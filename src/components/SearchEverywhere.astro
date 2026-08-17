@@ -1,0 +1,125 @@
+---
+// SearchEverywhere.astro
+---
+
+<section class="py-16 sm:py-24 bg-white border-y border-slate-200/80 relative overflow-hidden" id="discovery-shift">
+  
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Header -->
+    <div class="text-center max-w-3xl mx-auto mb-14 sm:mb-18">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-xs font-bold text-blue-700 uppercase tracking-wider mb-3">
+        The Discovery Shift
+      </div>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        Your customers don't search in just one place.
+      </h2>
+      <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+        Discovery is fragmented. Potential buyers no longer just click 10 blue links on Google. They validate authentic opinions on Reddit, ask ChatGPT for fast recommendations, and research sources with Perplexity.
+      </p>
+    </div>
+
+    <!-- 4 Fragmentation Pillars Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      
+      <!-- Card 1: Google SERPs -->
+      <div class="group relative bg-[#FAF9F5] rounded-2xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <div class="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1">Channel 01</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Traditional Search</h3>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            High-intent search queries on Google and Bing. Technical crawling, meta tags, and structured data remain table stakes for indexing.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-200/70 flex items-center justify-between text-xs">
+          <span class="text-slate-500 font-medium">Intent Focus</span>
+          <span class="font-bold text-slate-800">Commercial & Informational</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Reddit Communities -->
+      <div class="group relative bg-[#FAF9F5] rounded-2xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:border-orange-300 transition-all duration-300 flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+            </svg>
+          </div>
+          <div class="text-xs font-bold uppercase tracking-wider text-orange-600 mb-1">Channel 02</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Reddit Communities</h3>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Real people seeking unbiased recommendations. Buyers search <span class="font-mono text-xs bg-orange-50 text-orange-800 px-1 py-0.5 rounded">"query + reddit"</span> to bypass sponsored affiliate listicles.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-200/70 flex items-center justify-between text-xs">
+          <span class="text-slate-500 font-medium">Intent Focus</span>
+          <span class="font-bold text-slate-800">Unfiltered Peer Reviews</span>
+        </div>
+      </div>
+
+      <!-- Card 3: ChatGPT & LLM Answers -->
+      <div class="group relative bg-[#FAF9F5] rounded-2xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:border-violet-300 transition-all duration-300 flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-violet-600/10 text-violet-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div class="text-xs font-bold uppercase tracking-wider text-violet-600 mb-1">Channel 03</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Generative AI Answers</h3>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            ChatGPT and Claude answer direct user prompts. If your brand isn't part of training sets and entity knowledge graphs, you are invisible in AI summaries.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-200/70 flex items-center justify-between text-xs">
+          <span class="text-slate-500 font-medium">Intent Focus</span>
+          <span class="font-bold text-slate-800">Brand Mentions & LLM Synthesis</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Perplexity & AI Search -->
+      <div class="group relative bg-[#FAF9F5] rounded-2xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:border-teal-300 transition-all duration-300 flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-teal-600/10 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div class="text-xs font-bold uppercase tracking-wider text-teal-600 mb-1">Channel 04</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Live RAG Engines</h3>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Perplexity and Google AI Overviews cite real-time URLs. Clean technical architecture ensures live bots crawl and link to your exact content pieces.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-200/70 flex items-center justify-between text-xs">
+          <span class="text-slate-500 font-medium">Intent Focus</span>
+          <span class="font-bold text-slate-800">Direct Source Citations</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Unified Connection Banner -->
+    <div class="mt-10 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+      <div class="space-y-1.5 text-center md:text-left">
+        <h4 class="text-lg sm:text-xl font-bold">The Problem: SEO tools only look at 25% of this picture.</h4>
+        <p class="text-xs sm:text-sm text-slate-300 max-w-2xl">
+          Foundable connects all 4 visibility channels into a single unified dashboard, turning fragmented signals into clear content actions.
+        </p>
+      </div>
+      <a 
+        href="#modules" 
+        class="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-white text-slate-900 hover:bg-blue-50 text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-colors"
+      >
+        <span>Explore the 5 Modules</span>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+      </a>
+    </div>
+
+  </div>
+</section>

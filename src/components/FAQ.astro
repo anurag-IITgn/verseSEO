@@ -1,0 +1,124 @@
+---
+// FAQ.astro
+const faqs = [
+  {
+    question: "What exactly does Foundable do?",
+    answer: "Foundable is a lightweight visibility intelligence platform. Instead of giving you overwhelming 100-page SEO reports or fragmented dashboards, we connect four critical visibility signals into a single actionable workflow: technical crawl health, high-intent Google search gaps, relevant Reddit conversations, and AI search engine citations (ChatGPT, Perplexity, Claude, and Gemini)."
+  },
+  {
+    question: "Is this a traditional enterprise SEO tool like Semrush or Ahrefs?",
+    answer: "No. Enterprise tools are built for full-time SEO agencies and cost $200–$500/month. They are packed with complex backlink graphs and database filters that overwhelm small business owners and solo founders. Foundable focuses only on the high-impact signals that actually drive customer discovery across modern channels: fixing blockers, finding what customers search, discovering active Reddit discussions, and getting cited by AI answer engines."
+  },
+  {
+    question: "Does Foundable automatically post comments or spam Reddit?",
+    answer: "Absolutely not. We have a strict zero-spam policy. Foundable acts exclusively as a high-intent listening and market research radar. We find authentic, public conversations where real users are actively seeking advice in your niche and highlight the questions they're asking. You can then provide helpful, genuine responses directly on Reddit or use those insights to shape your website content."
+  },
+  {
+    question: "What is AI Visibility and why does it matter?",
+    answer: "Millions of potential customers now bypass Google entirely and ask ChatGPT, Perplexity, Claude, or Google Gemini for direct software and service recommendations (e.g., 'What is the best CRM for a 5-person plumbing business?'). AI Visibility measures whether these models recognize your brand, cite your website, or recommend your competitors instead — and shows you what content to publish to get indexed by AI answer engines."
+  },
+  {
+    question: "Can I generate full content briefs and articles?",
+    answer: "Yes! Foundable includes an AI-assisted Content Generator that bridges the gap between discovered opportunities and published articles. With one click, it transforms keyword intent clusters or Reddit discussion questions into structured SEO briefs (target word counts, semantic entities, H2/H3 outlines) and draft article previews ready for export to Markdown, WordPress, or Ghost."
+  },
+  {
+    question: "Is Foundable suitable for solo founders and non-technical business owners?",
+    answer: "Yes, it was designed specifically for founders, creators, and small business operators. Every technical warning comes with a plain-English explanation of why it matters and a simple fix step. You don't need an SEO degree or coding background to grow your organic visibility."
+  },
+  {
+    question: "How long does a website audit take?",
+    answer: "Our initial technical scan and keyword intent discovery runs in under 30 seconds. You receive an instant health score and prioritized checklist immediately after typing your domain."
+  }
+];
+---
+
+<section class="py-16 sm:py-24 bg-white border-b border-slate-200/80 relative" id="faq">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Header -->
+    <div class="text-center mb-12 sm:mb-16">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider mb-3">
+        Frequently Asked Questions
+      </div>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        Everything you need to know.
+      </h2>
+      <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+        Clear answers about our methodology, data privacy, and how we measure visibility across modern search.
+      </p>
+    </div>
+
+    <!-- Accordion List -->
+    <div class="space-y-4" id="faq-accordion-container">
+      {faqs.map((faq, index) => (
+        <div class="faq-item rounded-2xl border border-slate-200/90 bg-[#FAF9F5]/60 hover:bg-[#FAF9F5] transition-all overflow-hidden">
+          <button 
+            type="button" 
+            class="faq-toggle-btn w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+            aria-expanded="false"
+            aria-controls={`faq-answer-${index}`}
+            id={`faq-btn-${index}`}
+          >
+            <span class="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+              {faq.question}
+            </span>
+            <span class="faq-chevron w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0 transition-transform duration-200">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </button>
+          
+          <div 
+            id={`faq-answer-${index}`} 
+            role="region" 
+            aria-labelledby={`faq-btn-${index}`} 
+            class="faq-content hidden px-5 sm:px-6 pb-5 sm:pb-6 text-sm sm:text-base text-slate-600 leading-relaxed border-t border-slate-200/40 pt-4"
+          >
+            {faq.answer}
+          </div>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>
+
+<script>
+  const faqButtons = document.querySelectorAll<HTMLButtonElement>('.faq-toggle-btn');
+
+  faqButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+      const content = btn.nextElementSibling as HTMLElement | null;
+      const chevron = btn.querySelector('.faq-chevron') as HTMLElement | null;
+
+      // Close all other FAQs for clean single-view accordion
+      faqButtons.forEach(otherBtn => {
+        if (otherBtn !== btn) {
+          otherBtn.setAttribute('aria-expanded', 'false');
+          const otherContent = otherBtn.nextElementSibling as HTMLElement | null;
+          const otherChevron = otherBtn.querySelector('.faq-chevron') as HTMLElement | null;
+          if (otherContent) otherContent.classList.add('hidden');
+          if (otherChevron) otherChevron.classList.remove('rotate-180', 'bg-blue-600', 'text-white', 'border-blue-600');
+        }
+      });
+
+      // Toggle current
+      btn.setAttribute('aria-expanded', (!isExpanded).toString());
+      if (content) {
+        if (isExpanded) {
+          content.classList.add('hidden');
+          if (chevron) {
+            chevron.classList.remove('rotate-180', 'bg-blue-600', 'text-white', 'border-blue-600');
+          }
+        } else {
+          content.classList.remove('hidden');
+          if (chevron) {
+            chevron.classList.add('rotate-180', 'bg-blue-600', 'text-white', 'border-blue-600');
+          }
+        }
+      }
+    });
+  });
+</script>

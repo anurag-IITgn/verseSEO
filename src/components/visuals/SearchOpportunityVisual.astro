@@ -1,0 +1,190 @@
+---
+// SearchOpportunityVisual.astro
+---
+
+<div class="w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 overflow-hidden" id="search-opportunity-widget">
+  
+  <!-- Header Bar with Search Query -->
+  <div class="bg-slate-50 border-b border-slate-200/80 px-5 py-4">
+    <div class="text-[11px] font-bold uppercase tracking-wider text-blue-600 mb-1.5 flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      Customer Search Intent Discovery
+    </div>
+    
+    <div class="flex items-center gap-3 bg-white px-3.5 py-2 rounded-xl border border-slate-300/80 shadow-2xs">
+      <span class="text-xs font-bold text-slate-400 font-mono">Query:</span>
+      <span class="text-xs sm:text-sm font-semibold text-slate-900 truncate">AI resume builder for students</span>
+      <span class="ml-auto text-[11px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 shrink-0">
+        4 High-Value Clusters
+      </span>
+    </div>
+  </div>
+
+  <div class="p-5 sm:p-6 space-y-3.5">
+    
+    <div class="flex items-center justify-between text-xs text-slate-500 pb-1">
+      <span class="font-bold text-slate-700">Ranked Search Opportunities</span>
+      <span class="text-[11px] text-slate-400">Sorted by Opportunity Score</span>
+    </div>
+
+    <!-- Opportunity Card 1 -->
+    <div class="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/20 transition-all bg-white shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              AI resume builder for students
+            </h4>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-blue-800">
+              Commercial
+            </span>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] text-slate-500 font-mono">
+            <span>Vol: <strong class="text-slate-800">4,800/mo</strong></span>
+            <span>•</span>
+            <span>KD: <strong class="text-emerald-600 font-bold">18 (Low)</strong></span>
+            <span>•</span>
+            <span>CPC: <strong class="text-slate-800">$1.45</strong></span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 self-end sm:self-center">
+          <div class="text-right">
+            <div class="text-[10px] uppercase font-bold text-slate-400">Opportunity</div>
+            <div class="text-base sm:text-lg font-black text-blue-600 leading-none">94<span class="text-xs text-slate-400 font-normal">/100</span></div>
+          </div>
+          <button 
+            type="button" 
+            class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+            onclick="alert('Creating brief for: AI resume builder for students')"
+          >
+            Brief +
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opportunity Card 2 -->
+    <div class="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/20 transition-all bg-white shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              best resume builder for internship
+            </h4>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-800">
+              Transactional
+            </span>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] text-slate-500 font-mono">
+            <span>Vol: <strong class="text-slate-800">3,200/mo</strong></span>
+            <span>•</span>
+            <span>KD: <strong class="text-emerald-600 font-bold">22 (Low)</strong></span>
+            <span>•</span>
+            <span>CPC: <strong class="text-slate-800">$2.10</strong></span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 self-end sm:self-center">
+          <div class="text-right">
+            <div class="text-[10px] uppercase font-bold text-slate-400">Opportunity</div>
+            <div class="text-base sm:text-lg font-black text-blue-600 leading-none">91<span class="text-xs text-slate-400 font-normal">/100</span></div>
+          </div>
+          <button 
+            type="button" 
+            class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+            onclick="alert('Creating brief for: best resume builder for internship')"
+          >
+            Brief +
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opportunity Card 3 -->
+    <div class="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/20 transition-all bg-white shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              resume with no experience
+            </h4>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-800">
+              Informational
+            </span>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] text-slate-500 font-mono">
+            <span>Vol: <strong class="text-slate-800">12,400/mo</strong></span>
+            <span>•</span>
+            <span>KD: <strong class="text-amber-600 font-bold">34 (Med)</strong></span>
+            <span>•</span>
+            <span>CPC: <strong class="text-slate-800">$0.85</strong></span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 self-end sm:self-center">
+          <div class="text-right">
+            <div class="text-[10px] uppercase font-bold text-slate-400">Opportunity</div>
+            <div class="text-base sm:text-lg font-black text-blue-600 leading-none">78<span class="text-xs text-slate-400 font-normal">/100</span></div>
+          </div>
+          <button 
+            type="button" 
+            class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+            onclick="alert('Creating brief for: resume with no experience')"
+          >
+            Brief +
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opportunity Card 4 -->
+    <div class="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/20 transition-all bg-white shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              AI resume templates
+            </h4>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-blue-800">
+              Commercial
+            </span>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] text-slate-500 font-mono">
+            <span>Vol: <strong class="text-slate-800">2,900/mo</strong></span>
+            <span>•</span>
+            <span>KD: <strong class="text-emerald-600 font-bold">15 (Low)</strong></span>
+            <span>•</span>
+            <span>CPC: <strong class="text-slate-800">$1.20</strong></span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 self-end sm:self-center">
+          <div class="text-right">
+            <div class="text-[10px] uppercase font-bold text-slate-400">Opportunity</div>
+            <div class="text-base sm:text-lg font-black text-blue-600 leading-none">73<span class="text-xs text-slate-400 font-normal">/100</span></div>
+          </div>
+          <button 
+            type="button" 
+            class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+            onclick="alert('Creating brief for: AI resume templates')"
+          >
+            Brief +
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Tip Footer -->
+    <div class="pt-2 flex items-center justify-between text-xs text-slate-500">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Low-hanging fruit: 3 low KD opportunities available</span>
+      </div>
+      <span class="text-blue-600 font-medium">Select to auto-generate briefs →</span>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,185 @@
+---
+// Navbar.astro
+---
+
+<header class="sticky top-0 z-50 w-full backdrop-blur-md bg-[#FAF9F5]/90 border-b border-slate-200/80 transition-all duration-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 sm:h-18">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg p-1">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-blue-500/20 text-white font-bold text-lg group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 3v18"></path>
+            <path d="M3 12h18"></path>
+            <circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.25"></circle>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-extrabold text-xl tracking-tight text-slate-900 flex items-center gap-1.5">
+            Foundable
+            <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200/60">
+              V1 Beta
+            </span>
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center gap-1 lg:gap-2 text-sm font-medium text-slate-600" aria-label="Main Navigation">
+        <a 
+          href="#modules" 
+          class="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        >
+          Product Modules
+        </a>
+        <a 
+          href="#workflow" 
+          class="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        >
+          How It Connects
+        </a>
+        <a 
+          href="#demo" 
+          class="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 flex items-center gap-1.5"
+        >
+          <span>Live Simulator</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        </a>
+        <a 
+          href="#pricing" 
+          class="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        >
+          Pricing
+        </a>
+        <a 
+          href="#faq" 
+          class="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        >
+          FAQ
+        </a>
+      </nav>
+
+      <!-- Desktop Action Buttons -->
+      <div class="hidden md:flex items-center gap-3">
+        <button 
+          type="button" 
+          id="nav-login-btn"
+          class="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+          onclick="alert('Authentication will be available in the upcoming release!')"
+        >
+          Log in
+        </button>
+        <a 
+          href="#demo" 
+          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-blue-700 rounded-xl shadow-sm hover:shadow-md hover:shadow-blue-600/20 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+        >
+          <span>Analyze my website</span>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="flex md:hidden items-center gap-2">
+        <button 
+          type="button" 
+          id="mobile-menu-button"
+          aria-expanded="false" 
+          aria-controls="mobile-menu"
+          aria-label="Toggle navigation menu" 
+          class="p-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        >
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-b border-slate-200 bg-white/95 backdrop-blur-md px-4 pt-2 pb-6 space-y-2 shadow-lg">
+    <nav class="flex flex-col space-y-1">
+      <a 
+        href="#modules" 
+        class="mobile-nav-link px-3 py-2.5 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+      >
+        Product Modules
+      </a>
+      <a 
+        href="#workflow" 
+        class="mobile-nav-link px-3 py-2.5 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+      >
+        How It Connects
+      </a>
+      <a 
+        href="#demo" 
+        class="mobile-nav-link px-3 py-2.5 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-between"
+      >
+        <span>Live Simulator</span>
+        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">Interactive</span>
+      </a>
+      <a 
+        href="#pricing" 
+        class="mobile-nav-link px-3 py-2.5 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+      >
+        Pricing
+      </a>
+      <a 
+        href="#faq" 
+        class="mobile-nav-link px-3 py-2.5 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+      >
+        FAQ
+      </a>
+    </nav>
+    <div class="pt-4 border-t border-slate-100 flex flex-col gap-2">
+      <button 
+        type="button" 
+        class="w-full text-center px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl"
+        onclick="alert('Authentication will be available in the upcoming release!')"
+      >
+        Log in
+      </button>
+      <a 
+        href="#demo" 
+        class="mobile-nav-link w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
+      >
+        Analyze my website
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const button = document.getElementById('mobile-menu-button');
+  const menu = document.getElementById('mobile-menu');
+  const openIcon = document.getElementById('menu-icon-open');
+  const closeIcon = document.getElementById('menu-icon-close');
+  const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+
+  if (button && menu && openIcon && closeIcon) {
+    button.addEventListener('click', () => {
+      const isExpanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', (!isExpanded).toString());
+      menu.classList.toggle('hidden');
+      openIcon.classList.toggle('hidden');
+      closeIcon.classList.toggle('hidden');
+    });
+
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        menu.classList.add('hidden');
+        openIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+        button.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+</script>

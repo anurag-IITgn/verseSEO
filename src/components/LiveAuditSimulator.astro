@@ -1,0 +1,514 @@
+---
+// LiveAuditSimulator.astro
+---
+
+<section class="py-16 sm:py-24 bg-white border-b border-slate-200/80 relative" id="demo">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Header -->
+    <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Interactive Live Simulator
+      </div>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        Test the microtool on real sample websites.
+      </h2>
+      <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+        Experience how Foundable unifies technical SEO, high-intent keywords, Reddit listening, and AI citations in under 30 seconds.
+      </p>
+    </div>
+
+    <!-- Simulator Shell Container -->
+    <div class="bg-[#FAF9F5] rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 p-6 sm:p-8 lg:p-10 max-w-5xl mx-auto">
+      
+      <!-- Input Controls & Preset Selector -->
+      <div class="space-y-4 mb-8">
+        
+        <!-- Preset selector chips -->
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Select Sample Persona:</span>
+          <div class="flex flex-wrap gap-2" id="sim-persona-chips">
+            <button 
+              type="button" 
+              class="sim-persona-btn active px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold cursor-pointer transition-all"
+              data-domain="resumeforge.io"
+              data-category="saas"
+            >
+              💻 SaaS Startup (resumeforge.io)
+            </button>
+            <button 
+              type="button" 
+              class="sim-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all"
+              data-domain="aeroroast.co"
+              data-category="ecommerce"
+            >
+              ☕ E-Commerce (aeroroast.co)
+            </button>
+            <button 
+              type="button" 
+              class="sim-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all"
+              data-domain="apexpt.com"
+              data-category="local"
+            >
+              🏥 Local Clinic (apexpt.com)
+            </button>
+            <button 
+              type="button" 
+              class="sim-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all"
+              data-domain="coursecraft.dev"
+              data-category="creator"
+            >
+              🎨 Creator Platform (coursecraft.dev)
+            </button>
+          </div>
+        </div>
+
+        <!-- URL Input & Scan Action Bar -->
+        <div class="flex flex-col sm:flex-row items-center gap-2 p-2 bg-white rounded-2xl border border-slate-300 shadow-sm focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
+          <div class="flex items-center gap-2.5 w-full px-3 py-1.5">
+            <span class="text-slate-400 font-mono text-xs sm:text-sm">https://</span>
+            <input 
+              type="text" 
+              id="sim-domain-input" 
+              value="resumeforge.io" 
+              class="w-full text-sm sm:text-base font-semibold text-slate-900 focus:outline-none bg-transparent"
+              placeholder="e.g. yourcompany.com"
+            />
+          </div>
+          <button 
+            type="button" 
+            id="sim-run-btn" 
+            class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/20 cursor-pointer transition-all"
+          >
+            <span id="sim-btn-text">Run Instant Scan</span>
+            <svg id="sim-btn-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Scanning Progress Simulation (Hidden initially) -->
+      <div id="sim-progress-box" class="hidden p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-4 mb-8">
+        <div class="flex justify-center">
+          <div class="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-base font-bold text-slate-900" id="sim-progress-title">Scanning Website Infrastructure...</h4>
+          <p class="text-xs text-slate-500 font-mono" id="sim-progress-subtitle">Fetching robots.txt, sitemap.xml, SSL headers, and LLM entity associations</p>
+        </div>
+        <div class="w-full max-w-md mx-auto bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div id="sim-progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 15%"></div>
+        </div>
+      </div>
+
+      <!-- Simulator Output Card Display -->
+      <div id="sim-results-box" class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-8 space-y-6">
+        
+        <!-- Results Header Banner -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Target Scanned</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">
+                Audit Verified
+              </span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-black text-slate-900 mt-1 font-mono" id="sim-result-domain">
+              resumeforge.io
+            </h3>
+          </div>
+
+          <!-- Overall Composite Score Badge -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-2xl px-5 py-3 text-right">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-900 block">Omni-Visibility Index</span>
+            <div class="text-2xl sm:text-3xl font-black text-blue-700" id="sim-result-score">
+              84 <span class="text-sm font-normal text-slate-400">/ 100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Grid Sub-Panels -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Box 1: Technical Health Findings -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-[#FAF9F5]/70 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 1. Technical Health
+              </span>
+              <span class="text-xs font-bold text-emerald-700" id="sim-tech-status">88% (Healthy)</span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-600 font-mono" id="sim-tech-items">
+              <div class="flex items-center gap-1.5 text-emerald-700">✓ HTTPS & HSTS active (TLS 1.3)</div>
+              <div class="flex items-center gap-1.5 text-emerald-700">✓ Sitemap contains 142 valid URLs</div>
+              <div class="flex items-center gap-1.5 text-amber-700">⚠ 3 Missing meta descriptions</div>
+            </div>
+          </div>
+
+          <!-- Box 2: Search Intent Opportunities -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-[#FAF9F5]/70 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span> 2. Search Intent
+              </span>
+              <span class="text-xs font-bold text-blue-700" id="sim-search-status">4 Top Opportunities</span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-700" id="sim-search-items">
+              <div class="flex justify-between items-center bg-white p-1.5 rounded border border-slate-200/80">
+                <span class="font-semibold truncate">"AI resume builder for students"</span>
+                <span class="text-blue-600 font-bold font-mono ml-2">Score 94</span>
+              </div>
+              <div class="flex justify-between items-center bg-white p-1.5 rounded border border-slate-200/80">
+                <span class="font-semibold truncate">"resume with no experience"</span>
+                <span class="text-blue-600 font-bold font-mono ml-2">Score 78</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 3: Reddit Community Opportunities -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-[#FAF9F5]/70 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span> 3. Reddit Intel
+              </span>
+              <span class="text-xs font-bold text-orange-700" id="sim-reddit-status">3 Active Discussions</span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-700" id="sim-reddit-items">
+              <div class="bg-white p-2 rounded border border-slate-200/80">
+                <span class="text-orange-600 font-bold">r/smallbusiness:</span> "What's the best software for..."
+                <div class="text-[10px] text-slate-400 font-mono mt-0.5">184 upvotes • High buyer intent</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 4: AI Answer Citation Status -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-[#FAF9F5]/70 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-violet-600"></span> 4. AI Engine Footprint
+              </span>
+              <span class="text-xs font-bold text-violet-700" id="sim-ai-status">3 of 4 Cited</span>
+            </div>
+            <div class="space-y-1 text-xs text-slate-700" id="sim-ai-items">
+              <div class="flex justify-between items-center">
+                <span>ChatGPT (GPT-4o)</span>
+                <span class="text-emerald-700 font-bold">✓ Mentioned (#2)</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Perplexity AI</span>
+                <span class="text-emerald-700 font-bold">✓ Direct Citation</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Google Gemini</span>
+                <span class="text-rose-600 font-bold">✕ Not Mentioned</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Priority Action Box -->
+        <div class="p-4 rounded-xl bg-blue-50/80 border border-blue-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <strong class="text-blue-950 block">Next Recommended Growth Move:</strong>
+            <span id="sim-next-action">Publish the "Student Resume Outline" brief to unlock Gemini AI citations and capture +4,800 monthly search clicks.</span>
+          </div>
+          <button 
+            type="button" 
+            class="shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors cursor-pointer text-xs"
+            onclick="alert('Full report generator will be available with connected V1 accounts!')"
+          >
+            Generate Full Plan →
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+  interface PersonaData {
+    domain: string;
+    score: string;
+    techStatus: string;
+    techItems: string[];
+    searchStatus: string;
+    searchItems: Array<{ query: string; score: number }>;
+    redditStatus: string;
+    redditThread: { sub: string; title: string; meta: string };
+    aiStatus: string;
+    aiBreakdown: Array<{ name: string; status: string; isGood: boolean }>;
+    nextAction: string;
+  }
+
+  const personaDatabase: Record<string, PersonaData> = {
+    "resumeforge.io": {
+      domain: "resumeforge.io",
+      score: "84",
+      techStatus: "88% (Healthy)",
+      techItems: [
+        "✓ HTTPS & HSTS active (TLS 1.3)",
+        "✓ Sitemap contains 142 valid URLs",
+        "⚠ 3 Missing meta descriptions on /templates"
+      ],
+      searchStatus: "4 Top Opportunities",
+      searchItems: [
+        { query: "AI resume builder for students", score: 94 },
+        { query: "best resume builder for internship", score: 91 },
+        { query: "resume with no experience template", score: 78 }
+      ],
+      redditStatus: "3 Active Discussions",
+      redditThread: {
+        sub: "r/smallbusiness",
+        title: "What's the best software to format resumes for non-technical candidates?",
+        meta: "184 upvotes • High purchase intent"
+      },
+      aiStatus: "3 of 4 Cited (74%)",
+      aiBreakdown: [
+        { name: "ChatGPT (GPT-4o)", status: "✓ Mentioned (#2)", isGood: true },
+        { name: "Perplexity AI", status: "✓ Direct Citation [1]", isGood: true },
+        { name: "Claude 3.5", status: "✓ Recommended", isGood: true },
+        { name: "Google Gemini", status: "✕ Not Mentioned", isGood: false }
+      ],
+      nextAction: "Publish the 'Student Resume Guide' content brief to trigger Google Gemini AI citations and capture 4,800 monthly organic visits."
+    },
+    "aeroroast.co": {
+      domain: "aeroroast.co",
+      score: "79",
+      techStatus: "82% (Good)",
+      techItems: [
+        "✓ Fast LCP: 0.9s on mobile",
+        "✓ Structured Product Schema present",
+        "⚠ 8 Broken image alt attributes"
+      ],
+      searchStatus: "6 E-commerce Clusters",
+      searchItems: [
+        { query: "single origin light roast subscription", score: 96 },
+        { query: "aeropress grind size specialty beans", score: 89 },
+        { query: "low acid specialty coffee beans", score: 82 }
+      ],
+      redditStatus: "5 Active Discussions",
+      redditThread: {
+        sub: "r/Coffee",
+        title: "Best subscription for fruity Ethiopian light roasts?",
+        meta: "245 upvotes • 78 comments"
+      },
+      aiStatus: "2 of 4 Cited (58%)",
+      aiBreakdown: [
+        { name: "ChatGPT (GPT-4o)", status: "✓ Mentioned (#3)", isGood: true },
+        { name: "Perplexity AI", status: "✓ Source link active", isGood: true },
+        { name: "Claude 3.5", status: "✕ Generic roast list", isGood: false },
+        { name: "Google Gemini", status: "✕ Competitor cited", isGood: false }
+      ],
+      nextAction: "Create a brewing guide for Ethiopian origins to satisfy r/Coffee recommendation criteria and capture Claude citation signals."
+    },
+    "apexpt.com": {
+      domain: "apexpt.com",
+      score: "72",
+      techStatus: "76% (Needs Fixes)",
+      techItems: [
+        "✓ Local Business Schema active",
+        "⚠ Missing OpenGraph tags on /contact",
+        "⚠ Mobile viewport tap targets too small"
+      ],
+      searchStatus: "5 Local Intent Gaps",
+      searchItems: [
+        { query: "sports physical therapist near me", score: 98 },
+        { query: "rotator cuff rehab specialist", score: 92 },
+        { query: "post surgery knee physical therapy cost", score: 86 }
+      ],
+      redditStatus: "2 City Discussions",
+      redditThread: {
+        sub: "r/Austin",
+        title: "Any physical therapist recommendations for runner knee injuries?",
+        meta: "54 upvotes • High local buyer intent"
+      },
+      aiStatus: "1 of 4 Cited (42%)",
+      aiBreakdown: [
+        { name: "ChatGPT (GPT-4o)", status: "✕ No local entity match", isGood: false },
+        { name: "Perplexity AI", status: "✓ Cited via Google Maps", isGood: true },
+        { name: "Claude 3.5", status: "✕ Not cited", isGood: false },
+        { name: "Google Gemini", status: "✕ Competitor cited", isGood: false }
+      ],
+      nextAction: "Implement structured FAQ Schema on your conditions treated pages to trigger local ChatGPT & Gemini health service citations."
+    },
+    "coursecraft.dev": {
+      domain: "coursecraft.dev",
+      score: "87",
+      techStatus: "94% (Excellent)",
+      techItems: [
+        "✓ 0 Broken links detected",
+        "✓ Canonical URLs properly configured",
+        "✓ Superfast TTFB (120ms)"
+      ],
+      searchStatus: "7 High-KD Gaps",
+      searchItems: [
+        { query: "open source course platform for developers", score: 97 },
+        { query: "self hosted LMS for technical bootcamp", score: 93 },
+        { query: "interactive markdown code quiz generator", score: 85 }
+      ],
+      redditStatus: "4 Active Discussions",
+      redditThread: {
+        sub: "r/webdev",
+        title: "How are you hosting paid developer documentation in 2026?",
+        meta: "310 upvotes • 94 comments"
+      },
+      aiStatus: "4 of 4 Cited (92%)",
+      aiBreakdown: [
+        { name: "ChatGPT (GPT-4o)", status: "✓ Top recommendation", isGood: true },
+        { name: "Perplexity AI", status: "✓ Cited as lead source", isGood: true },
+        { name: "Claude 3.5", status: "✓ Highly rated for devs", isGood: true },
+        { name: "Google Gemini", status: "✓ Mentioned in dev tools", isGood: true }
+      ],
+      nextAction: "Maintain high authority by answering common markdown LMS syntax questions in community documentation."
+    }
+  };
+
+  const domainInput = document.getElementById('sim-domain-input') as HTMLInputElement | null;
+  const runBtn = document.getElementById('sim-run-btn');
+  const personaBtns = document.querySelectorAll<HTMLButtonElement>('#sim-persona-chips .sim-persona-btn');
+  const progressBox = document.getElementById('sim-progress-box');
+  const resultsBox = document.getElementById('sim-results-box');
+  const progressBar = document.getElementById('sim-progress-bar');
+  const progressTitle = document.getElementById('sim-progress-title');
+
+  function updateResultsUI(data: PersonaData) {
+    const resDomain = document.getElementById('sim-result-domain');
+    const resScore = document.getElementById('sim-result-score');
+    const techStatus = document.getElementById('sim-tech-status');
+    const techItems = document.getElementById('sim-tech-items');
+    const searchStatus = document.getElementById('sim-search-status');
+    const searchItems = document.getElementById('sim-search-items');
+    const redditStatus = document.getElementById('sim-reddit-status');
+    const redditItems = document.getElementById('sim-reddit-items');
+    const aiStatus = document.getElementById('sim-ai-status');
+    const aiItems = document.getElementById('sim-ai-items');
+    const nextAction = document.getElementById('sim-next-action');
+
+    if (resDomain) resDomain.textContent = data.domain;
+    if (resScore) resScore.innerHTML = `${data.score} <span class="text-sm font-normal text-slate-400">/ 100</span>`;
+    if (techStatus) techStatus.textContent = data.techStatus;
+    
+    if (techItems) {
+      techItems.innerHTML = data.techItems.map(item => {
+        const isWarn = item.includes('⚠');
+        return `<div class="flex items-center gap-1.5 ${isWarn ? 'text-amber-700' : 'text-emerald-700'}">${item}</div>`;
+      }).join('');
+    }
+
+    if (searchStatus) searchStatus.textContent = data.searchStatus;
+    if (searchItems) {
+      searchItems.innerHTML = data.searchItems.map(s => `
+        <div class="flex justify-between items-center bg-white p-1.5 rounded border border-slate-200/80">
+          <span class="font-semibold truncate">"${s.query}"</span>
+          <span class="text-blue-600 font-bold font-mono ml-2">Score ${s.score}</span>
+        </div>
+      `).join('');
+    }
+
+    if (redditStatus) redditStatus.textContent = data.redditStatus;
+    if (redditItems) {
+      redditItems.innerHTML = `
+        <div class="bg-white p-2 rounded border border-slate-200/80">
+          <span class="text-orange-600 font-bold">${data.redditThread.sub}:</span> "${data.redditThread.title}"
+          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${data.redditThread.meta}</div>
+        </div>
+      `;
+    }
+
+    if (aiStatus) aiStatus.textContent = data.aiStatus;
+    if (aiItems) {
+      aiItems.innerHTML = data.aiBreakdown.map(ai => `
+        <div class="flex justify-between items-center">
+          <span>${ai.name}</span>
+          <span class="${ai.isGood ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'}">${ai.status}</span>
+        </div>
+      `).join('');
+    }
+
+    if (nextAction) nextAction.textContent = data.nextAction;
+  }
+
+  function simulateScan(domain: string) {
+    if (!progressBox || !resultsBox || !progressBar || !progressTitle) return;
+
+    resultsBox.classList.add('hidden');
+    progressBox.classList.remove('hidden');
+
+    const cleanDomain = domain.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/.*$/, '');
+    const matchedData = personaDatabase[cleanDomain] || {
+      domain: cleanDomain || "mycustomsite.com",
+      score: "81",
+      techStatus: "84% (Good Health)",
+      techItems: [
+        "✓ HTTPS active & SSL verified",
+        "✓ Sitemap discovered with 86 indexable pages",
+        "⚠ 2 Pages missing canonical tags"
+      ],
+      searchStatus: "3 High-Intent Gaps Discovered",
+      searchItems: [
+        { query: `best software for ${cleanDomain.split('.')[0]}`, score: 92 },
+        { query: `how to choose a ${cleanDomain.split('.')[0]} tool`, score: 85 }
+      ],
+      redditStatus: "2 Active Discussions Found",
+      redditThread: {
+        sub: "r/SaaS",
+        title: `What tools are people using instead of older legacy tools for ${cleanDomain.split('.')[0]}?`,
+        meta: "112 upvotes • 43 comments"
+      },
+      aiStatus: "2 of 4 Models Cited",
+      aiBreakdown: [
+        { name: "ChatGPT (GPT-4o)", status: "✓ Mentioned (#3)", isGood: true },
+        { name: "Perplexity AI", status: "✓ Cited source", isGood: true },
+        { name: "Google Gemini", status: "✕ Not Mentioned", isGood: false }
+      ],
+      nextAction: `Publish a dedicated comparison guide targeting keywords around ${cleanDomain} to trigger comprehensive AI citations.`
+    };
+
+    progressBar.style.width = '20%';
+    progressTitle.textContent = 'Crawling sitemap & technical tags...';
+
+    setTimeout(() => {
+      progressBar.style.width = '60%';
+      progressTitle.textContent = 'Querying Reddit communities & search intent clusters...';
+    }, 400);
+
+    setTimeout(() => {
+      progressBar.style.width = '90%';
+      progressTitle.textContent = 'Evaluating ChatGPT, Claude & Perplexity citations...';
+    }, 800);
+
+    setTimeout(() => {
+      progressBar.style.width = '100%';
+      progressBox.classList.add('hidden');
+      resultsBox.classList.remove('hidden');
+      updateResultsUI(matchedData);
+    }, 1200);
+  }
+
+  personaBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      personaBtns.forEach(b => {
+        b.className = 'sim-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all';
+      });
+      btn.className = 'sim-persona-btn active px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold cursor-pointer transition-all';
+
+      const domain = btn.getAttribute('data-domain') || 'resumeforge.io';
+      if (domainInput) domainInput.value = domain;
+      simulateScan(domain);
+    });
+  });
+
+  if (runBtn) {
+    runBtn.addEventListener('click', () => {
+      const domain = domainInput ? domainInput.value.trim() : 'resumeforge.io';
+      simulateScan(domain);
+    });
+  }
+</script>

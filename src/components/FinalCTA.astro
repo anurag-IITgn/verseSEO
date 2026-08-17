@@ -1,0 +1,96 @@
+---
+// FinalCTA.astro
+---
+
+<section class="py-20 sm:py-28 bg-gradient-to-b from-[#FAF9F5] via-slate-900 to-slate-950 text-white relative overflow-hidden" id="final-cta">
+  
+  <!-- Subtle ambient background glow -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none -z-0">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-[400px] h-[300px] bg-indigo-600/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    
+    <!-- Small Eyebrow Badge -->
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold text-blue-200 mb-6 backdrop-blur-md">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>Get Visible in 2026</span>
+    </div>
+
+    <!-- Main Headline -->
+    <h2 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] max-w-4xl mx-auto">
+      Know where your next customer could find you.
+    </h2>
+
+    <!-- Subheading -->
+    <p class="mt-6 text-base sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+      Bring technical SEO health, high-intent Google keywords, Reddit buyer discussions, and AI answer engine visibility together in one simple dashboard.
+    </p>
+
+    <!-- Bottom URL Bar & CTA Form -->
+    <div class="mt-10 max-w-xl mx-auto">
+      <form id="final-cta-form" class="flex flex-col sm:flex-row items-center gap-2 p-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-400/20 transition-all">
+        <div class="flex items-center gap-2.5 w-full px-3 py-1.5">
+          <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+          <input 
+            type="text" 
+            id="final-cta-input" 
+            placeholder="Enter your website URL..." 
+            class="w-full text-sm sm:text-base text-white placeholder:text-slate-400 bg-transparent border-0 focus:outline-none focus:ring-0 font-medium"
+            required
+          />
+        </div>
+        <button 
+          type="submit" 
+          class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm sm:text-base rounded-xl shadow-lg shadow-blue-600/30 cursor-pointer transition-all"
+        >
+          <span>Analyze my website</span>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+        </button>
+      </form>
+
+      <!-- Trust signals -->
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm text-slate-400 font-medium">
+        <div class="flex items-center gap-1.5">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Free 30-second audit</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>No credit card needed</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Actionable V1 roadmap</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  const finalForm = document.getElementById('final-cta-form');
+  const finalInput = document.getElementById('final-cta-input') as HTMLInputElement | null;
+
+  if (finalForm) {
+    finalForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const demoSection = document.getElementById('demo');
+      if (demoSection) {
+        demoSection.scrollIntoView({ behavior: 'smooth' });
+        const simInput = document.getElementById('sim-domain-input') as HTMLInputElement | null;
+        if (simInput && finalInput && finalInput.value) {
+          simInput.value = finalInput.value;
+        }
+        const runBtn = document.getElementById('sim-run-btn');
+        if (runBtn) {
+          setTimeout(() => runBtn.click(), 400);
+        }
+      }
+    });
+  }
+</script>

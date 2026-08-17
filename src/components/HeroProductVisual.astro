@@ -1,0 +1,466 @@
+---
+// HeroProductVisual.astro
+---
+
+<div class="relative w-full max-w-5xl mx-auto mt-10 lg:mt-14" id="hero-product-visual-container">
+  
+  <!-- Ambient background glow behind card -->
+  <div class="absolute -inset-1.5 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-violet-600/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none" id="visual-ambient-glow"></div>
+
+  <!-- Main Product Container Card -->
+  <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 overflow-hidden transition-all duration-300">
+    
+    <!-- Top Browser / App Navigation Bar -->
+    <div class="bg-slate-50/90 border-b border-slate-200/80 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Window Controls & Target Domain -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-rose-400/80 inline-block"></span>
+          <span class="w-3 h-3 rounded-full bg-amber-400/80 inline-block"></span>
+          <span class="w-3 h-3 rounded-full bg-emerald-400/80 inline-block"></span>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-600 shadow-2xs">
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span>resumeforge.io</span>
+          <span class="text-slate-400">/</span>
+          <span class="text-blue-600 font-semibold">intelligence</span>
+        </div>
+      </div>
+
+      <!-- Channel Switcher Tabs (Interactive & Synced with Headline) -->
+      <div class="flex items-center gap-1 bg-slate-200/60 p-1 rounded-xl text-xs font-semibold overflow-x-auto max-w-full" id="hero-visual-tabs" role="tablist">
+        <button 
+          type="button" 
+          role="tab" 
+          aria-selected="true" 
+          data-channel="0" 
+          class="hero-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-900 bg-white shadow-xs font-medium cursor-pointer"
+        >
+          Google SERP
+        </button>
+        <button 
+          type="button" 
+          role="tab" 
+          aria-selected="false" 
+          data-channel="1" 
+          class="hero-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+        >
+          Reddit Intel
+        </button>
+        <button 
+          type="button" 
+          role="tab" 
+          aria-selected="false" 
+          data-channel="2" 
+          class="hero-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+        >
+          ChatGPT & AI
+        </button>
+        <button 
+          type="button" 
+          role="tab" 
+          aria-selected="false" 
+          data-channel="3" 
+          class="hero-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+        >
+          Perplexity
+        </button>
+        <button 
+          type="button" 
+          role="tab" 
+          aria-selected="false" 
+          data-channel="4" 
+          class="hero-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+        >
+          Content Brief
+        </button>
+        <button 
+          type="button" 
+          role="tab" 
+          aria-selected="false" 
+          data-channel="5" 
+          class="hero-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+        >
+          Omni Matrix
+        </button>
+      </div>
+
+      <!-- Live Signal Status -->
+      <div class="hidden md:flex items-center gap-2">
+        <span class="flex h-2 w-2 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="text-xs font-mono font-medium text-slate-500">Live Syncing</span>
+      </div>
+
+    </div>
+
+    <!-- Active View Display Area -->
+    <div class="p-4 sm:p-6 lg:p-8 min-h-[360px] flex flex-col justify-center relative overflow-hidden bg-gradient-to-b from-white to-slate-50/50" id="hero-visual-display">
+
+      <!-- VIEW 0: GOOGLE SEARCH INTEL -->
+      <div class="hero-view-panel transition-all duration-300 opacity-100 block" data-panel="0">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          <!-- Left SERP Simulation Card -->
+          <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Target Google Query</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
+                Rank #3 (↑ 2)
+              </span>
+            </div>
+            
+            <div class="space-y-1.5">
+              <div class="text-xs text-emerald-700 font-mono flex items-center gap-1">
+                https://resumeforge.io › templates › students
+              </div>
+              <h4 class="text-base font-bold text-blue-700 hover:underline cursor-pointer">
+                AI Resume Builder for Students (No Experience Required)
+              </h4>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Build ATS-friendly resumes in minutes with smart formatting, AI bullet point suggestions, and pre-built templates tailored for college internships and entry-level roles.
+              </p>
+            </div>
+
+            <!-- Mini SERP Signals -->
+            <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center">
+              <div class="bg-slate-50 rounded-lg p-2 border border-slate-100">
+                <div class="text-[11px] text-slate-500 font-medium">Search Volume</div>
+                <div class="text-sm font-bold text-slate-900">4,800 / mo</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2 border border-slate-100">
+                <div class="text-[11px] text-slate-500 font-medium">Organic CTR</div>
+                <div class="text-sm font-bold text-emerald-600">8.4%</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2 border border-slate-100">
+                <div class="text-[11px] text-slate-500 font-medium">KD Score</div>
+                <div class="text-sm font-bold text-blue-600">18 (Easy)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Insight Summary -->
+          <div class="lg:col-span-5 space-y-3">
+            <div class="bg-blue-50/60 border border-blue-200/70 rounded-xl p-4">
+              <div class="flex items-center gap-2 text-blue-900 font-bold text-xs mb-1">
+                <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Search Opportunity Detected</span>
+              </div>
+              <p class="text-xs text-slate-700 leading-normal">
+                Competitors in positions #1 and #2 lack student-specific formatting guides. Adding an entry-level FAQ section will boost your page to position #1.
+              </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-2">
+              <div class="text-xs font-semibold text-slate-800">Related Intent Clusters</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-[11px] font-medium font-mono">best resume for internship (3.2k)</span>
+                <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-[11px] font-medium font-mono">resume with no experience (12.4k)</span>
+                <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-[11px] font-medium font-mono">student CV templates (1.8k)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW 1: REDDIT OPPORTUNITY -->
+      <div class="hero-view-panel transition-all duration-300 opacity-0 hidden" data-panel="1">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          <!-- Reddit Post Card -->
+          <div class="lg:col-span-7 bg-white rounded-xl border border-orange-200/80 p-5 shadow-xs">
+            <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-[#FF4500] text-white flex items-center justify-center text-[10px] font-bold">r/</span>
+                <span class="text-xs font-bold text-slate-900">r/smallbusiness</span>
+                <span class="text-[11px] text-slate-400">• 4h ago</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+                Purchase Intent: HIGH
+              </span>
+            </div>
+
+            <h4 class="text-sm sm:text-base font-bold text-slate-900 mb-2">
+              "What's the best software to format professional resumes for non-technical candidates?"
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
+              "...We're helping 50 junior graduates prep for interviews next month. Need something that automates ATS keyword alignment without heavy manual formatting..."
+            </p>
+
+            <div class="mt-3 flex items-center justify-between text-xs text-slate-500 font-medium">
+              <div class="flex items-center gap-3">
+                <span class="flex items-center gap-1 font-semibold text-orange-600">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" /></svg>
+                  184 Upvotes
+                </span>
+                <span>💬 62 Comments</span>
+              </div>
+              <span class="text-indigo-600 font-semibold">Relevance: 96/100</span>
+            </div>
+          </div>
+
+          <!-- Suggested Action Box -->
+          <div class="lg:col-span-5 space-y-3">
+            <div class="bg-orange-50/60 border border-orange-200/80 rounded-xl p-4">
+              <div class="flex items-center gap-2 text-orange-950 font-bold text-xs mb-1">
+                <svg class="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>Zero-Spam Conversation Opportunity</span>
+              </div>
+              <p class="text-xs text-slate-700 leading-normal">
+                Top comment asks for ATS-compliant export formats. Sharing your free resume scoring checklist here will drive authentic, high-converting buyer traffic.
+              </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-3.5 text-xs">
+              <div class="font-semibold text-slate-800 mb-1.5">Also active in:</div>
+              <div class="space-y-1.5 text-slate-600">
+                <div class="flex justify-between items-center">
+                  <span>r/SaaS (38 comments)</span>
+                  <span class="text-emerald-600 font-semibold font-mono">91% Match</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>r/Entrepreneur (108 comments)</span>
+                  <span class="text-emerald-600 font-semibold font-mono">98% Match</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW 2: CHATGPT & AI ENGINES -->
+      <div class="hero-view-panel transition-all duration-300 opacity-0 hidden" data-panel="2">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          <!-- AI Prompt Tracker -->
+          <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+            <div class="text-xs font-mono font-medium text-slate-400 mb-1 uppercase tracking-wider">Monitored LLM Prompt</div>
+            <div class="text-sm font-semibold text-slate-900 bg-slate-50 p-3 rounded-lg border border-slate-200/80 mb-4">
+              "What are the top AI tools for college students writing their first resume?"
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between p-2.5 bg-emerald-50/70 border border-emerald-200/70 rounded-lg text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px]">GPT</span>
+                  <span class="font-bold text-slate-900">ChatGPT (GPT-4o)</span>
+                </div>
+                <span class="font-semibold text-emerald-700">✓ Mentioned (#2 recommendation)</span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 bg-emerald-50/70 border border-emerald-200/70 rounded-lg text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded bg-violet-700 text-white flex items-center justify-center font-bold text-[10px]">CL</span>
+                  <span class="font-bold text-slate-900">Claude 3.5 Sonnet</span>
+                </div>
+                <span class="font-semibold text-emerald-700">✓ Recommended for student UX</span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 bg-rose-50/70 border border-rose-200/70 rounded-lg text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-[10px]">GEM</span>
+                  <span class="font-bold text-slate-900">Google Gemini</span>
+                </div>
+                <span class="font-semibold text-rose-700">✕ Not mentioned (Competitor cited)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Score & Action -->
+          <div class="lg:col-span-5 space-y-3">
+            <div class="bg-violet-50/70 border border-violet-200/80 rounded-xl p-4">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-violet-950 uppercase tracking-wide">AI Citation Score</span>
+                <span class="text-lg font-black text-violet-700">74 / 100</span>
+              </div>
+              <div class="w-full bg-violet-200 rounded-full h-2 mb-2">
+                <div class="bg-violet-600 h-2 rounded-full" style="width: 74%"></div>
+              </div>
+              <p class="text-xs text-slate-700 leading-normal">
+                Your tool is recognized by 3 out of 4 major AI models. Publishing a comparative benchmark will trigger citations in Gemini.
+              </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
+              <span class="font-semibold text-slate-800">Citing Source URLs:</span> 5 verified blog citations feeding LLM training/RAG indexes.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW 3: PERPLEXITY & LIVE RAG CITATIONS -->
+      <div class="hero-view-panel transition-all duration-300 opacity-0 hidden" data-panel="3">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-teal-800 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
+                Perplexity Answer Source Tracking
+              </span>
+              <span class="px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold border border-teal-200">
+                Direct Domain Citation #1
+              </span>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200/80 text-xs text-slate-700 space-y-2 mb-3">
+              <div class="font-semibold text-slate-900">Perplexity Generated Response:</div>
+              <p class="italic text-slate-600">
+                "...For students with no prior formal experience, <span class="bg-teal-100 text-teal-900 font-semibold px-1 rounded">ResumeForge.io</span> provides ATS-friendly templates and guided prompts specifically for coursework and campus projects [1]..."
+              </p>
+            </div>
+
+            <div class="text-[11px] text-slate-500 font-mono flex items-center gap-2">
+              <span>[1] Source: https://resumeforge.io/guide/first-resume</span>
+              <span class="text-teal-600 font-bold">✓ Indexed</span>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 space-y-3">
+            <div class="bg-teal-50/70 border border-teal-200/80 rounded-xl p-4">
+              <div class="text-xs font-bold text-teal-950 mb-1">RAG Answer Footprint</div>
+              <p class="text-xs text-slate-700 leading-normal">
+                Perplexity fetches real-time web context. Because your technical SEO passes schema audits, the answer engine reads your content directly into live responses.
+              </p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-3.5 text-xs text-slate-600">
+              <div class="font-semibold text-slate-900 mb-1">Crawl Status:</div>
+              <span class="text-emerald-700 font-medium">PerplexityBot allowed • Schema FAQ verified</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW 4: CONTENT BRIEF GENERATION -->
+      <div class="hero-view-panel transition-all duration-300 opacity-0 hidden" data-panel="4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-indigo-900">Automated Content Brief</span>
+              <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold border border-indigo-100">
+                Ready to Draft
+              </span>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div>
+                <span class="text-slate-400 uppercase font-mono text-[10px] block">Primary Topic</span>
+                <span class="font-bold text-slate-900 text-sm">How to Make a Resume with No Experience (2026 Guide)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                <div>
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Target Length</span>
+                  <span class="font-semibold text-slate-800">1,650 words</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Search Intent</span>
+                  <span class="font-semibold text-slate-800">Informational + Commercial</span>
+                </div>
+              </div>
+              <div class="pt-2 border-t border-slate-100">
+                <span class="text-slate-400 uppercase font-mono text-[10px] block mb-1">Recommended Section Structure</span>
+                <div class="space-y-1 text-slate-600 font-mono text-[11px]">
+                  <div class="p-1 bg-slate-50 rounded">H2: 1. Choose the Functional Resume Format</div>
+                  <div class="p-1 bg-slate-50 rounded">H2: 2. How to Highlight Coursework & Volunteer Work</div>
+                  <div class="p-1 bg-slate-50 rounded">H2: 3. ATS Keywords for Entry-Level Applicants</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 space-y-3">
+            <div class="bg-indigo-50/70 border border-indigo-200/80 rounded-xl p-4">
+              <div class="text-xs font-bold text-indigo-950 mb-1">Opportunity Bridge</div>
+              <p class="text-xs text-slate-700 leading-normal">
+                Transforms Reddit questions and Google intent clusters directly into an optimized article draft formatted for Google ranking and AI citations.
+              </p>
+            </div>
+            <button 
+              type="button" 
+              class="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
+              onclick="alert('In the full product, this generates a complete markdown draft ready for export!')"
+            >
+              <span>1-Click Generate Article Draft</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW 5: UNIFIED OMNI MATRIX (EVERYWHERE) -->
+      <div class="hero-view-panel transition-all duration-300 opacity-0 hidden" data-panel="5">
+        <div class="space-y-4">
+          
+          <!-- Unified Score Header -->
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 p-4 rounded-xl border border-blue-200/80">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Unified Visibility Index</span>
+              <h4 class="text-xl sm:text-2xl font-black text-slate-900">86 / 100 <span class="text-xs font-normal text-emerald-600 font-semibold ml-2">↑ +14 pts this month</span></h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-3 py-1 bg-white rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs">
+                All 4 Signals Synchronized
+              </span>
+            </div>
+          </div>
+
+          <!-- 4 Quadrant Mini Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+              <div class="text-[11px] font-semibold text-slate-500">Technical Health</div>
+              <div class="text-lg font-bold text-emerald-600">92%</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">0 Critical Errors</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+              <div class="text-[11px] font-semibold text-slate-500">Google Reach</div>
+              <div class="text-lg font-bold text-blue-600">88%</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">14 Ranking Keywords</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+              <div class="text-[11px] font-semibold text-slate-500">Reddit Intel</div>
+              <div class="text-lg font-bold text-orange-600">78%</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">6 Active Threads</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+              <div class="text-[11px] font-semibold text-slate-500">AI Citations</div>
+              <div class="text-lg font-bold text-violet-600">86%</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">3 Models Tracking</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Interactive Controls & Next Sync Indicator -->
+    <div class="bg-slate-50/90 border-t border-slate-200/80 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+        <span>Interactive Preview Mode • Simulated live scan for <strong>resumeforge.io</strong></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-slate-400">Click tabs above to switch dimensions</span>
+      </div>
+    </div>
+
+  </div>
+</div>

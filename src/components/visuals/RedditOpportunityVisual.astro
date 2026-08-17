@@ -1,0 +1,119 @@
+---
+// RedditOpportunityVisual.astro
+---
+
+<div class="w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 overflow-hidden" id="reddit-opportunity-widget">
+  
+  <!-- Top Header with Reddit Branding Accent & Zero Spam Disclaimer -->
+  <div class="bg-slate-50 border-b border-slate-200/80 px-5 py-3.5 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <span class="w-5 h-5 rounded-full bg-[#FF4500] text-white flex items-center justify-center text-[10px] font-bold">r/</span>
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Reddit High-Intent Conversations</span>
+    </div>
+    <div class="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+      <svg class="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+      <span>Zero Auto-Spam • Organic Intel Only</span>
+    </div>
+  </div>
+
+  <div class="p-5 sm:p-6 space-y-4">
+    
+    <!-- Active Thread 1 -->
+    <div class="group p-4 rounded-xl border border-orange-200/80 bg-orange-50/20 hover:bg-orange-50/50 hover:border-orange-300 transition-all shadow-2xs">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xs text-slate-900">r/smallbusiness</span>
+          <span class="text-[11px] text-slate-400">• 4h ago • 62 comments</span>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+          Purchase Intent: HIGH
+        </span>
+      </div>
+
+      <h4 class="text-xs sm:text-sm font-bold text-slate-900 mb-1.5 group-hover:text-orange-600 transition-colors">
+        "What's the best software for a small business looking to streamline client proposals?"
+      </h4>
+
+      <p class="text-xs text-slate-600 leading-relaxed bg-white/80 p-2.5 rounded-lg border border-slate-100">
+        "...We're wasting 15+ hours a week formatting PDFs manually. What modern, affordable tools are you all using that don't cost $300/seat?"
+      </p>
+
+      <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-3 text-slate-500 font-mono text-[11px]">
+          <span class="text-orange-600 font-bold">↑ 184 Upvotes</span>
+          <span>•</span>
+          <span>Sentiment: <strong class="text-slate-800">Frustrated with incumbents</strong></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-indigo-600">Relevance: 96/100</span>
+          <button 
+            type="button" 
+            class="px-2.5 py-1 bg-white hover:bg-slate-900 hover:text-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 transition-colors cursor-pointer"
+            onclick="alert('Drafting authentic response framework for r/smallbusiness thread!')"
+          >
+            Draft Advice Framework
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Thread 2 -->
+    <div class="group p-4 rounded-xl border border-slate-200 hover:border-orange-300 hover:bg-orange-50/20 transition-all bg-white shadow-2xs">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xs text-slate-900">r/SaaS</span>
+          <span class="text-[11px] text-slate-400">• 1d ago • 38 comments</span>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold">
+          Intent: EVALUATING TOOLS
+        </span>
+      </div>
+
+      <h4 class="text-xs sm:text-sm font-bold text-slate-900 mb-1.5 group-hover:text-orange-600 transition-colors">
+        "What tools are people using to automate customer support without hallucinating AI answers?"
+      </h4>
+
+      <div class="mt-2.5 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-3 text-slate-500 font-mono text-[11px]">
+          <span class="text-orange-600 font-bold">↑ 92 Upvotes</span>
+          <span>•</span>
+          <span>r/SaaS</span>
+        </div>
+        <span class="text-xs font-bold text-indigo-600">Relevance: 91/100</span>
+      </div>
+    </div>
+
+    <!-- Active Thread 3 -->
+    <div class="group p-4 rounded-xl border border-slate-200 hover:border-orange-300 hover:bg-orange-50/20 transition-all bg-white shadow-2xs">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xs text-slate-900">r/Entrepreneur</span>
+          <span class="text-[11px] text-slate-400">• 6h ago • 108 comments</span>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+          Purchase Intent: VERY HIGH
+        </span>
+      </div>
+
+      <h4 class="text-xs sm:text-sm font-bold text-slate-900 mb-1.5 group-hover:text-orange-600 transition-colors">
+        "Recommendations for simple SEO tools that don't cost $200/mo?"
+      </h4>
+
+      <div class="mt-2.5 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-3 text-slate-500 font-mono text-[11px]">
+          <span class="text-orange-600 font-bold">↑ 312 Upvotes</span>
+          <span>•</span>
+          <span>r/Entrepreneur</span>
+        </div>
+        <span class="text-xs font-bold text-indigo-600">Relevance: 98/100</span>
+      </div>
+    </div>
+
+    <!-- Footnote on Ethical Listening -->
+    <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+      <span>Track keywords across 200+ subreddits daily</span>
+      <span class="text-orange-600 font-semibold">View all 14 active threads →</span>
+    </div>
+
+  </div>
+</div>

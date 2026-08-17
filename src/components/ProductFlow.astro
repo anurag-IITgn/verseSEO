@@ -1,0 +1,306 @@
+---
+// ProductFlow.astro
+---
+
+<section class="py-16 sm:py-24 bg-gradient-to-b from-white to-[#FAF9F5] border-b border-slate-200/80 relative" id="workflow">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Header -->
+    <div class="text-center max-w-3xl mx-auto mb-14 sm:mb-18">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200/60 text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
+        Integrated Workflow
+      </div>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        A continuous visibility intelligence loop.
+      </h2>
+      <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+        Stop using 5 disconnected tools. Foundable connects your technical health, search opportunities, Reddit discussions, and AI citations into one unified execution engine.
+      </p>
+    </div>
+
+    <!-- Interactive Interactive Pipeline Sequencer -->
+    <div class="bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 p-6 sm:p-10">
+      
+      <!-- Top Steps Grid (Desktop & Tablet) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8" id="flow-steps-nav">
+        
+        <!-- Step 1 -->
+        <button type="button" class="flow-step-btn active group text-left p-3 rounded-xl border border-blue-600 bg-blue-50/60 transition-all cursor-pointer" data-step="1">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold font-mono text-blue-700">01. INPUT</span>
+            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+          </div>
+          <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600">Your Website</div>
+        </button>
+
+        <!-- Step 2 -->
+        <button type="button" class="flow-step-btn group text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer" data-step="2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold font-mono text-slate-400">02. AUDIT</span>
+            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+          </div>
+          <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600">Technical Health</div>
+        </button>
+
+        <!-- Step 3 -->
+        <button type="button" class="flow-step-btn group text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer" data-step="3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold font-mono text-slate-400">03. INTENT</span>
+            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+          </div>
+          <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600">Search Gaps</div>
+        </button>
+
+        <!-- Step 4 -->
+        <button type="button" class="flow-step-btn group text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer" data-step="4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold font-mono text-slate-400">04. LISTEN</span>
+            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+          </div>
+          <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600">Reddit Threads</div>
+        </button>
+
+        <!-- Step 5 -->
+        <button type="button" class="flow-step-btn group text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer" data-step="5">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold font-mono text-slate-400">05. AI RADAR</span>
+            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+          </div>
+          <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600">AI Citations</div>
+        </button>
+
+        <!-- Step 6 -->
+        <button type="button" class="flow-step-btn group text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer" data-step="6">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold font-mono text-slate-400">06. CREATE</span>
+            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+          </div>
+          <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600">Content Engine</div>
+        </button>
+
+        <!-- Step 7 -->
+        <button type="button" class="flow-step-btn group text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer" data-step="7">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold font-mono text-slate-400">07. GROW</span>
+            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+          </div>
+          <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600">Actionable Digest</div>
+        </button>
+
+      </div>
+
+      <!-- Step Content Display Box -->
+      <div class="bg-[#FAF9F5] rounded-2xl border border-slate-200/90 p-6 sm:p-8" id="flow-display-card">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <div class="lg:col-span-7 space-y-3">
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 text-xs font-bold font-mono" id="flow-step-tag">
+              STAGE 01 OF 07
+            </div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900" id="flow-step-title">
+              Instant Website Ingestion
+            </h3>
+            <p class="text-sm sm:text-base text-slate-600 leading-relaxed" id="flow-step-desc">
+              Enter your domain once. Foundable performs a non-invasive, lightweight crawl of your indexable pages, robots.txt, sitemaps, and core meta infrastructure.
+            </p>
+            <div class="pt-2 text-xs font-mono text-slate-500" id="flow-step-payload">
+              ↳ <strong>Output:</strong> Page hierarchy, response status codes, discovered entity keywords.
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-3" id="flow-step-visual">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span class="text-xs font-mono text-slate-400 font-bold">SYSTEM STATUS</span>
+              <span class="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Ready
+              </span>
+            </div>
+            <div class="text-xs font-mono bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1 text-slate-700">
+              <div>→ Scanning target domain...</div>
+              <div>→ 142 URLs discovered in sitemap.xml</div>
+              <div class="text-blue-600 font-bold">✓ Initial crawl benchmark complete (1.2s)</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Step Navigation Buttons -->
+      <div class="mt-6 flex items-center justify-between">
+        <button 
+          type="button" 
+          id="flow-prev-btn"
+          class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-40 cursor-pointer"
+        >
+          ← Previous Stage
+        </button>
+        <div class="text-xs text-slate-400 font-mono hidden sm:block">
+          Click any step above to inspect data flow
+        </div>
+        <button 
+          type="button" 
+          id="flow-next-btn"
+          class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition-colors cursor-pointer"
+        >
+          Next Stage →
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+  interface FlowStepData {
+    tag: string;
+    title: string;
+    desc: string;
+    payload: string;
+    visualStatus: string;
+    visualLines: string[];
+  }
+
+  const stepsData: Record<number, FlowStepData> = {
+    1: {
+      tag: "STAGE 01 OF 07 • INGESTION",
+      title: "Instant Website Ingestion",
+      desc: "Enter your domain once. Foundable performs a non-invasive, lightweight crawl of your indexable pages, robots.txt, sitemaps, and core meta infrastructure.",
+      payload: "↳ Passes page hierarchy, response status codes, and discovered entity topics to Module 2.",
+      visualStatus: "Ingestion Active",
+      visualLines: ["→ Target: https://yourdomain.com", "→ 142 URLs parsed from sitemap.xml", "✓ Initial domain structure mapped in 1.2s"]
+    },
+    2: {
+      tag: "STAGE 02 OF 07 • TECHNICAL AUDIT",
+      title: "Technical Health & Crawl Check",
+      desc: "Identifies indexing roadblocks, broken 404 links, missing meta descriptions, canonical mismatches, and page performance issues before they hurt your rankings.",
+      payload: "↳ Generates actionable fix list and verifies clean foundation for Google & AI search bots.",
+      visualStatus: "Health: 82/100",
+      visualLines: ["✓ HTTPS & SSL: Valid (TLS 1.3)", "⚠ 3 Meta descriptions missing", "⚠ 4 Broken internal links flagged"]
+    },
+    3: {
+      tag: "STAGE 03 OF 07 • SEARCH OPPORTUNITIES",
+      title: "High-Intent Keyword Gap Discovery",
+      desc: "Discovers low-competition, high-opportunity keyword clusters tailored to what your potential customers are actively searching on Google and Bing.",
+      payload: "↳ Filters topics by Opportunity Score (90+) and aligns with user search intent.",
+      visualStatus: "4 High-Value Gaps",
+      visualLines: ["→ 'AI resume builder for students' (94/100)", "→ 'best resume builder for internship' (91/100)", "✓ KD: 18 (Low competition target)"]
+    },
+    4: {
+      tag: "STAGE 04 OF 07 • COMMUNITY LISTENING",
+      title: "Reddit High-Intent Conversations",
+      desc: "Scans active subreddits for authentic discussions where users are asking for solutions in your domain. Zero auto-spam — pure organic listening intel.",
+      payload: "↳ Extracts user pain points, sentiment, and questions to answer in content.",
+      visualStatus: "3 High-Intent Threads",
+      visualLines: ["→ r/smallbusiness: 'Best software for...'", "→ 184 Upvotes • 62 Comments", "✓ Relevance: 96/100 • Buyer Intent: HIGH"]
+    },
+    5: {
+      tag: "STAGE 05 OF 07 • AI ANSWER RADAR",
+      title: "AI Answer Engine Visibility",
+      desc: "Checks whether ChatGPT, Perplexity, Claude, and Gemini cite or recommend your product when users prompt them for recommendations.",
+      payload: "↳ Identifies missing citations and entity associations in LLM knowledge graphs.",
+      visualStatus: "AI Visibility: 64/100",
+      visualLines: ["✓ ChatGPT: Mentioned in #2 slot", "✓ Perplexity: Direct link cited [1]", "✕ Gemini: Not mentioned (Competitor cited)"]
+    },
+    6: {
+      tag: "STAGE 06 OF 07 • CONTENT ENGINE",
+      title: "Automated SEO & AI Content Briefs",
+      desc: "Bridges the gap between raw data and published content. Generates structured briefs and article outlines optimized for both Google rankings and AI citations.",
+      payload: "↳ Produces markdown drafts, LSI keywords, and target section outlines.",
+      visualStatus: "Brief Ready",
+      visualLines: ["→ Target Length: 1,650 Words", "→ 8 Semantic LSI terms included", "✓ H2/H3 outline structured for citations"]
+    },
+    7: {
+      tag: "STAGE 07 OF 07 • ACTIONABLE DIGEST",
+      title: "Weekly Growth Digest & Next Steps",
+      desc: "Receive a prioritized weekly checklist of exactly what to fix, which Reddit threads to authentically engage with, and which new content to publish.",
+      payload: "↳ Delivers clear, bite-sized tasks so you never wonder what to work on next.",
+      visualStatus: "Weekly Plan Set",
+      visualLines: ["1. Fix 3 missing meta descriptions (+12% CTR)", "2. Reply to r/smallbusiness thread with free guide", "3. Publish 'Resume for Students' article"]
+    }
+  };
+
+  let activeStep = 1;
+  const stepButtons = document.querySelectorAll<HTMLButtonElement>('#flow-steps-nav .flow-step-btn');
+  const tagEl = document.getElementById('flow-step-tag');
+  const titleEl = document.getElementById('flow-step-title');
+  const descEl = document.getElementById('flow-step-desc');
+  const payloadEl = document.getElementById('flow-step-payload');
+  const visualEl = document.getElementById('flow-step-visual');
+  const prevBtn = document.getElementById('flow-prev-btn') as HTMLButtonElement | null;
+  const nextBtn = document.getElementById('flow-next-btn') as HTMLButtonElement | null;
+
+  function renderStep(step: number) {
+    activeStep = step;
+    const data = stepsData[step];
+    if (!data) return;
+
+    // Update Nav Buttons
+    stepButtons.forEach((btn, index) => {
+      const btnStep = index + 1;
+      const isSelected = btnStep === step;
+      if (isSelected) {
+        btn.className = 'flow-step-btn group text-left p-3 rounded-xl border border-blue-600 bg-blue-50/70 transition-all cursor-pointer';
+        const dot = btn.querySelector('span:last-child');
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-blue-600';
+      } else {
+        btn.className = 'flow-step-btn group text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer';
+        const dot = btn.querySelector('span:last-child');
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-slate-300';
+      }
+    });
+
+    if (tagEl) tagEl.textContent = data.tag;
+    if (titleEl) titleEl.textContent = data.title;
+    if (descEl) descEl.textContent = data.desc;
+    if (payloadEl) payloadEl.innerHTML = data.payload;
+
+    if (visualEl) {
+      visualEl.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <span class="text-xs font-mono text-slate-400 font-bold">PIPELINE MONITOR</span>
+          <span class="text-xs font-semibold text-blue-700 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span> ${data.visualStatus}
+          </span>
+        </div>
+        <div class="text-xs font-mono bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1.5 text-slate-700 animate-fade-in">
+          ${data.visualLines.map(line => `<div>${line}</div>`).join('')}
+        </div>
+      `;
+    }
+
+    if (prevBtn) prevBtn.disabled = step === 1;
+    if (nextBtn) {
+      if (step === 7) {
+        nextBtn.textContent = 'Restart Flow ↺';
+      } else {
+        nextBtn.textContent = 'Next Stage →';
+      }
+    }
+  }
+
+  stepButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = parseInt(btn.getAttribute('data-step') || '1', 10);
+      renderStep(step);
+    });
+  });
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (activeStep > 1) renderStep(activeStep - 1);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      if (activeStep < 7) {
+        renderStep(activeStep + 1);
+      } else {
+        renderStep(1);
+      }
+    });
+  }
+</script>

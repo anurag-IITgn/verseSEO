@@ -1,17 +1,208 @@
 ---
-
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import SearchEverywhere from '../components/SearchEverywhere.astro';
+import FeatureSection from '../components/FeatureSection.astro';
+import TechnicalSeoVisual from '../components/visuals/TechnicalSeoVisual.astro';
+import SearchOpportunityVisual from '../components/visuals/SearchOpportunityVisual.astro';
+import RedditOpportunityVisual from '../components/visuals/RedditOpportunityVisual.astro';
+import AiVisibilityVisual from '../components/visuals/AiVisibilityVisual.astro';
+import ContentGeneratorVisual from '../components/visuals/ContentGeneratorVisual.astro';
+import ProductFlow from '../components/ProductFlow.astro';
+import LiveAuditSimulator from '../components/LiveAuditSimulator.astro';
+import Pricing from '../components/Pricing.astro';
+import FAQ from '../components/FAQ.astro';
+import FinalCTA from '../components/FinalCTA.astro';
+import Footer from '../components/Footer.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout 
+  title="Foundable — Visibility Intelligence for Modern Search, Reddit & AI"
+  description="The all-in-one visibility platform for small businesses, SaaS founders, and creators. Fix technical flaws, capture search intent, discover Reddit opportunities, and track ChatGPT & Perplexity citations."
+>
+  <!-- Global Navigation -->
+  <Navbar />
+
+  <main class="flex-grow">
+    <!-- Hero Section with Dynamic Headline & Synced Visual -->
+    <Hero />
+
+    <!-- Fragmented Discovery Shift ("Your customers don't search in just one place") -->
+    <SearchEverywhere />
+
+    <!-- Five Product Modules Section Header -->
+    <section class="py-16 sm:py-20 bg-[#FAF9F5] border-b border-slate-200/80" id="modules">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-xs font-bold text-blue-700 uppercase tracking-wider mb-4">
+          The 5 Core Modules
+        </div>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
+          Everything you need to win visibility across the modern web.
+        </h2>
+        <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          From technical website health to Reddit discussions and generative AI citations — five tailored intelligence modules built for real founders.
+        </p>
+      </div>
+    </section>
+
+    <!-- MODULE 1: Website Health / Technical SEO (Text Left / Visual Right) -->
+    <FeatureSection
+      moduleNumber="01"
+      moduleName="Technical SEO"
+      eyebrowBadge="Module 01 — Technical SEO"
+      badgeTheme="emerald"
+      headline="Find what is holding your website back."
+      description="You don't need a 100-page enterprise audit. Foundable scans critical crawling foundations in seconds — SSL, XML sitemaps, canonical tags, missing metadata, and broken links — with plain-English fix steps."
+      bullets={[
+        {
+          title: "Clear 0–100 Health Score",
+          desc: "Understand your website's baseline indexability without deciphering complicated jargon."
+        },
+        {
+          title: "Crawl Roadblock Detection",
+          desc: "Ensure Google bots, Bing crawlers, and AI scrapers can parse and index every critical page."
+        },
+        {
+          title: "Actionable Fix Guidance",
+          desc: "Step-by-step instructions designed for non-technical founders to resolve warnings in minutes."
+        }
+      ]}
+      layout="text-left"
+      id="module-technical"
+    >
+      <TechnicalSeoVisual />
+    </FeatureSection>
+
+    <!-- MODULE 2: Search Opportunities (Visual Left / Text Right) -->
+    <FeatureSection
+      moduleNumber="02"
+      moduleName="Search Opportunities"
+      eyebrowBadge="Module 02 — Search Opportunities"
+      badgeTheme="blue"
+      headline="Stop guessing what to write."
+      description="Discover high-intent, low-competition keywords that your exact potential customers are typing into search engines right now. Filter by opportunity score, search volume, and commercial intent."
+      bullets={[
+        {
+          title: "Opportunity Scoring (0–100)",
+          desc: "Instantly identify low-hanging fruit keywords with high buyer interest and low competition."
+        },
+        {
+          title: "Search Intent Alignment",
+          desc: "Distinguish between informational research queries and buyers ready to sign up."
+        },
+        {
+          title: "Revenue-Focused Terms",
+          desc: "Prioritize keywords that have high conversion potential for your specific product category."
+        }
+      ]}
+      layout="text-right"
+      id="module-search"
+    >
+      <SearchOpportunityVisual />
+    </FeatureSection>
+
+    <!-- MODULE 3: Reddit Opportunities (Text Left / Visual Right) -->
+    <FeatureSection
+      moduleNumber="03"
+      moduleName="Reddit Opportunities"
+      eyebrowBadge="Module 03 — Reddit Opportunities"
+      badgeTheme="orange"
+      headline="Find the conversations that matter."
+      description="Listen to high-intent buyer discussions across niche communities. When users ask for recommendations or vent about competitors, you'll know immediately. 100% organic market listening — zero auto-spam."
+      bullets={[
+        {
+          title: "High-Intent Community Radar",
+          desc: "Scans active subreddits for authentic discussions where users are seeking solutions in your niche."
+        },
+        {
+          title: "Zero Spam / Organic Value Only",
+          desc: "We never post fake comments. We identify where you can join conversations authentically and add value."
+        },
+        {
+          title: "Sentiment & Relevance Scoring",
+          desc: "Focus only on threads with high purchase intent and active community engagement."
+        }
+      ]}
+      layout="text-left"
+      id="module-reddit"
+    >
+      <RedditOpportunityVisual />
+    </FeatureSection>
+
+    <!-- MODULE 4: AI Visibility (Visual Left / Text Right) -->
+    <FeatureSection
+      moduleNumber="04"
+      moduleName="AI Visibility"
+      eyebrowBadge="Module 04 — AI Visibility"
+      badgeTheme="violet"
+      headline="Measure your brand's footprint in AI answers."
+      description="Millions of buyers now ask ChatGPT, Perplexity, Claude, and Gemini for direct product recommendations. Foundable tracks whether AI models mention your brand and cites your content as a verified source."
+      bullets={[
+        {
+          title: "Multi-Model Citation Tracker",
+          desc: "Monitor ChatGPT (GPT-4o), Claude 3.5 Sonnet, Perplexity AI, and Google Gemini simultaneously."
+        },
+        {
+          title: "Competitor Mention Rate",
+          desc: "See which competing brands are being recommended in your target prompt categories."
+        },
+        {
+          title: "RAG & Citation Optimization",
+          desc: "Actionable steps to get your content indexed into live AI answer sources and knowledge graphs."
+        }
+      ]}
+      layout="text-right"
+      id="module-ai"
+    >
+      <AiVisibilityVisual />
+    </FeatureSection>
+
+    <!-- MODULE 5: Content Generator (Text Left / Visual Right) -->
+    <FeatureSection
+      moduleNumber="05"
+      moduleName="Content Engine"
+      eyebrowBadge="Module 05 — Content Generator"
+      badgeTheme="indigo"
+      headline="Turn discovered opportunities into high-ranking content briefs."
+      description="Bridge the gap between raw keyword data and publish-ready articles. Generate structured SEO briefs and draft articles tailored for Google rankings and AI citations in seconds."
+      bullets={[
+        {
+          title: "One-Click Structured Briefs",
+          desc: "Auto-generates recommended word counts, search intent targets, and H2/H3 section outlines."
+        },
+        {
+          title: "Semantic Entity Integration",
+          desc: "Embeds natural LSI keywords and entities that search engines and AI models expect to see."
+        },
+        {
+          title: "Export Ready",
+          desc: "Download clean Markdown or copy straight to WordPress, Ghost, or your custom CMS."
+        }
+      ]}
+      layout="text-left"
+      id="module-content"
+    >
+      <ContentGeneratorVisual />
+    </FeatureSection>
+
+    <!-- Product Workflow / How It Connects -->
+    <ProductFlow />
+
+    <!-- Interactive Live Simulator Sandbox -->
+    <LiveAuditSimulator />
+
+    <!-- Pricing Section -->
+    <Pricing />
+
+    <!-- Frequently Asked Questions -->
+    <FAQ />
+
+    <!-- Final Call to Action -->
+    <FinalCTA />
+  </main>
+
+  <!-- Global Footer -->
+  <Footer />
+</Layout>
