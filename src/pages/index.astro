@@ -34,24 +34,24 @@ import Footer from '../components/Footer.astro';
     <SearchEverywhere />
 
     <!-- Five Product Modules — Cohesive Section Background -->
-    <div class="relative bg-gradient-to-b from-[#f0eee8] to-[#e8e5dc] py-16 sm:py-20">
+    <div class="relative bg-[#0c1021] py-16 sm:py-20">
       <!-- Ambient depth layers -->
       <div class="absolute inset-0 pointer-events-none overflow-hidden">
-        <div class="absolute top-0 left-1/4 w-[600px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-violet-500/5 rounded-full blur-[100px]"></div>
+        <div class="absolute top-0 left-1/4 w-[600px] h-[400px] bg-blue-500/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[100px]"></div>
       </div>
 
       <div class="relative">
         <!-- Five Product Modules Section Header -->
         <section class="pb-12 sm:pb-16" id="modules">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/5 border border-slate-900/10 text-xs font-bold text-slate-700 uppercase tracking-wider mb-4">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">
               The 5 Core Modules
             </div>
-            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-4xl mx-auto">
               Everything you need to win visibility across the modern web.
             </h2>
-            <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            <p class="mt-4 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
               From technical website health to Reddit discussions and generative AI citations — five tailored intelligence modules built for real founders.
             </p>
           </div>
@@ -198,6 +198,9 @@ import Footer from '../components/Footer.astro';
     </FeatureSection>
 
       </div>
+
+      <!-- Fade transition into the next light section -->
+      <div class="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-b from-transparent to-[#faf9f5] pointer-events-none"></div>
     </div>
 
     <!-- Growth Visualization — Organic / Direct / Referral -->
