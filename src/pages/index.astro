@@ -10,6 +10,7 @@ import SearchOpportunityVisual from '../components/visuals/SearchOpportunityVisu
 import RedditOpportunityVisual from '../components/visuals/RedditOpportunityVisual.astro';
 import AiVisibilityVisual from '../components/visuals/AiVisibilityVisual.astro';
 import ContentGeneratorVisual from '../components/visuals/ContentGeneratorVisual.astro';
+import GrowthGraph from '../components/GrowthGraph.astro';
 import ProductFlow from '../components/ProductFlow.astro';
 import LiveAuditSimulator from '../components/LiveAuditSimulator.astro';
 import Pricing from '../components/Pricing.astro';
@@ -32,23 +33,32 @@ import Footer from '../components/Footer.astro';
     <!-- Fragmented Discovery Shift ("Your customers don't search in just one place") -->
     <SearchEverywhere />
 
-    <!-- Five Product Modules Section Header -->
-    <section class="py-16 sm:py-20 bg-[#FAF9F5] border-b border-slate-200/80" id="modules">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-xs font-bold text-blue-700 uppercase tracking-wider mb-4">
-          The 5 Core Modules
-        </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
-          Everything you need to win visibility across the modern web.
-        </h2>
-        <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          From technical website health to Reddit discussions and generative AI citations — five tailored intelligence modules built for real founders.
-        </p>
+    <!-- Five Product Modules — Cohesive Section Background -->
+    <div class="relative bg-gradient-to-b from-[#f8f7f4] to-[#f3f1ec] py-16 sm:py-20">
+      <!-- Ambient depth layers -->
+      <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-[600px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-violet-500/5 rounded-full blur-[100px]"></div>
       </div>
-    </section>
 
-    <!-- MODULE 1: Website Health / Technical SEO (Text Left / Visual Right) -->
-    <FeatureSection
+      <div class="relative">
+        <!-- Five Product Modules Section Header -->
+        <section class="pb-12 sm:pb-16" id="modules">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/5 border border-slate-900/10 text-xs font-bold text-slate-700 uppercase tracking-wider mb-4">
+              The 5 Core Modules
+            </div>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
+              Everything you need to win visibility across the modern web.
+            </h2>
+            <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              From technical website health to Reddit discussions and generative AI citations — five tailored intelligence modules built for real founders.
+            </p>
+          </div>
+        </section>
+
+        <!-- MODULE 1: Website Health / Technical SEO (Text Left / Visual Right) -->
+        <FeatureSection
       moduleNumber="01"
       moduleName="Technical SEO"
       eyebrowBadge="Module 01 — Technical SEO"
@@ -186,6 +196,12 @@ import Footer from '../components/Footer.astro';
     >
       <ContentGeneratorVisual />
     </FeatureSection>
+
+      </div>
+    </div>
+
+    <!-- Growth Visualization — Organic / Direct / Referral -->
+    <GrowthGraph />
 
     <!-- Product Workflow / How It Connects -->
     <ProductFlow />

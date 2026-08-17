@@ -1,0 +1,227 @@
+---
+// GrowthGraph.astro — Organic / Direct / Referral Growth Visualization
+const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'];
+
+const data = {
+  organic: [20, 25, 32, 43, 57, 74],
+  direct: [35, 38, 42, 45, 48, 51],
+  referral: [18, 21, 24, 27, 30, 33],
+};
+
+const maxVal = 80;
+const chartWidth = 600;
+const chartHeight = 260;
+const paddingLeft = 48;
+const paddingRight = 24;
+const paddingTop = 24;
+const paddingBottom = 48;
+const innerWidth = chartWidth - paddingLeft - paddingRight;
+const innerHeight = chartHeight - paddingTop - paddingBottom;
+
+function toX(i: number) {
+  return paddingLeft + (i / (weeks.length - 1)) * innerWidth;
+}
+function toY(v: number) {
+  return paddingTop + innerHeight - (v / maxVal) * innerHeight;
+}
+
+function buildPath(values: number[]) {
+  return values.map((v, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+}
+
+const organicPath = buildPath(data.organic);
+const directPath = buildPath(data.direct);
+const referralPath = buildPath(data.referral);
+---
+
+<section class="py-16 sm:py-20">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Section Header -->
+    <div class="text-center mb-10 sm:mb-14">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/5 border border-slate-900/10 text-xs font-bold text-slate-700 uppercase tracking-wider mb-4">
+        Acquisition Trends
+      </div>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-3xl mx-auto">
+        Turn search visibility into organic growth.
+      </h2>
+      <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        Track how your acquisition mix changes as your search visibility improves.
+      </p>
+    </div>
+
+    <!-- Graph Card -->
+    <div class="relative bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-900/5 overflow-hidden">
+      
+      <!-- Card Header -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-6 sm:px-8 pt-6 sm:pt-8 pb-4">
+        <div>
+          <div class="text-sm font-bold text-slate-900">Traffic Acquisition by Source</div>
+          <div class="text-xs text-slate-500 mt-0.5">Illustrative demo data · Not actual customer results</div>
+        </div>
+        <div class="flex items-center gap-4 sm:gap-5 text-xs font-medium">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#4ade80]"></span>
+            <span class="text-slate-700">Organic Search</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+            <span class="text-slate-500">Direct</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+            <span class="text-slate-400">Referral</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SVG Chart -->
+      <div class="px-4 sm:px-6 pb-6 sm:pb-8">
+        <div class="relative w-full overflow-hidden">
+          <svg
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            class="w-full h-auto"
+            role="img"
+            aria-label="Line graph showing Organic Search growing faster than Direct and Referral over 6 weeks"
+          >
+            <defs>
+              <linearGradient id="organicFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4ade80" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="#4ade80" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+
+            <!-- Grid lines -->
+            {[0, 20, 40, 60, 80].map((v) => (
+              <line
+                x1={paddingLeft}
+                y1={toY(v)}
+                x2={chartWidth - paddingRight}
+                y2={toY(v)}
+                stroke="#e2e8f0"
+                stroke-width="1"
+                stroke-dasharray={v === 0 ? "0" : "4,4"}
+              />
+            ))}
+
+            <!-- Y-axis labels -->
+            {[0, 20, 40, 60, 80].map((v) => (
+              <text
+                x={paddingLeft - 10}
+                y={toY(v) + 4}
+                text-anchor="end"
+                class="fill-slate-400 text-[10px]"
+                style="font-family: 'JetBrains Mono', monospace;"
+              >
+                {v}
+              </text>
+            ))}
+
+            <!-- X-axis labels -->
+            {weeks.map((w, i) => (
+              <text
+                x={toX(i)}
+                y={chartHeight - 12}
+                text-anchor="middle"
+                class="fill-slate-400 text-[10px]"
+                style="font-family: 'JetBrains Mono', monospace;"
+              >
+                {w}
+              </text>
+            ))}
+
+            <!-- Organic area fill -->
+            <path
+              d={`${organicPath} L${toX(5)},${toY(0)} L${toX(0)},${toY(0)} Z`}
+              fill="url(#organicFill)"
+            />
+
+            <!-- Lines -->
+            <path d={referralPath} fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d={directPath} fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d={organicPath} fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+            <!-- Data points -->
+            {data.referral.map((v, i) => (
+              <circle cx={toX(i)} cy={toY(v)} r="3.5" fill="white" stroke="#cbd5e1" stroke-width="2" />
+            ))}
+            {data.direct.map((v, i) => (
+              <circle cx={toX(i)} cy={toY(v)} r="3.5" fill="white" stroke="#94a3b8" stroke-width="2" />
+            ))}
+            {data.organic.map((v, i) => (
+              <circle cx={toX(i)} cy={toY(v)} r="4" fill="white" stroke="#4ade80" stroke-width="2.5" class="organic-dot" data-week={i} data-value={v} />
+            ))}
+
+            <!-- Organic end label -->
+            <text
+              x={toX(5) + 10}
+              y={toY(74) + 4}
+              class="fill-emerald-600 text-[11px] font-bold"
+              style="font-family: 'Plus Jakarta Sans', sans-serif;"
+            >
+              +270%
+            </text>
+          </svg>
+
+          <!-- Hover tooltip -->
+          <div
+            id="growth-tooltip"
+            class="absolute hidden bg-slate-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg pointer-events-none z-10 whitespace-nowrap"
+            style="font-family: 'JetBrains Mono', monospace;"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Bottom insight bar -->
+      <div class="bg-emerald-50/60 border-t border-emerald-200/60 px-6 sm:px-8 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          <span class="text-xs font-semibold text-emerald-800">Organic is becoming the fastest-growing acquisition channel.</span>
+        </div>
+        <span class="text-[11px] text-emerald-600 font-mono font-medium shrink-0">Illustrative · Not measured results</span>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+  const tooltip = document.getElementById('growth-tooltip');
+  const organicDots = document.querySelectorAll('.organic-dot');
+  const chartContainer = organicDots[0]?.closest('div.relative');
+
+  if (tooltip && chartContainer) {
+    const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'];
+    const organic = [20, 25, 32, 43, 57, 74];
+    const direct = [35, 38, 42, 45, 48, 51];
+    const referral = [18, 21, 24, 27, 30, 33];
+
+    organicDots.forEach((dot) => {
+      dot.addEventListener('mouseenter', (e) => {
+        const idx = parseInt(dot.getAttribute('data-week') || '0');
+        tooltip.innerHTML = `
+          <div class="font-bold mb-1">${weeks[idx]}</div>
+          <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ade80]"></span> Organic: ${organic[idx]}</div>
+          <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Direct: ${direct[idx]}</div>
+          <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Referral: ${referral[idx]}</div>
+        `;
+        tooltip.classList.remove('hidden');
+      });
+
+      dot.addEventListener('mousemove', (e) => {
+        const rect = chartContainer.getBoundingClientRect();
+        const x = (e as MouseEvent).clientX - rect.left;
+        const y = (e as MouseEvent).clientY - rect.top;
+        tooltip.style.left = `${x + 12}px`;
+        tooltip.style.top = `${y - 10}px`;
+      });
+
+      dot.addEventListener('mouseleave', () => {
+        tooltip.classList.add('hidden');
+      });
+    });
+  }
+</script>
