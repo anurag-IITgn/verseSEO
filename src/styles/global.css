@@ -2,17 +2,56 @@
 
 @layer base {
   :root {
+    /* ─── Foundation ─── */
     --color-bg-main: #faf9f5;
     --color-bg-card: #ffffff;
+    --color-bg-elevated: #f5f4f0;
+
+    /* ─── Dark Surfaces ─── */
+    --color-surface-dark: #0c1021;
+    --color-surface-dark-elevated: #141929;
+    --color-surface-dark-border: rgba(255, 255, 255, 0.08);
+
+    /* ─── Text ─── */
     --color-text-primary: #0f172a;
     --color-text-secondary: #475569;
     --color-text-muted: #64748b;
+    --color-text-on-dark: #f8fafc;
+    --color-text-on-dark-muted: #94a3b8;
+
+    /* ─── Brand Accents ─── */
     --color-brand-blue: #2563eb;
     --color-brand-indigo: #4f46e5;
     --color-brand-violet: #7c3aed;
+
+    /* ─── Semantic: Organic / Growth ─── */
+    --color-organic: #22c55e;
+    --color-organic-light: #4ade80;
+    --color-organic-bg: #f0fdf4;
+
+    /* ─── Semantic: Reddit ─── */
+    --color-reddit: #ff4500;
+    --color-reddit-light: #ff6a33;
+    --color-reddit-bg: #fff7ed;
+
+    /* ─── Semantic: AI / Generative ─── */
+    --color-ai-primary: #6366f1;
+    --color-ai-secondary: #8b5cf6;
+    --color-ai-bg: #f5f3ff;
+
+    /* ─── Semantic: Search ─── */
+    --color-search: #3b82f6;
+    --color-search-bg: #eff6ff;
+
+    /* ─── Status ─── */
     --color-accent-teal: #0d9488;
     --color-accent-amber: #f59e0b;
     --color-accent-rose: #f43f5e;
+
+    /* ─── Borders ─── */
+    --color-border-light: rgba(226, 232, 240, 0.8);
+    --color-border-dark: rgba(255, 255, 255, 0.08);
+    --color-border-accent: rgba(37, 99, 235, 0.2);
   }
 
   html {
@@ -91,12 +130,66 @@
   animation: pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* ─── Color System Utility Classes ─── */
+
+/* Dark premium surfaces */
+.surface-dark {
+  background-color: var(--color-surface-dark);
+  color: var(--color-text-on-dark);
+}
+
+.surface-dark-elevated {
+  background-color: var(--color-surface-dark-elevated);
+  color: var(--color-text-on-dark);
+}
+
+/* Light foundation surfaces */
+.surface-main {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+}
+
+.surface-card {
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.surface-elevated {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+/* Semantic section backgrounds */
+.section-organic {
+  background-color: var(--color-organic-bg);
+}
+
+.section-reddit {
+  background-color: var(--color-reddit-bg);
+}
+
+.section-ai {
+  background-color: var(--color-ai-bg);
+}
+
+.section-search {
+  background-color: var(--color-search-bg);
+}
+
 /* Subtle card styling */
 .glass-panel {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Dark glass variant */
+.glass-panel-dark {
+  background: rgba(12, 16, 33, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .card-hover {

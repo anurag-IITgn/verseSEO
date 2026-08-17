@@ -59,9 +59,9 @@ const referralPath = buildPath(data.referral);
           <div class="text-sm font-bold text-slate-900">Traffic Acquisition by Source</div>
           <div class="text-xs text-slate-500 mt-0.5">Illustrative demo data · Not actual customer results</div>
         </div>
-        <div class="flex items-center gap-4 sm:gap-5 text-xs font-medium">
+          <div class="flex items-center gap-4 sm:gap-5 text-xs font-medium">
           <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#4ade80]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#22c55e]"></span>
             <span class="text-slate-700">Organic Search</span>
           </div>
           <div class="flex items-center gap-1.5">
@@ -86,8 +86,8 @@ const referralPath = buildPath(data.referral);
           >
             <defs>
               <linearGradient id="organicFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#4ade80" stop-opacity="0.15" />
-                <stop offset="100%" stop-color="#4ade80" stop-opacity="0" />
+                <stop offset="0%" stop-color="#22c55e" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="#22c55e" stop-opacity="0" />
               </linearGradient>
             </defs>
 
@@ -139,7 +139,7 @@ const referralPath = buildPath(data.referral);
             <!-- Lines -->
             <path d={referralPath} fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
             <path d={directPath} fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d={organicPath} fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <path d={organicPath} fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
 
             <!-- Data points -->
             {data.referral.map((v, i) => (
@@ -149,7 +149,7 @@ const referralPath = buildPath(data.referral);
               <circle cx={toX(i)} cy={toY(v)} r="3.5" fill="white" stroke="#94a3b8" stroke-width="2" />
             ))}
             {data.organic.map((v, i) => (
-              <circle cx={toX(i)} cy={toY(v)} r="4" fill="white" stroke="#4ade80" stroke-width="2.5" class="organic-dot" data-week={i} data-value={v} />
+              <circle cx={toX(i)} cy={toY(v)} r="4" fill="white" stroke="#22c55e" stroke-width="2.5" class="organic-dot" data-week={i} data-value={v} />
             ))}
 
             <!-- Organic end label -->
@@ -204,7 +204,7 @@ const referralPath = buildPath(data.referral);
         const idx = parseInt(dot.getAttribute('data-week') || '0');
         tooltip.innerHTML = `
           <div class="font-bold mb-1">${weeks[idx]}</div>
-          <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ade80]"></span> Organic: ${organic[idx]}</div>
+          <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span> Organic: ${organic[idx]}</div>
           <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Direct: ${direct[idx]}</div>
           <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Referral: ${referral[idx]}</div>
         `;

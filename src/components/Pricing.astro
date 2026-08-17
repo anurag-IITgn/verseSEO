@@ -2,7 +2,7 @@
 // Pricing.astro
 ---
 
-<section class="py-16 sm:py-24 bg-[#FAF9F5] border-b border-slate-200/80 relative" id="pricing">
+<section class="py-16 sm:py-24 bg-[#f5f4f0] border-b border-slate-200/80 relative" id="pricing">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <!-- Section Header -->
@@ -22,7 +22,7 @@
         <button 
           type="button" 
           id="billing-monthly-btn"
-          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition-all cursor-pointer"
+          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] text-white transition-all cursor-pointer"
         >
           Monthly Billing
         </button>
@@ -209,7 +209,7 @@
         <div class="mt-8 pt-6 border-t border-slate-100">
           <button 
             type="button" 
-            class="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 hover:bg-blue-600 text-white transition-colors cursor-pointer"
+            class="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] hover:bg-blue-600 text-white transition-colors cursor-pointer"
             onclick="alert('Pro tier registration will be available shortly!')"
           >
             Upgrade to Pro
@@ -235,7 +235,7 @@
 
   if (monthlyBtn && annualBtn) {
     monthlyBtn.addEventListener('click', () => {
-      monthlyBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition-all cursor-pointer';
+      monthlyBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] text-white transition-all cursor-pointer';
       annualBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer';
 
       priceElements.forEach(el => {
@@ -250,7 +250,7 @@
     });
 
     annualBtn.addEventListener('click', () => {
-      annualBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition-all flex items-center gap-1.5 cursor-pointer';
+      annualBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] text-white transition-all flex items-center gap-1.5 cursor-pointer';
       monthlyBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer';
 
       priceElements.forEach(el => {
