@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-seo_saas}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-seo_saas}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      LOG_LEVEL: info
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-seo_saas}
+      # Required in production: the exact public origin(s) that may call the API.
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
+      # nginx terminates TLS/HTTP and forwards the real client IP.
+      TRUST_PROXY: "true"
+      MAX_PAGES: 50
+      CRAWL_TIMEOUT_MS: 10000
+      CRAWL_USER_AGENT: VisibilityCrawler/1.0
+      # Optional integrations. Set in the environment / .env file.
+      # REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
+      # REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
+      # GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Apply schema migrations before starting the server.
+    command: sh -c "node dist/db/migrate.js && node dist/server.js"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        # Same-origin deployment: nginx serves the site and proxies /api to the backend.
+        PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-}
+    restart: unless-stopped
+    ports:
+      - "${PORT:-80}:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

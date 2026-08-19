@@ -319,18 +319,11 @@ import HeroProductVisual from './HeroProductVisual.astro';
   if (auditForm) {
     auditForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const demoSection = document.getElementById('demo');
-      if (demoSection) {
-        demoSection.scrollIntoView({ behavior: 'smooth' });
-        const simInput = document.getElementById('sim-domain-input') as HTMLInputElement | null;
-        if (simInput && urlInput && urlInput.value) {
-          simInput.value = urlInput.value;
-        }
-        const runBtn = document.getElementById('sim-run-btn');
-        if (runBtn) {
-          setTimeout(() => runBtn.click(), 400);
-        }
+      const params = new URLSearchParams({ next: '/app' });
+      if (urlInput && urlInput.value.trim()) {
+        params.set('website', urlInput.value.trim().replace(/^https?:\/\//, '').replace(/\/+$/, ''));
       }
+      window.location.href = `/login?${params.toString()}`;
     });
   }
 

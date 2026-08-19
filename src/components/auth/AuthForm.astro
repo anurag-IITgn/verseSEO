@@ -1,0 +1,223 @@
+---
+// AuthForm.astro — shared Login / Create Account card
+interface Props {
+  mode: 'login' | 'register';
+}
+
+const { mode } = Astro.props;
+const isLogin = mode === 'login';
+---
+
+<div class="w-full max-w-md" id="auth-root" data-mode={mode}>
+  <div class="bg-white rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 p-8 sm:p-10">
+
+    <!-- Brand mark -->
+    <a href="/" class="inline-flex items-center gap-2.5 mb-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-blue-500/20 text-white font-bold text-lg">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 3v18"></path>
+          <path d="M3 12h18"></path>
+          <circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.25"></circle>
+        </svg>
+      </div>
+      <span class="font-extrabold text-xl tracking-tight text-slate-900">Foundable</span>
+    </a>
+
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+      {isLogin ? 'Welcome back' : 'Create your account'}
+    </h1>
+    <p class="mt-2 text-sm text-slate-600 leading-relaxed">
+      {isLogin
+        ? 'Log in to scan your projects and track visibility across search, Reddit, and AI engines.'
+        : 'Sign up free to run instant audits on your own projects. No credit card required.'}
+    </p>
+
+    <!-- Backend / notice banner when arriving with a website to analyze -->
+    <p id="auth-website-hint" class="hidden mt-4 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800"></p>
+
+    <!-- Error banner -->
+    <div id="auth-error" class="hidden mt-4 px-3 py-2.5 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-700"></div>
+
+    <!-- Success banner -->
+    <div id="auth-success" class="hidden mt-4 px-3 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-700"></div>
+
+    <form id="auth-form" class="mt-6 space-y-4" novalidate>
+      <div>
+        <label for="auth-email" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Email</label>
+        <input
+          type="email"
+          id="auth-email"
+          name="email"
+          autocomplete="email"
+          required
+          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+          placeholder="you@company.com"
+        />
+      </div>
+
+      <div>
+        <label for="auth-password" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          Password
+          {isLogin ? '' : <span class="normal-case font-medium text-slate-400">(8+ characters)</span>}
+        </label>
+        <input
+          type="password"
+          id="auth-password"
+          name="password"
+          autocomplete={isLogin ? 'current-password' : 'new-password'}
+          minlength="8"
+          maxlength="200"
+          required
+          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+          placeholder={isLogin ? 'Your password' : 'Create a password'}
+        />
+      </div>
+
+      {!isLogin && (
+        <div>
+          <label for="auth-confirm" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Confirm password</label>
+          <input
+            type="password"
+            id="auth-confirm"
+            name="confirm"
+            autocomplete="new-password"
+            required
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+            placeholder="Repeat your password"
+          />
+        </div>
+      )}
+
+      <button
+        type="submit"
+        id="auth-submit"
+        class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-wait text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/25 transition-all duration-200 cursor-pointer"
+      >
+        <span id="auth-submit-label">{isLogin ? 'Log in' : 'Create account'}</span>
+      </button>
+    </form>
+
+    <div class="mt-6 text-center text-sm text-slate-600">
+      {isLogin ? (
+        <>
+          Don't have an account?
+          <a href="/register?next=/app" id="auth-switch-link" class="ml-1 font-semibold text-blue-600 hover:text-blue-700 hover:underline">Create account</a>
+        </>
+      ) : (
+        <>
+          Already have an account?
+          <a href="/login?next=/app" id="auth-switch-link" class="ml-1 font-semibold text-blue-600 hover:text-blue-700 hover:underline">Log in</a>
+        </>
+      )}
+    </div>
+  </div>
+</div>
+
+<script>
+  const MODE: 'login' | 'register' = document.getElementById('auth-root')?.dataset.mode === 'register' ? 'register' : 'login';
+  const isLogin = MODE === 'login';
+  const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+  const form = document.getElementById('auth-form');
+  const emailInput = document.getElementById('auth-email') as HTMLInputElement | null;
+  const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null;
+  const confirmInput = document.getElementById('auth-confirm') as HTMLInputElement | null;
+  const submitBtn = document.getElementById('auth-submit') as HTMLButtonElement | null;
+  const submitLabel = document.getElementById('auth-submit-label');
+  const errorBanner = document.getElementById('auth-error');
+  const successBanner = document.getElementById('auth-success');
+  const websiteHint = document.getElementById('auth-website-hint');
+  const switchLink = document.getElementById('auth-switch-link') as HTMLAnchorElement | null;
+
+  const params = new URLSearchParams(window.location.search);
+  const next = params.get('next') || '/app';
+  const website = params.get('website') || '';
+
+  if (websiteHint && website) {
+    websiteHint.textContent = `After signing in you can scan ${website} from your dashboard.`;
+    websiteHint.classList.remove('hidden');
+  }
+
+  if (switchLink) {
+    const target = isLogin
+      ? `/register?next=${encodeURIComponent(next)}${website ? `&website=${encodeURIComponent(website)}` : ''}`
+      : `/login?next=${encodeURIComponent(next)}${website ? `&website=${encodeURIComponent(website)}` : ''}`;
+    switchLink.setAttribute('href', target);
+  }
+
+  function showBanner(el: HTMLElement | null, message: string) {
+    if (!el) return;
+    el.textContent = message;
+    el.classList.remove('hidden');
+  }
+
+  function hideBanner(el: HTMLElement | null) {
+    if (!el) return;
+    el.classList.add('hidden');
+  }
+
+  function setLoading(loading: boolean) {
+    if (!submitBtn || !submitLabel) return;
+    submitBtn.disabled = loading;
+    submitLabel.textContent = loading ? (isLogin ? 'Logging in...' : 'Creating account...') : (isLogin ? 'Log in' : 'Create account');
+  }
+
+  async function redirectAuthenticatedUser() {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: 'include' });
+      if (res.ok) {
+        window.location.replace(next);
+      }
+    } catch {
+      // Backend unreachable — leave the form visible.
+    }
+  }
+
+  async function submit(event: Event) {
+    event.preventDefault();
+    hideBanner(errorBanner);
+    hideBanner(successBanner);
+
+    const email = emailInput?.value.trim() ?? '';
+    const password = passwordInput?.value ?? '';
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showBanner(errorBanner, 'Please enter a valid email address.');
+      return;
+    }
+    if (password.length < 8) {
+      showBanner(errorBanner, 'Password must be at least 8 characters.');
+      return;
+    }
+    if (confirmInput && password !== confirmInput.value) {
+      showBanner(errorBanner, 'Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/${isLogin ? 'login' : 'register'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        setLoading(false);
+        showBanner(errorBanner, body?.error?.message ?? 'Something went wrong. Please try again.');
+        return;
+      }
+      showBanner(successBanner, isLogin ? 'Welcome back! Redirecting to your dashboard...' : 'Account created! Redirecting to your dashboard...');
+      setTimeout(() => {
+        window.location.replace(next);
+      }, 700);
+    } catch {
+      setLoading(false);
+      showBanner(errorBanner, 'Could not reach the backend. Is it running on localhost:3000?');
+    }
+  }
+
+  form?.addEventListener('submit', submit);
+  void redirectAuthenticatedUser();
+</script>

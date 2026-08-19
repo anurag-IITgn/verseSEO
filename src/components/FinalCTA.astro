@@ -79,18 +79,11 @@
   if (finalForm) {
     finalForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const demoSection = document.getElementById('demo');
-      if (demoSection) {
-        demoSection.scrollIntoView({ behavior: 'smooth' });
-        const simInput = document.getElementById('sim-domain-input') as HTMLInputElement | null;
-        if (simInput && finalInput && finalInput.value) {
-          simInput.value = finalInput.value;
-        }
-        const runBtn = document.getElementById('sim-run-btn');
-        if (runBtn) {
-          setTimeout(() => runBtn.click(), 400);
-        }
+      const params = new URLSearchParams({ next: '/app' });
+      if (finalInput && finalInput.value.trim()) {
+        params.set('website', finalInput.value.trim().replace(/^https?:\/\//, '').replace(/\/+$/, ''));
       }
+      window.location.href = `/login?${params.toString()}`;
     });
   }
 </script>

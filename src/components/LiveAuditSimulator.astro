@@ -1,12 +1,17 @@
 ---
 // LiveAuditSimulator.astro
+interface Props {
+  mode?: 'teaser' | 'app';
+}
+
+const { mode = 'teaser' } = Astro.props;
 ---
 
-<section class="py-16 sm:py-24 bg-[#FAF9F5] border-b border-slate-200/80 relative" id="demo">
+<section class="py-16 sm:py-24 bg-[#FAF9F5] border-b border-slate-200/80 relative" id="demo" data-mode={mode}>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
-    <!-- Section Header -->
-    <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+    {mode === 'teaser' &&
+      <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         Interactive Live Simulator
@@ -18,13 +23,16 @@
         Experience how Foundable unifies technical SEO, high-intent keywords, Reddit listening, and AI citations in under 30 seconds.
       </p>
     </div>
+    }
 
     <!-- Simulator Shell Container -->
     <div class="bg-white rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 p-6 sm:p-8 lg:p-10 max-w-5xl mx-auto">
-      
+
       <!-- Input Controls & Preset Selector -->
       <div class="space-y-4 mb-8">
-        
+
+        {mode === 'teaser' &&
+        <>
         <!-- Preset selector chips -->
         <div class="flex flex-wrap items-center justify-between gap-2">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Select Sample Persona:</span>
@@ -87,6 +95,34 @@
             </svg>
           </button>
         </div>
+        </>
+        }
+
+        {mode === 'app' &&
+        <>
+        <!-- App-mode project bar -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 p-2 bg-white rounded-2xl border border-slate-300 shadow-sm">
+          <div class="flex items-center gap-2.5 w-full px-3 py-1.5">
+            <span class="text-slate-400 font-mono text-xs sm:text-sm shrink-0">Project:</span>
+            <select 
+              id="sim-project-select" 
+              class="w-full text-sm sm:text-base font-semibold text-slate-900 focus:outline-none bg-transparent cursor-pointer"
+            ></select>
+          </div>
+          <button 
+            type="button" 
+            id="sim-run-btn" 
+            class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/20 cursor-pointer transition-all"
+          >
+            <span id="sim-btn-text">Run New Scan</span>
+            <svg id="sim-btn-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </button>
+        </div>
+        <p id="sim-app-project-meta" class="text-xs text-slate-500 font-mono"></p>
+        </>
+        }
 
       </div>
 
@@ -125,7 +161,7 @@
           <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-2xl px-5 py-3 text-right">
             <span class="text-[11px] font-bold uppercase tracking-wider text-blue-900 block">Omni-Visibility Index</span>
             <div class="text-2xl sm:text-3xl font-black text-blue-700" id="sim-result-score">
-              84 <span class="text-sm font-normal text-slate-400">/ 100</span>
+              -- <span class="text-sm font-normal text-slate-400">/ 100</span>
             </div>
           </div>
         </div>
@@ -139,12 +175,10 @@
               <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 1. Technical Health
               </span>
-              <span class="text-xs font-bold text-emerald-700" id="sim-tech-status">88% (Healthy)</span>
+              <span class="text-xs font-bold text-emerald-700" id="sim-tech-status">Awaiting scan</span>
             </div>
             <div class="space-y-1.5 text-xs text-slate-600 font-mono" id="sim-tech-items">
-              <div class="flex items-center gap-1.5 text-emerald-700">✓ HTTPS & HSTS active (TLS 1.3)</div>
-              <div class="flex items-center gap-1.5 text-emerald-700">✓ Sitemap contains 142 valid URLs</div>
-              <div class="flex items-center gap-1.5 text-amber-700">⚠ 3 Missing meta descriptions</div>
+              <div class="flex items-center gap-1.5 text-slate-400">Run a scan to load real technical SEO results.</div>
             </div>
           </div>
 
@@ -154,17 +188,10 @@
               <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-blue-600"></span> 2. Search Intent
               </span>
-              <span class="text-xs font-bold text-blue-700" id="sim-search-status">4 Top Opportunities</span>
+              <span class="text-xs font-bold text-blue-700" id="sim-search-status">Awaiting scan</span>
             </div>
-            <div class="space-y-1.5 text-xs text-slate-700" id="sim-search-items">
-              <div class="flex justify-between items-center bg-white p-1.5 rounded border border-slate-200/80">
-                <span class="font-semibold truncate">"AI resume builder for students"</span>
-                <span class="text-blue-600 font-bold font-mono ml-2">Score 94</span>
-              </div>
-              <div class="flex justify-between items-center bg-white p-1.5 rounded border border-slate-200/80">
-                <span class="font-semibold truncate">"resume with no experience"</span>
-                <span class="text-blue-600 font-bold font-mono ml-2">Score 78</span>
-              </div>
+            <div class="space-y-1.5 text-xs text-slate-600 font-mono" id="sim-search-items">
+              <div class="text-slate-400">Run a scan to discover real search opportunities.</div>
             </div>
           </div>
 
@@ -174,13 +201,10 @@
               <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-orange-500"></span> 3. Reddit Intel
               </span>
-              <span class="text-xs font-bold text-orange-700" id="sim-reddit-status">3 Active Discussions</span>
+              <span class="text-xs font-bold text-orange-700" id="sim-reddit-status">Awaiting scan</span>
             </div>
-            <div class="space-y-1.5 text-xs text-slate-700" id="sim-reddit-items">
-              <div class="bg-white p-2 rounded border border-slate-200/80">
-                <span class="text-orange-600 font-bold">r/smallbusiness:</span> "What's the best software for..."
-                <div class="text-[10px] text-slate-400 font-mono mt-0.5">184 upvotes • High buyer intent</div>
-              </div>
+            <div class="space-y-1.5 text-xs text-slate-600 font-mono" id="sim-reddit-items">
+              <div class="text-slate-400">Run a scan to look for relevant Reddit discussions.</div>
             </div>
           </div>
 
@@ -190,24 +214,39 @@
               <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-violet-600"></span> 4. AI Engine Footprint
               </span>
-              <span class="text-xs font-bold text-violet-700" id="sim-ai-status">3 of 4 Cited</span>
+              <span class="text-xs font-bold text-violet-700" id="sim-ai-status">Awaiting scan</span>
             </div>
-            <div class="space-y-1 text-xs text-slate-700" id="sim-ai-items">
-              <div class="flex justify-between items-center">
-                <span>ChatGPT (GPT-4o)</span>
-                <span class="text-emerald-700 font-bold">✓ Mentioned (#2)</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span>Perplexity AI</span>
-                <span class="text-emerald-700 font-bold">✓ Direct Citation</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span>Google Gemini</span>
-                <span class="text-rose-600 font-bold">✕ Not Mentioned</span>
-              </div>
+            <div class="space-y-1 text-xs text-slate-600 font-mono" id="sim-ai-items">
+              <div class="text-slate-400">Run a scan to check your AI engine footprint.</div>
             </div>
           </div>
 
+          <!-- Box 5: Content Generator -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-white/70 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-indigo-600"></span> 5. Content Generator
+              </span>
+              <span class="text-xs font-bold text-indigo-700" id="sim-content-status">Awaiting scan</span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-600 font-mono" id="sim-content-items">
+              <div class="text-slate-400">Run a scan to generate content recommendations.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Scan History & Previous Scan -->
+        <div id="sim-history-section" class="hidden p-4 rounded-xl bg-slate-50/70 border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-slate-800"></span> Scan History & Previous Scan
+            </span>
+            <span class="text-xs font-bold text-slate-500 font-mono" id="sim-history-count"></span>
+          </div>
+          <div class="text-xs text-slate-600 font-mono space-y-2" id="sim-history-body">
+            <div class="text-slate-400">Run a scan to load scan history and the previous scan comparison.</div>
+          </div>
         </div>
 
         <!-- Priority Action Box -->
@@ -238,12 +277,6 @@
     score: string;
     techStatus: string;
     techItems: string[];
-    searchStatus: string;
-    searchItems: Array<{ query: string; score: number }>;
-    redditStatus: string;
-    redditThread: { sub: string; title: string; meta: string };
-    aiStatus: string;
-    aiBreakdown: Array<{ name: string; status: string; isGood: boolean }>;
     nextAction: string;
   }
 
@@ -257,25 +290,6 @@
         "✓ Sitemap contains 142 valid URLs",
         "⚠ 3 Missing meta descriptions on /templates"
       ],
-      searchStatus: "4 Top Opportunities",
-      searchItems: [
-        { query: "AI resume builder for students", score: 94 },
-        { query: "best resume builder for internship", score: 91 },
-        { query: "resume with no experience template", score: 78 }
-      ],
-      redditStatus: "3 Active Discussions",
-      redditThread: {
-        sub: "r/smallbusiness",
-        title: "What's the best software to format resumes for non-technical candidates?",
-        meta: "184 upvotes • High purchase intent"
-      },
-      aiStatus: "3 of 4 Cited (74%)",
-      aiBreakdown: [
-        { name: "ChatGPT (GPT-4o)", status: "✓ Mentioned (#2)", isGood: true },
-        { name: "Perplexity AI", status: "✓ Direct Citation [1]", isGood: true },
-        { name: "Claude 3.5", status: "✓ Recommended", isGood: true },
-        { name: "Google Gemini", status: "✕ Not Mentioned", isGood: false }
-      ],
       nextAction: "Publish the 'Student Resume Guide' content brief to trigger Google Gemini AI citations and capture 4,800 monthly organic visits."
     },
     "aeroroast.co": {
@@ -286,25 +300,6 @@
         "✓ Fast LCP: 0.9s on mobile",
         "✓ Structured Product Schema present",
         "⚠ 8 Broken image alt attributes"
-      ],
-      searchStatus: "6 E-commerce Clusters",
-      searchItems: [
-        { query: "single origin light roast subscription", score: 96 },
-        { query: "aeropress grind size specialty beans", score: 89 },
-        { query: "low acid specialty coffee beans", score: 82 }
-      ],
-      redditStatus: "5 Active Discussions",
-      redditThread: {
-        sub: "r/Coffee",
-        title: "Best subscription for fruity Ethiopian light roasts?",
-        meta: "245 upvotes • 78 comments"
-      },
-      aiStatus: "2 of 4 Cited (58%)",
-      aiBreakdown: [
-        { name: "ChatGPT (GPT-4o)", status: "✓ Mentioned (#3)", isGood: true },
-        { name: "Perplexity AI", status: "✓ Source link active", isGood: true },
-        { name: "Claude 3.5", status: "✕ Generic roast list", isGood: false },
-        { name: "Google Gemini", status: "✕ Competitor cited", isGood: false }
       ],
       nextAction: "Create a brewing guide for Ethiopian origins to satisfy r/Coffee recommendation criteria and capture Claude citation signals."
     },
@@ -317,25 +312,6 @@
         "⚠ Missing OpenGraph tags on /contact",
         "⚠ Mobile viewport tap targets too small"
       ],
-      searchStatus: "5 Local Intent Gaps",
-      searchItems: [
-        { query: "sports physical therapist near me", score: 98 },
-        { query: "rotator cuff rehab specialist", score: 92 },
-        { query: "post surgery knee physical therapy cost", score: 86 }
-      ],
-      redditStatus: "2 City Discussions",
-      redditThread: {
-        sub: "r/Austin",
-        title: "Any physical therapist recommendations for runner knee injuries?",
-        meta: "54 upvotes • High local buyer intent"
-      },
-      aiStatus: "1 of 4 Cited (42%)",
-      aiBreakdown: [
-        { name: "ChatGPT (GPT-4o)", status: "✕ No local entity match", isGood: false },
-        { name: "Perplexity AI", status: "✓ Cited via Google Maps", isGood: true },
-        { name: "Claude 3.5", status: "✕ Not cited", isGood: false },
-        { name: "Google Gemini", status: "✕ Competitor cited", isGood: false }
-      ],
       nextAction: "Implement structured FAQ Schema on your conditions treated pages to trigger local ChatGPT & Gemini health service citations."
     },
     "coursecraft.dev": {
@@ -347,149 +323,1037 @@
         "✓ Canonical URLs properly configured",
         "✓ Superfast TTFB (120ms)"
       ],
-      searchStatus: "7 High-KD Gaps",
-      searchItems: [
-        { query: "open source course platform for developers", score: 97 },
-        { query: "self hosted LMS for technical bootcamp", score: 93 },
-        { query: "interactive markdown code quiz generator", score: 85 }
-      ],
-      redditStatus: "4 Active Discussions",
-      redditThread: {
-        sub: "r/webdev",
-        title: "How are you hosting paid developer documentation in 2026?",
-        meta: "310 upvotes • 94 comments"
-      },
-      aiStatus: "4 of 4 Cited (92%)",
-      aiBreakdown: [
-        { name: "ChatGPT (GPT-4o)", status: "✓ Top recommendation", isGood: true },
-        { name: "Perplexity AI", status: "✓ Cited as lead source", isGood: true },
-        { name: "Claude 3.5", status: "✓ Highly rated for devs", isGood: true },
-        { name: "Google Gemini", status: "✓ Mentioned in dev tools", isGood: true }
-      ],
       nextAction: "Maintain high authority by answering common markdown LMS syntax questions in community documentation."
     }
   };
 
+  // Backend API base. Override with PUBLIC_API_BASE_URL for non-local deployments.
+  const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+  const simRoot = document.getElementById('demo');
+  const SIM_MODE: 'teaser' | 'app' = simRoot?.dataset.mode === 'app' ? 'app' : 'teaser';
+
   const domainInput = document.getElementById('sim-domain-input') as HTMLInputElement | null;
-  const runBtn = document.getElementById('sim-run-btn');
+  const runBtn = document.getElementById('sim-run-btn') as HTMLButtonElement | null;
   const personaBtns = document.querySelectorAll<HTMLButtonElement>('#sim-persona-chips .sim-persona-btn');
   const progressBox = document.getElementById('sim-progress-box');
   const resultsBox = document.getElementById('sim-results-box');
-  const progressBar = document.getElementById('sim-progress-bar');
+  const progressBar = document.getElementById('sim-progress-bar') as HTMLElement | null;
   const progressTitle = document.getElementById('sim-progress-title');
+  const progressSubtitle = document.getElementById('sim-progress-subtitle');
+  const appProjectMeta = document.getElementById('sim-app-project-meta');
 
-  function updateResultsUI(data: PersonaData) {
-    const resDomain = document.getElementById('sim-result-domain');
-    const resScore = document.getElementById('sim-result-score');
-    const techStatus = document.getElementById('sim-tech-status');
-    const techItems = document.getElementById('sim-tech-items');
-    const searchStatus = document.getElementById('sim-search-status');
-    const searchItems = document.getElementById('sim-search-items');
-    const redditStatus = document.getElementById('sim-reddit-status');
-    const redditItems = document.getElementById('sim-reddit-items');
-    const aiStatus = document.getElementById('sim-ai-status');
-    const aiItems = document.getElementById('sim-ai-items');
-    const nextAction = document.getElementById('sim-next-action');
+  const resDomain = document.getElementById('sim-result-domain');
+  const resScore = document.getElementById('sim-result-score');
+  const techStatus = document.getElementById('sim-tech-status');
+  const techItems = document.getElementById('sim-tech-items');
+  const searchStatus = document.getElementById('sim-search-status');
+  const searchItems = document.getElementById('sim-search-items');
+  const redditStatus = document.getElementById('sim-reddit-status');
+  const redditItems = document.getElementById('sim-reddit-items');
+  const aiStatus = document.getElementById('sim-ai-status');
+  const aiItems = document.getElementById('sim-ai-items');
+  const contentStatus = document.getElementById('sim-content-status');
+  const contentItems = document.getElementById('sim-content-items');
+  const nextAction = document.getElementById('sim-next-action');
 
-    if (resDomain) resDomain.textContent = data.domain;
-    if (resScore) resScore.innerHTML = `${data.score} <span class="text-sm font-normal text-slate-400">/ 100</span>`;
-    if (techStatus) techStatus.textContent = data.techStatus;
-    
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+    const headers: Record<string, string> = { Accept: 'application/json', ...(init.headers as Record<string, string>) };
+    if (typeof init.body === 'string') headers['Content-Type'] = 'application/json';
+    return fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'include' });
+  }
+
+  async function backendError(res: Response): Promise<Error> {
+    try {
+      const body = await res.json();
+      return new Error(body?.error?.message ?? `Backend request failed (${res.status})`);
+    } catch {
+      return new Error(`Backend request failed (${res.status})`);
+    }
+  }
+
+  function toWebsiteUrl(input: string): string {
+    const trimmed = input.trim();
+    if (!trimmed) return '';
+    if (/^https?:\/\//i.test(trimmed)) return trimmed.replace(/\/+$/, '');
+    return `https://${trimmed.replace(/^www\./i, '')}`;
+  }
+
+  function domainKey(input: string): string {
+    return input.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/.*$/, '');
+  }
+
+  function scoreLabel(score: number): string {
+    if (score >= 90) return 'Excellent';
+    if (score >= 75) return 'Healthy';
+    if (score >= 60) return 'Good';
+    if (score >= 40) return 'Needs Fixes';
+    return 'Critical';
+  }
+
+  const issueLabels: Record<string, string> = {
+    MISSING_HTTPS: 'Website not served over HTTPS',
+    MISSING_ROBOTS_TXT: 'Missing robots.txt',
+    MISSING_SITEMAP: 'Missing XML sitemap',
+    MISSING_TITLE: 'Missing title tags',
+    DUPLICATE_TITLE: 'Duplicate title tags',
+    TITLE_TOO_SHORT: 'Titles below recommended length',
+    TITLE_TOO_LONG: 'Titles above recommended length',
+    MISSING_META_DESCRIPTION: 'Missing meta descriptions',
+    DUPLICATE_META_DESCRIPTION: 'Duplicate meta descriptions',
+    MISSING_CANONICAL: 'Missing canonical tags',
+    NOINDEX_PAGE: 'Pages set to noindex',
+    BROKEN_INTERNAL_LINK: 'Broken internal links',
+    NON_200_PAGE: 'Pages returning non-200 responses',
+  };
+
+  const issueOrder = [
+    'MISSING_HTTPS',
+    'MISSING_ROBOTS_TXT',
+    'MISSING_SITEMAP',
+    'MISSING_TITLE',
+    'DUPLICATE_TITLE',
+    'TITLE_TOO_SHORT',
+    'TITLE_TOO_LONG',
+    'MISSING_META_DESCRIPTION',
+    'DUPLICATE_META_DESCRIPTION',
+    'MISSING_CANONICAL',
+    'NOINDEX_PAGE',
+    'BROKEN_INTERNAL_LINK',
+    'NON_200_PAGE',
+  ];
+
+  function fallbackPersona(cleanDomain: string): PersonaData {
+    return {
+      domain: cleanDomain || 'mycustomsite.com',
+      score: '81',
+      techStatus: '84% (Good Health)',
+      techItems: ['✓ HTTPS active & SSL verified', '✓ Sitemap discovered', '⚠ 2 Pages missing canonical tags'],
+      nextAction: `Publish a dedicated comparison guide targeting keywords around ${cleanDomain} to trigger comprehensive AI citations.`,
+    };
+  }
+
+  // Demo panels only simulate static content. Panels 2 (Search Intent),
+  // 3 (Reddit Intel), 4 (AI Engine Footprint) and 5 (Content Generator)
+  // are driven by the real backend.
+  function renderDemoPanels(input: string) {
+    const cleanDomain = domainKey(input);
+    const persona = personaDatabase[cleanDomain] || fallbackPersona(cleanDomain);
+
+    if (nextAction) nextAction.textContent = persona.nextAction;
+  }
+
+  // Technical Health panel + overall score are driven by the real backend results.
+  function renderTechPanel(websiteUrl: string, results: {
+    crawl?: { robotsFound?: boolean | null; sitemapFound?: boolean | null };
+    pages?: unknown[];
+    healthScore?: number | null;
+    issueCount?: number;
+    issueCounts?: Record<string, number>;
+  }) {
+    const crawl = results.crawl ?? {};
+    const healthScore = typeof results.healthScore === 'number' ? results.healthScore : 0;
+    const counts = results.issueCounts ?? {};
+
+    if (resDomain) resDomain.textContent = websiteUrl.replace(/^https?:\/\//, '');
+    if (resScore) resScore.innerHTML = `${healthScore} <span class="text-sm font-normal text-slate-400">/ 100</span>`;
+    if (techStatus) techStatus.textContent = `${healthScore}% (${scoreLabel(healthScore)})`;
+
+    const lines: string[] = [];
+    for (const type of issueOrder) {
+      const n = counts[type] ?? 0;
+      if (n > 0) lines.push(`⚠ ${n} ${issueLabels[type]}`);
+    }
+    if (results.issueCount === 0) lines.push('✓ No technical issues found');
+    if (crawl.robotsFound) lines.push('✓ robots.txt found');
+    if (crawl.sitemapFound) lines.push('✓ XML sitemap found');
+    if (Array.isArray(results.pages)) lines.push(`✓ Crawled ${results.pages.length} pages`);
+    if (lines.length === 0) lines.push('✓ No technical issues found');
+
     if (techItems) {
-      techItems.innerHTML = data.techItems.map(item => {
-        const isWarn = item.includes('⚠');
-        return `<div class="flex items-center gap-1.5 ${isWarn ? 'text-amber-700' : 'text-emerald-700'}">${item}</div>`;
+      techItems.innerHTML = lines.map(line => {
+        const isGood = line.startsWith('✓');
+        return `<div class="flex items-center gap-1.5 ${isGood ? 'text-emerald-700' : 'text-amber-700'}">${line}</div>`;
       }).join('');
     }
+  }
 
-    if (searchStatus) searchStatus.textContent = data.searchStatus;
+  // Panel 2 (Search Intent) is driven by real opportunities computed from the crawl.
+  const opportunityTypeLabels: Record<string, string> = {
+    CONTENT_GAP: 'Content gap',
+    WEAK_TOPIC_COVERAGE: 'Weak coverage',
+    EXISTING_PAGE_OPTIMIZATION: 'Page optimization',
+    INTERNAL_LINK_OPPORTUNITY: 'Internal link',
+    SEARCH_INTENT_GAP: 'Search intent',
+  };
+
+  function escapeHtml(value: string): string {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function priorityBadgeClass(priority: string): string {
+    if (priority === 'high') return 'bg-rose-50 text-rose-700 border-rose-100';
+    if (priority === 'medium') return 'bg-amber-50 text-amber-700 border-amber-100';
+    return 'bg-slate-100 text-slate-600 border-slate-200';
+  }
+
+  function renderSearchPanelLoading() {
+    if (searchStatus) {
+      searchStatus.classList.remove('text-rose-600');
+      searchStatus.classList.add('text-blue-700');
+      searchStatus.textContent = 'Analyzing search intent...';
+    }
     if (searchItems) {
-      searchItems.innerHTML = data.searchItems.map(s => `
-        <div class="flex justify-between items-center bg-white p-1.5 rounded border border-slate-200/80">
-          <span class="font-semibold truncate">"${s.query}"</span>
-          <span class="text-blue-600 font-bold font-mono ml-2">Score ${s.score}</span>
-        </div>
-      `).join('');
+      searchItems.innerHTML = '<div class="text-slate-400">Deriving opportunities from the crawled pages...</div>';
+    }
+  }
+
+  function renderSearchPanelError(message: string) {
+    if (searchStatus) {
+      searchStatus.classList.remove('text-blue-700');
+      searchStatus.classList.add('text-rose-600');
+      searchStatus.textContent = 'Unavailable';
+    }
+    if (searchItems) {
+      searchItems.innerHTML = `<div class="text-rose-600">${escapeHtml(message)}</div>`;
+    }
+  }
+
+  function renderSearchPanel(data: {
+    opportunities?: Array<{
+      opportunityType: string;
+      query: string;
+      score: number;
+      priority: string;
+      reason: string;
+      suggestedAction: string;
+      relatedPageUrl: string | null;
+    }>;
+  }) {
+    const opps = data?.opportunities ?? [];
+    const highCount = opps.filter(o => o.priority === 'high').length;
+
+    if (searchStatus) {
+      searchStatus.classList.remove('text-rose-600');
+      searchStatus.classList.add('text-blue-700');
+      searchStatus.textContent = opps.length === 0
+        ? 'No opportunities'
+        : `${opps.length} Opportunities${highCount > 0 ? ` · ${highCount} High` : ''}`;
+    }
+    if (searchItems) {
+      searchItems.innerHTML = opps.length === 0
+        ? '<div class="text-slate-400">No actionable search opportunities found for this crawl.</div>'
+        : opps.map(o => `
+          <div class="bg-white p-2 rounded border border-slate-200/80 space-y-1">
+            <div class="flex justify-between items-center gap-2">
+              <span class="font-semibold truncate">"${escapeHtml(o.query)}"</span>
+              <span class="${o.priority === 'high' ? 'text-rose-600' : 'text-blue-600'} font-bold font-mono ml-2 shrink-0">Score ${o.score}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">${opportunityTypeLabels[o.opportunityType] ?? o.opportunityType}</span>
+              <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border ${priorityBadgeClass(o.priority)}">${o.priority}</span>
+            </div>
+            <div class="text-[11px] text-slate-600">${escapeHtml(o.reason)}</div>
+            <div class="text-[11px] text-slate-500 font-mono">→ ${escapeHtml(o.suggestedAction)}</div>
+          </div>
+        `).join('');
+    }
+  }
+
+  // Panel 3 (Reddit Intel) is driven by real Reddit API discussions when available.
+  function timeAgo(iso: string): string {
+    const ms = Date.now() - Date.parse(iso);
+    if (!Number.isFinite(ms) || ms < 0) return '';
+    const days = Math.floor(ms / 86_400_000);
+    if (days >= 365) return `${Math.floor(days / 365)}y ago`;
+    if (days >= 30) return `${Math.floor(days / 30)}mo ago`;
+    if (days >= 1) return `${days}d ago`;
+    const hours = Math.floor(ms / 3_600_000);
+    if (hours >= 1) return `${hours}h ago`;
+    return `${Math.max(1, Math.floor(ms / 60_000))}m ago`;
+  }
+
+  function renderRedditPanelLoading() {
+    if (redditStatus) {
+      redditStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      redditStatus.classList.add('text-orange-700');
+      redditStatus.textContent = 'Searching Reddit...';
+    }
+    if (redditItems) {
+      redditItems.innerHTML = '<div class="text-slate-400">Looking for relevant Reddit discussions...</div>';
+    }
+  }
+
+  function renderRedditPanelNotConnected(message: string) {
+    if (redditStatus) {
+      redditStatus.classList.remove('text-orange-700', 'text-rose-600');
+      redditStatus.classList.add('text-slate-500');
+      redditStatus.textContent = 'Not connected';
+    }
+    if (redditItems) {
+      redditItems.innerHTML = `<div class="text-amber-700">${escapeHtml(message)}</div>`;
+    }
+  }
+
+  function renderRedditPanelEmpty() {
+    if (redditStatus) {
+      redditStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      redditStatus.classList.add('text-orange-700');
+      redditStatus.textContent = 'No discussions';
+    }
+    if (redditItems) {
+      redditItems.innerHTML = '<div class="text-slate-400">No relevant Reddit discussions found for this crawl.</div>';
+    }
+  }
+
+  function renderRedditPanelError(message: string) {
+    if (redditStatus) {
+      redditStatus.classList.remove('text-orange-700', 'text-slate-500', 'text-amber-700');
+      redditStatus.classList.add('text-rose-600');
+      redditStatus.textContent = 'Unavailable';
+    }
+    if (redditItems) {
+      redditItems.innerHTML = `<div class="text-rose-600">${escapeHtml(message)}</div>`;
+    }
+  }
+
+  function renderRedditPanel(data: {
+    status?: string;
+    message?: string | null;
+    discussions?: Array<{
+      subreddit: string;
+      postTitle: string;
+      postUrl: string;
+      author: string | null;
+      score: number;
+      numComments: number;
+      postedAt: string | null;
+      opportunityScore: number;
+      priority: string;
+      reason: string;
+    }>;
+  }) {
+    if (data.status === 'unavailable') {
+      renderRedditPanelNotConnected(data.message ?? 'Reddit discovery is unavailable.');
+      return;
+    }
+    const discussions = data?.discussions ?? [];
+    if (discussions.length === 0) {
+      renderRedditPanelEmpty();
+      return;
     }
 
-    if (redditStatus) redditStatus.textContent = data.redditStatus;
+    if (redditStatus) {
+      redditStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      redditStatus.classList.add('text-orange-700');
+      const highCount = discussions.filter(d => d.priority === 'high').length;
+      redditStatus.textContent = `${discussions.length} Discussions${highCount > 0 ? ` · ${highCount} High` : ''}`;
+    }
     if (redditItems) {
-      redditItems.innerHTML = `
-        <div class="bg-white p-2 rounded border border-slate-200/80">
-          <span class="text-orange-600 font-bold">${data.redditThread.sub}:</span> "${data.redditThread.title}"
-          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${data.redditThread.meta}</div>
+      redditItems.innerHTML = discussions.map(d => {
+        const meta = [
+          d.score > 0 ? `${d.score} upvotes` : null,
+          d.numComments > 0 ? `${d.numComments} comments` : null,
+          d.postedAt ? timeAgo(d.postedAt) : null,
+        ].filter(Boolean).join(' • ');
+        const scoreClass = d.priority === 'high' ? 'text-rose-600' : 'text-orange-600';
+        return `
+          <div class="bg-white p-2 rounded border border-slate-200/80 space-y-0.5">
+            <span class="text-orange-600 font-bold">r/${escapeHtml(d.subreddit)}:</span> "<a href="${escapeHtml(d.postUrl)}" target="_blank" rel="noopener" class="text-slate-700 hover:text-orange-700 underline decoration-dotted">${escapeHtml(d.postTitle)}</a>"
+            <div class="text-[10px] text-slate-400 font-mono mt-0.5">${escapeHtml(meta)}${meta ? ' · ' : ''}<span class="${scoreClass} font-bold">Score ${d.opportunityScore}</span></div>
+            <div class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(d.reason)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Panel 4 (AI Engine Footprint) reports what the configured AI provider
+  // (Gemini) actually said about the site. No fabricated citations or rankings.
+  function renderAiPanelLoading() {
+    if (aiStatus) {
+      aiStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      aiStatus.classList.add('text-violet-700');
+      aiStatus.textContent = 'Querying Gemini...';
+    }
+    if (aiItems) {
+      aiItems.innerHTML = '<div class="text-slate-400">Asking the AI provider real questions derived from your content...</div>';
+    }
+  }
+
+  function renderAiPanelNotConnected(message: string) {
+    if (aiStatus) {
+      aiStatus.classList.remove('text-violet-700', 'text-rose-600');
+      aiStatus.classList.add('text-slate-500');
+      aiStatus.textContent = 'Not connected';
+    }
+    if (aiItems) {
+      aiItems.innerHTML = `<div class="text-amber-700">${escapeHtml(message)}</div>`;
+    }
+  }
+
+  function renderAiPanelEmpty() {
+    if (aiStatus) {
+      aiStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      aiStatus.classList.add('text-violet-700');
+      aiStatus.textContent = 'No results';
+    }
+    if (aiItems) {
+      aiItems.innerHTML = '<div class="text-slate-400">No AI visibility results were produced for this crawl.</div>';
+    }
+  }
+
+  function renderAiPanelError(message: string) {
+    if (aiStatus) {
+      aiStatus.classList.remove('text-violet-700', 'text-slate-500', 'text-amber-700');
+      aiStatus.classList.add('text-rose-600');
+      aiStatus.textContent = 'Unavailable';
+    }
+    if (aiItems) {
+      aiItems.innerHTML = `<div class="text-rose-600">${escapeHtml(message)}</div>`;
+    }
+  }
+
+  function renderAiPanel(data: {
+    status?: string;
+    message?: string | null;
+    provider?: string | null;
+    model?: string | null;
+    overallVisibilityScore?: number;
+    mentionedCount?: number;
+    citedCount?: number;
+    results?: Array<{
+      topic: string;
+      mentioned: boolean;
+      cited: boolean;
+      stance: string;
+      visibilityScore: number;
+      reason: string;
+      competitors: string[];
+    }>;
+  }) {
+    if (data.status === 'unavailable') {
+      renderAiPanelNotConnected(data.message ?? 'AI visibility is unavailable.');
+      return;
+    }
+    const results = data?.results ?? [];
+    if (results.length === 0) {
+      renderAiPanelEmpty();
+      return;
+    }
+
+    if (aiStatus) {
+      aiStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      aiStatus.classList.add('text-violet-700');
+      const mentioned = data.mentionedCount ?? 0;
+      const cited = data.citedCount ?? 0;
+      aiStatus.textContent = `${mentioned} mentioned · ${cited} cited`;
+    }
+    if (aiItems) {
+      const modelLabel = [data.provider, data.model].filter(Boolean).join(' · ');
+      aiItems.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500">${escapeHtml(modelLabel || 'AI provider')}</span>
+          <span class="text-violet-700 font-bold">Score ${data.overallVisibilityScore ?? 0}/100</span>
         </div>
+      ` + results.map(r => {
+        const stanceClass = r.stance === 'recommendation'
+          ? 'text-emerald-700 font-bold'
+          : r.stance === 'negative'
+            ? 'text-rose-600 font-bold'
+            : 'text-slate-600';
+        const mentionLabel = r.cited
+          ? '✓ Mentioned & linked'
+          : r.mentioned
+            ? '✓ Mentioned'
+            : '✕ Not mentioned';
+        const mentionClass = r.mentioned ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold';
+        const competitorText = r.competitors.length > 0
+          ? `<div class="text-[10px] text-slate-400 font-mono">Also mentioned: ${escapeHtml(r.competitors.join(', '))}</div>`
+          : '';
+        return `
+          <div class="bg-white p-2 rounded border border-slate-200/80 space-y-0.5">
+            <div class="flex justify-between items-center gap-2">
+              <span class="font-semibold truncate">"${escapeHtml(r.topic)}"</span>
+              <span class="text-violet-700 font-bold font-mono ml-2 shrink-0">${r.visibilityScore}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="${mentionClass}">${mentionLabel}</span>
+              <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border border-violet-200 text-violet-700">${escapeHtml(r.stance)}</span>
+            </div>
+            <div class="text-[11px] text-slate-600">${escapeHtml(r.reason)}</div>
+            ${competitorText}
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Panel 5 (Content Generator) is driven by real content recommendations derived
+  // from the crawl's technical issues, search opportunities and AI visibility gaps.
+  const contentIntentLabels: Record<string, string> = {
+    informational: 'Informational',
+    commercial: 'Commercial',
+    transactional: 'Transactional',
+    navigational: 'Navigational',
+    'on-page': 'On-page',
+  };
+
+  function renderContentPanelLoading() {
+    if (contentStatus) {
+      contentStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      contentStatus.classList.add('text-indigo-700');
+      contentStatus.textContent = 'Generating briefs...';
+    }
+    if (contentItems) {
+      contentItems.innerHTML = '<div class="text-slate-400">Prioritizing content ideas from crawl signals...</div>';
+    }
+  }
+
+  function renderContentPanelNotConnected(message: string) {
+    if (contentStatus) {
+      contentStatus.classList.remove('text-indigo-700', 'text-rose-600');
+      contentStatus.classList.add('text-slate-500');
+      contentStatus.textContent = 'Not connected';
+    }
+    if (contentItems) {
+      contentItems.innerHTML = `<div class="text-amber-700">${escapeHtml(message)}</div>`;
+    }
+  }
+
+  function renderContentPanelEmpty() {
+    if (contentStatus) {
+      contentStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      contentStatus.classList.add('text-indigo-700');
+      contentStatus.textContent = 'No ideas';
+    }
+    if (contentItems) {
+      contentItems.innerHTML = '<div class="text-slate-400">No content recommendations were produced for this crawl.</div>';
+    }
+  }
+
+  function renderContentPanelError(message: string) {
+    if (contentStatus) {
+      contentStatus.classList.remove('text-indigo-700', 'text-slate-500', 'text-amber-700');
+      contentStatus.classList.add('text-rose-600');
+      contentStatus.textContent = 'Unavailable';
+    }
+    if (contentItems) {
+      contentItems.innerHTML = `<div class="text-rose-600">${escapeHtml(message)}</div>`;
+    }
+  }
+
+  function renderContentPanel(data: {
+    status?: string;
+    message?: string | null;
+    provider?: string | null;
+    model?: string | null;
+    recommendations?: Array<{
+      title: string;
+      intent: string;
+      priority: string;
+      rationale: string;
+      aiEnhanced: boolean;
+    }>;
+  }) {
+    if (data.status === 'unavailable') {
+      renderContentPanelNotConnected(data.message ?? 'Content generation is unavailable.');
+      return;
+    }
+    const recommendations = data?.recommendations ?? [];
+    if (recommendations.length === 0) {
+      renderContentPanelEmpty();
+      return;
+    }
+
+    if (contentStatus) {
+      contentStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
+      contentStatus.classList.add('text-indigo-700');
+      const highCount = recommendations.filter(r => r.priority === 'high').length;
+      contentStatus.textContent = `${recommendations.length} Ideas${highCount > 0 ? ` · ${highCount} High` : ''}`;
+    }
+    if (contentItems) {
+      const modelLabel = [data.provider, data.model].filter(Boolean).join(' · ');
+      contentItems.innerHTML = recommendations.slice(0, 3).map(r => {
+        const intentLabel = contentIntentLabels[r.intent] ?? r.intent;
+        const aiBadge = r.aiEnhanced
+          ? '<span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">AI brief</span>'
+          : '<span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">Draft</span>';
+        return `
+          <div class="bg-white p-2 rounded border border-slate-200/80 space-y-1">
+            <div class="flex justify-between items-center gap-2">
+              <span class="font-semibold truncate">"${escapeHtml(r.title)}"</span>
+              <span class="text-indigo-700 font-bold font-mono ml-2 shrink-0">${escapeHtml(r.priority)}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200">${escapeHtml(intentLabel)}</span>
+              ${aiBadge}
+            </div>
+            <div class="text-[11px] text-slate-600">${escapeHtml(r.rationale)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function updateNextActionFromContent(data: {
+    status?: string;
+    message?: string | null;
+    recommendations?: Array<{ title: string; priority: string; rationale: string }>;
+  }) {
+    if (!nextAction) return;
+    const recommendations = data?.recommendations ?? [];
+    if (recommendations.length > 0) {
+      const top = recommendations[0];
+      nextAction.textContent = `Publish "${top.title}" (${top.priority} priority) — ${top.rationale}`;
+      return;
+    }
+    if (data.status === 'unavailable') {
+      nextAction.textContent = data.message ?? 'Connect Gemini to generate content recommendations.';
+    }
+  }
+
+  // Scan History & Previous Scan is driven by the real scan-history and
+  // comparison endpoints. All values come from persisted scans — nothing is
+  // fabricated when there is no previous scan yet.
+  function scanDate(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '—';
+    return `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  function renderScanHistoryPanel(
+    history: { total: number; scans: Array<{ id: string; completedAt: string | null; createdAt: string; healthScore: number | null }> },
+    comp: {
+      hasPrevious: boolean;
+      message: string | null;
+      current: {
+        id: string;
+        completedAt: string | null;
+        createdAt: string;
+        healthScore: number | null;
+        pagesCrawled: number;
+        results: { issueCount: number };
+      } | null;
+      previous: {
+        completedAt: string | null;
+        createdAt: string;
+        healthScore: number | null;
+        pagesCrawled: number;
+        results: { issueCount: number };
+      } | null;
+      changes: { healthScore: { from: number; to: number; delta: number } | null } | null;
+      improvements: string[];
+      regressions: string[];
+    },
+    crawlId: string,
+  ) {
+    const body = document.getElementById('sim-history-body');
+    const count = document.getElementById('sim-history-count');
+    if (!body || !count) return;
+
+    const current = comp.current;
+    if (!current) {
+      count.textContent = '';
+      body.innerHTML = '<div class="text-slate-400">No completed scans available yet.</div>';
+      return;
+    }
+
+    count.textContent = `${history.total} scan${history.total === 1 ? '' : 's'}`;
+    const prev = comp.previous;
+    let html = '';
+
+    if (!prev) {
+      html = `
+        <div class="flex items-center gap-2 text-amber-700">
+          <span>ⓘ</span><span>${escapeHtml(comp.message ?? 'No previous scan available yet.')}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span class="text-slate-500">Current scan:</span>
+          <span class="font-bold text-slate-800">${escapeHtml(scanDate(current.completedAt ?? current.createdAt))}</span>
+          <span class="text-slate-500">Health:</span>
+          <span class="font-bold text-slate-800">${current.healthScore ?? '—'}/100</span>
+        </div>
+      `;
+    } else {
+      const scoreDelta = comp.changes?.healthScore?.delta ?? 0;
+      const deltaClass = scoreDelta > 0 ? 'text-emerald-700' : scoreDelta < 0 ? 'text-rose-600' : 'text-slate-500';
+      const deltaText = scoreDelta > 0 ? `+${scoreDelta}` : `${scoreDelta}`;
+      html = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-2.5 rounded-lg border border-slate-200 bg-white space-y-0.5">
+            <span class="text-[10px] font-bold uppercase tracking-wide text-blue-700">Current scan</span>
+            <div class="text-slate-700">${escapeHtml(scanDate(current.completedAt ?? current.createdAt))}</div>
+            <div class="text-slate-500">Health <span class="font-bold text-slate-800">${current.healthScore ?? '—'}/100</span></div>
+          </div>
+          <div class="p-2.5 rounded-lg border border-slate-200 bg-white space-y-0.5">
+            <span class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Previous scan</span>
+            <div class="text-slate-700">${escapeHtml(scanDate(prev.completedAt ?? prev.createdAt))}</div>
+            <div class="text-slate-500">Health <span class="font-bold text-slate-800">${prev.healthScore ?? '—'}/100</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">Score change:</span>
+          <span class="font-bold ${deltaClass}">${escapeHtml(deltaText)}</span>
+          <span class="text-slate-400 text-[11px]">(${prev.healthScore ?? '—'} → ${current.healthScore ?? '—'})</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span class="text-slate-500">Pages:</span>
+          <span class="text-slate-700">${prev.pagesCrawled} → ${current.pagesCrawled}</span>
+          <span class="text-slate-500">Issues:</span>
+          <span class="text-slate-700">${prev.results.issueCount} → ${current.results.issueCount}</span>
+        </div>
+        ${comp.improvements.length > 0
+          ? `<div class="space-y-0.5"><div class="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Improvements</div>${comp.improvements.map((i: string) => `<div class="text-emerald-700 flex gap-1.5"><span>✓</span><span>${escapeHtml(i)}</span></div>`).join('')}</div>`
+          : ''}
+        ${comp.regressions.length > 0
+          ? `<div class="space-y-0.5"><div class="text-[10px] font-bold uppercase tracking-wide text-rose-600">Regressions</div>${comp.regressions.map((i: string) => `<div class="text-rose-600 flex gap-1.5"><span>✕</span><span>${escapeHtml(i)}</span></div>`).join('')}</div>`
+          : ''}
       `;
     }
 
-    if (aiStatus) aiStatus.textContent = data.aiStatus;
-    if (aiItems) {
-      aiItems.innerHTML = data.aiBreakdown.map(ai => `
-        <div class="flex justify-between items-center">
-          <span>${ai.name}</span>
-          <span class="${ai.isGood ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'}">${ai.status}</span>
-        </div>
-      `).join('');
-    }
+    const chips = history.scans.map((s) => {
+      const isCurrent = s.id === crawlId;
+      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-mono ${isCurrent ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-white border-slate-200 text-slate-600'}">${escapeHtml(scanDate(s.completedAt ?? s.createdAt))} · ${s.healthScore ?? '—'}</span>`;
+    }).join('');
+    html += `<div class="pt-1"><span class="text-[10px] font-bold uppercase tracking-wide text-slate-500">All scans</span><div class="flex flex-wrap gap-1.5 mt-1">${chips}</div></div>`;
 
-    if (nextAction) nextAction.textContent = data.nextAction;
+    body.innerHTML = html;
   }
 
-  function simulateScan(domain: string) {
-    if (!progressBox || !resultsBox || !progressBar || !progressTitle) return;
+  async function loadScanHistory(projectId: string, crawlId: string) {
+    const historySection = document.getElementById('sim-history-section');
+    if (!historySection) return;
+    try {
+      const [historyRes, compRes] = await Promise.all([
+        apiFetch(`/api/projects/${projectId}/scans`),
+        apiFetch(`/api/projects/${projectId}/scans/comparison`),
+      ]);
+      if (!historyRes.ok) throw await backendError(historyRes);
+      if (!compRes.ok) throw await backendError(compRes);
+      const history = await historyRes.json();
+      const comp = await compRes.json();
+      renderScanHistoryPanel(history, comp, crawlId);
+      historySection.classList.remove('hidden');
+    } catch {
+      historySection.classList.add('hidden');
+    }
+  }
 
+  function showProgress(title: string, subtitle: string, width = 15) {
+    if (!progressBox || !resultsBox || !progressBar) return;
     resultsBox.classList.add('hidden');
     progressBox.classList.remove('hidden');
+    progressBar.classList.remove('bg-rose-600');
+    progressBar.classList.add('bg-blue-600');
+    progressBar.style.width = `${width}%`;
+    if (progressTitle) progressTitle.textContent = title;
+    if (progressSubtitle) progressSubtitle.textContent = subtitle;
+  }
 
-    const cleanDomain = domain.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/.*$/, '');
-    const matchedData = personaDatabase[cleanDomain] || {
-      domain: cleanDomain || "mycustomsite.com",
-      score: "81",
-      techStatus: "84% (Good Health)",
-      techItems: [
-        "✓ HTTPS active & SSL verified",
-        "✓ Sitemap discovered with 86 indexable pages",
-        "⚠ 2 Pages missing canonical tags"
-      ],
-      searchStatus: "3 High-Intent Gaps Discovered",
-      searchItems: [
-        { query: `best software for ${cleanDomain.split('.')[0]}`, score: 92 },
-        { query: `how to choose a ${cleanDomain.split('.')[0]} tool`, score: 85 }
-      ],
-      redditStatus: "2 Active Discussions Found",
-      redditThread: {
-        sub: "r/SaaS",
-        title: `What tools are people using instead of older legacy tools for ${cleanDomain.split('.')[0]}?`,
-        meta: "112 upvotes • 43 comments"
-      },
-      aiStatus: "2 of 4 Models Cited",
-      aiBreakdown: [
-        { name: "ChatGPT (GPT-4o)", status: "✓ Mentioned (#3)", isGood: true },
-        { name: "Perplexity AI", status: "✓ Cited source", isGood: true },
-        { name: "Google Gemini", status: "✕ Not Mentioned", isGood: false }
-      ],
-      nextAction: `Publish a dedicated comparison guide targeting keywords around ${cleanDomain} to trigger comprehensive AI citations.`
-    };
+  function showError(message: string) {
+    if (!progressBox || !resultsBox || !progressBar) return;
+    resultsBox.classList.add('hidden');
+    progressBox.classList.remove('hidden');
+    progressBar.classList.remove('bg-blue-600');
+    progressBar.classList.add('bg-rose-600');
+    progressBar.style.width = '100%';
+    if (progressTitle) progressTitle.textContent = 'Scan Failed';
+    if (progressSubtitle) progressSubtitle.textContent = message;
+  }
 
-    progressBar.style.width = '20%';
-    progressTitle.textContent = 'Crawling sitemap & technical tags...';
+  function showResults(websiteUrl: string, results: Parameters<typeof renderTechPanel>[1]) {
+    renderTechPanel(websiteUrl, results);
+    renderDemoPanels(websiteUrl);
+    if (progressBox) progressBox.classList.add('hidden');
+    if (resultsBox) resultsBox.classList.remove('hidden');
+  }
 
-    setTimeout(() => {
-      progressBar.style.width = '60%';
-      progressTitle.textContent = 'Querying Reddit communities & search intent clusters...';
-    }, 400);
+  async function pollCrawl(crawlId: string): Promise<void> {
+    const deadline = Date.now() + 120000;
+    while (Date.now() < deadline) {
+      const res = await apiFetch(`/api/crawls/${crawlId}`);
+      if (!res.ok) throw await backendError(res);
+      const run = await res.json();
+      if (run.status === 'COMPLETED') return;
+      if (run.status === 'FAILED') {
+        throw new Error(run.errorMessage || 'The crawl failed — no pages could be fetched.');
+      }
+      await sleep(1500);
+    }
+    throw new Error('Scan timed out. The website took too long to crawl.');
+  }
 
-    setTimeout(() => {
-      progressBar.style.width = '90%';
-      progressTitle.textContent = 'Evaluating ChatGPT, Claude & Perplexity citations...';
-    }, 800);
+  async function renderCrawlResults(crawlId: string, websiteUrl: string, projectId: string, scrollToHistory = false) {
+    showProgress('Analyzing technical SEO signals...', 'Computing the health score from collected data', 85);
+    const resultsRes = await apiFetch(`/api/crawls/${crawlId}/results`);
+    if (!resultsRes.ok) throw await backendError(resultsRes);
+    const results = await resultsRes.json();
 
-    setTimeout(() => {
-      progressBar.style.width = '100%';
-      progressBox.classList.add('hidden');
-      resultsBox.classList.remove('hidden');
-      updateResultsUI(matchedData);
-    }, 1200);
+    showResults(websiteUrl, results);
+
+    renderSearchPanelLoading();
+    try {
+      const searchRes = await apiFetch(`/api/crawls/${crawlId}/search-opportunities`);
+      if (!searchRes.ok) throw await backendError(searchRes);
+      renderSearchPanel(await searchRes.json());
+    } catch (error) {
+      renderSearchPanelError(error instanceof Error ? error.message : 'Could not load search opportunities.');
+    }
+
+    renderRedditPanelLoading();
+    try {
+      const redditRes = await apiFetch(`/api/crawls/${crawlId}/reddit-opportunities`);
+      if (!redditRes.ok) throw await backendError(redditRes);
+      renderRedditPanel(await redditRes.json());
+    } catch (error) {
+      renderRedditPanelError(error instanceof Error ? error.message : 'Could not load Reddit discussions.');
+    }
+
+    renderAiPanelLoading();
+    try {
+      const aiRes = await apiFetch(`/api/crawls/${crawlId}/ai-visibility`);
+      if (!aiRes.ok) throw await backendError(aiRes);
+      renderAiPanel(await aiRes.json());
+    } catch (error) {
+      renderAiPanelError(error instanceof Error ? error.message : 'Could not load AI visibility results.');
+    }
+
+    renderContentPanelLoading();
+    try {
+      const contentRes = await apiFetch(`/api/crawls/${crawlId}/content-recommendations`);
+      if (!contentRes.ok) throw await backendError(contentRes);
+      const contentData = await contentRes.json();
+      renderContentPanel(contentData);
+      updateNextActionFromContent(contentData);
+    } catch (error) {
+      renderContentPanelError(error instanceof Error ? error.message : 'Could not load content recommendations.');
+    }
+
+    await loadScanHistory(projectId, crawlId);
+    if (scrollToHistory) {
+      const historySection = document.getElementById('sim-history-section');
+      if (historySection) historySection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function showEmptyScanState(websiteUrl: string) {
+    const displayDomain = websiteUrl.replace(/^https?:\/\//, '');
+    if (resDomain) resDomain.textContent = displayDomain;
+    if (resScore) resScore.innerHTML = `-- <span class="text-sm font-normal text-slate-400">/ 100</span>`;
+    if (techStatus) techStatus.textContent = 'No scans yet';
+    if (techItems) techItems.innerHTML = '<div class="text-slate-400">Run a new scan to audit this project.</div>';
+    if (searchStatus) searchStatus.textContent = 'Awaiting scan';
+    if (searchItems) searchItems.innerHTML = '<div class="text-slate-400">Run a scan to discover real search opportunities.</div>';
+    if (redditStatus) redditStatus.textContent = 'Awaiting scan';
+    if (redditItems) redditItems.innerHTML = '<div class="text-slate-400">Run a scan to look for relevant Reddit discussions.</div>';
+    if (aiStatus) aiStatus.textContent = 'Awaiting scan';
+    if (aiItems) aiItems.innerHTML = '<div class="text-slate-400">Run a scan to check your AI engine footprint.</div>';
+    if (contentStatus) contentStatus.textContent = 'Awaiting scan';
+    if (contentItems) contentItems.innerHTML = '<div class="text-slate-400">Run a scan to generate content recommendations.</div>';
+    const historySection = document.getElementById('sim-history-section');
+    if (historySection) historySection.classList.add('hidden');
+    if (progressBox) progressBox.classList.add('hidden');
+    if (resultsBox) resultsBox.classList.remove('hidden');
+  }
+
+  function renderTeaserDemo(rawDomain: string) {
+    const cleanDomain = domainKey(rawDomain);
+    const persona = personaDatabase[cleanDomain] || fallbackPersona(cleanDomain);
+    if (resDomain) resDomain.textContent = cleanDomain || 'mycustomsite.com';
+    if (resScore) resScore.innerHTML = `${persona.score} <span class="text-sm font-normal text-slate-400">/ 100</span>`;
+    if (techStatus) techStatus.textContent = persona.techStatus;
+    if (techItems) {
+      techItems.innerHTML = persona.techItems.map(line => {
+        const isGood = line.startsWith('✓');
+        return `<div class="flex items-center gap-1.5 ${isGood ? 'text-emerald-700' : 'text-amber-700'}">${escapeHtml(line)}</div>`;
+      }).join('');
+    }
+    if (nextAction) nextAction.textContent = persona.nextAction;
+    if (searchStatus) searchStatus.textContent = 'Sample preview';
+    if (searchItems) searchItems.innerHTML = '<div class="text-slate-400">Log in to run a real crawl and discover search opportunities.</div>';
+    if (redditStatus) redditStatus.textContent = 'Sample preview';
+    if (redditItems) redditItems.innerHTML = '<div class="text-slate-400">Log in to see real Reddit discussions for this niche.</div>';
+    if (aiStatus) aiStatus.textContent = 'Sample preview';
+    if (aiItems) aiItems.innerHTML = '<div class="text-slate-400">Log in to measure real AI citations for this site.</div>';
+    if (contentStatus) contentStatus.textContent = 'Sample preview';
+    if (contentItems) contentItems.innerHTML = '<div class="text-slate-400">Log in to generate content recommendations.</div>';
+    const historySection = document.getElementById('sim-history-section');
+    if (historySection) historySection.classList.add('hidden');
+    if (progressBox) progressBox.classList.add('hidden');
+    if (resultsBox) resultsBox.classList.remove('hidden');
+  }
+
+  function redirectToAuth(websiteUrl: string) {
+    const params = new URLSearchParams({ next: '/app' });
+    params.set('website', websiteUrl.replace(/^https?:\/\//, ''));
+    window.location.href = `/login?${params.toString()}`;
+  }
+
+  async function runRealScan(rawDomain: string) {
+    const websiteUrl = toWebsiteUrl(rawDomain);
+    if (!websiteUrl) {
+      showError('Please enter a website URL.');
+      return;
+    }
+    if (SIM_MODE === 'teaser' && !currentUser) {
+      redirectToAuth(websiteUrl);
+      return;
+    }
+    let projectId = SIM_MODE === 'app' ? selectedProjectId : '';
+    if (SIM_MODE === 'app' && !projectId) {
+      showError('Select a project first.');
+      return;
+    }
+    const targetUrl = projectId && projectCache[projectId]?.websiteUrl ? projectCache[projectId].websiteUrl : websiteUrl;
+    if (runBtn) {
+      runBtn.disabled = true;
+      runBtn.classList.add('opacity-60', 'cursor-wait');
+    }
+    showProgress('Preparing scan...', 'Connecting to the SEO backend');
+    try {
+      if (!projectId) {
+        // Teaser mode: create the project, or reuse an existing one for the same website URL.
+        const projectRes = await apiFetch('/api/projects', {
+          method: 'POST',
+          body: JSON.stringify({ name: websiteUrl, websiteUrl }),
+        });
+        if (projectRes.status === 409) {
+          showProgress('Preparing scan...', 'Reusing the existing project for this website');
+          const resolveRes = await apiFetch(`/api/projects/resolve?websiteUrl=${encodeURIComponent(websiteUrl)}`);
+          if (!resolveRes.ok) throw await backendError(resolveRes);
+          projectId = (await resolveRes.json()).id;
+        } else if (projectRes.ok) {
+          projectId = (await projectRes.json()).id;
+        } else {
+          throw await backendError(projectRes);
+        }
+        await loadProjects();
+      }
+
+      showProgress('Starting crawl...', 'Discovering pages, robots.txt and sitemap', 30);
+      const crawlRes = await apiFetch(`/api/projects/${projectId}/crawls`, { method: 'POST' });
+      if (!crawlRes.ok) throw await backendError(crawlRes);
+      const crawl = await crawlRes.json();
+
+      showProgress('Scanning website infrastructure...', 'Crawling internal pages within the domain', 45);
+      await pollCrawl(crawl.id);
+
+      await renderCrawlResults(crawl.id, targetUrl, projectId);
+      await loadProjects();
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Scan failed unexpectedly.');
+    } finally {
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.classList.remove('opacity-60', 'cursor-wait');
+      }
+      window.dispatchEvent(new CustomEvent('foundable:scan-complete', { detail: { projectId } }));
+    }
+  }
+
+  async function loadProjectResults(projectId: string, action: 'results' | 'history') {
+    try {
+      const projectRes = await apiFetch(`/api/projects/${projectId}`);
+      if (!projectRes.ok) throw await backendError(projectRes);
+      const project = await projectRes.json();
+      const historyRes = await apiFetch(`/api/projects/${projectId}/scans`);
+      if (!historyRes.ok) throw await backendError(historyRes);
+      const history = await historyRes.json();
+      const latest = history.scans?.[0];
+      if (!latest) {
+        showEmptyScanState(project.websiteUrl);
+        return;
+      }
+      await renderCrawlResults(latest.id, project.websiteUrl, projectId, action === 'history');
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Could not load results.');
+    }
+  }
+
+  // --- Session & project ownership (driven by the app shell / event bus) ---
+  let currentUser: { id: string; email: string } | null = null;
+  let selectedProjectId = '';
+  const projectCache: Record<string, { domain: string; websiteUrl: string }> = {};
+  const projectSelect = document.getElementById('sim-project-select') as HTMLSelectElement | null;
+
+  function updateProjectMeta(domain: string) {
+    if (!appProjectMeta) return;
+    appProjectMeta.textContent = `Current project: ${domain}`;
+  }
+
+  async function checkSession() {
+    try {
+      const res = await apiFetch('/api/auth/me');
+      if (res.ok) currentUser = (await res.json()).user;
+    } catch {
+      // Backend offline; teaser mode will redirect to auth on scan attempts.
+    }
+  }
+
+  async function loadProjects() {
+    if (!projectSelect) return;
+    const previous = selectedProjectId;
+    projectSelect.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select a project...';
+    projectSelect.appendChild(placeholder);
+    try {
+      const res = await apiFetch('/api/projects');
+      if (!res.ok) throw await backendError(res);
+      const data = await res.json();
+      for (const project of data.projects ?? []) {
+        const option = document.createElement('option');
+        option.value = project.id;
+        option.textContent = project.domain;
+        projectSelect.appendChild(option);
+        projectCache[project.id] = { domain: project.domain, websiteUrl: project.websiteUrl };
+      }
+      selectedProjectId = previous;
+      if (projectSelect.value !== selectedProjectId) projectSelect.value = selectedProjectId;
+      if (selectedProjectId && projectCache[selectedProjectId]) {
+        updateProjectMeta(projectCache[selectedProjectId].domain);
+      }
+    } catch {
+      // The dashboard owns error messaging; fail silently here.
+    }
+  }
+
+  projectSelect?.addEventListener('change', () => {
+    selectedProjectId = projectSelect.value;
+    if (selectedProjectId && projectCache[selectedProjectId]) {
+      updateProjectMeta(projectCache[selectedProjectId].domain);
+      void loadProjectResults(selectedProjectId, 'results');
+    }
+  });
+
+  // The app shell (src/pages/app.astro) drives project selection via this event.
+  window.addEventListener('foundable:select-project', (event) => {
+    const detail = (event as CustomEvent<{ id: string; domain: string; websiteUrl: string; action?: string }>).detail;
+    if (!detail?.id) return;
+    selectedProjectId = detail.id;
+    projectCache[detail.id] = { domain: detail.domain, websiteUrl: detail.websiteUrl };
+    if (projectSelect) {
+      projectSelect.value = detail.id;
+    }
+    updateProjectMeta(detail.domain);
+    const action = detail.action ?? 'results';
+    if (action === 'scan') {
+      void runRealScan(detail.domain);
+    } else {
+      void loadProjectResults(detail.id, action === 'history' ? 'history' : 'results');
+    }
+  });
+
+  void checkSession();
+  if (SIM_MODE === 'app') {
+    void loadProjects();
   }
 
   personaBtns.forEach(btn => {
@@ -501,14 +1365,14 @@
 
       const domain = btn.getAttribute('data-domain') || 'resumeforge.io';
       if (domainInput) domainInput.value = domain;
-      simulateScan(domain);
+      renderTeaserDemo(domain);
     });
   });
 
   if (runBtn) {
     runBtn.addEventListener('click', () => {
-      const domain = domainInput ? domainInput.value.trim() : 'resumeforge.io';
-      simulateScan(domain);
+      const domain = domainInput ? domainInput.value.trim() : (projectCache[selectedProjectId]?.domain ?? '');
+      void runRealScan(domain);
     });
   }
 </script>

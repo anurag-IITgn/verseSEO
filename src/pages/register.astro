@@ -1,0 +1,37 @@
+---
+// src/pages/register.astro
+import Layout from '../layouts/Layout.astro';
+import AuthForm from '../components/auth/AuthForm.astro';
+---
+
+<Layout
+  title="Create account — Foundable"
+  description="Create a free Foundable account to run SEO audits, track AI citations, and manage your projects."
+>
+  <main class="min-h-screen flex flex-col">
+    <header class="w-full">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg p-1">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-blue-500/20 text-white font-bold text-lg">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 3v18"></path>
+              <path d="M3 12h18"></path>
+              <circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.25"></circle>
+            </svg>
+          </div>
+          <span class="font-extrabold text-xl tracking-tight text-slate-900">Foundable</span>
+        </a>
+        <a href="/" class="text-sm font-medium text-slate-600 hover:text-slate-900 hover:underline">← Back to home</a>
+      </div>
+    </header>
+
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
+      <AuthForm mode="register" />
+    </div>
+
+    <footer class="text-center py-8 text-xs text-slate-400">
+      &copy; Foundable · Powered by real crawl data, not guesses.
+    </footer>
+  </main>
+</Layout>
