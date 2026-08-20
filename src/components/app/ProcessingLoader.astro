@@ -1,0 +1,19 @@
+---
+// ProcessingLoader.astro — polished processing/loading visual for module cards
+// Swappable later for branded Foundable animation without restructuring.
+interface Props {
+  message?: string;
+  size?: 'sm' | 'md';
+}
+const { message = 'Loading...', size = 'sm' } = Astro.props;
+---
+<div class="flex flex-col items-center justify-center gap-3 py-4" data-processing-loader>
+  <div class:list={[
+    'border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin',
+    size === 'sm' ? 'w-6 h-6' : 'w-10 h-10',
+  ]}></div>
+  <p class:list={[
+    'text-slate-500 font-medium',
+    size === 'sm' ? 'text-xs' : 'text-sm',
+  ]} data-processing-message>{message}</p>
+</div>
