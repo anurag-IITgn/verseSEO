@@ -27,3 +27,32 @@ export interface GeneratedBrief {
   intent: string;
   structure: string[];
 }
+
+/**
+ * A structured content brief for one selected Search Opportunity. Every field
+ * is grounded in real opportunity data (the query, intent, reason, suggested
+ * action and evidence pages/phrases). No search volume, KD, CPC, traffic or
+ * SERP metrics are ever included.
+ */
+export interface OpportunityContentBrief {
+  targetTopic: string;
+  searchIntent: string;
+  coverage: string;
+  opportunity: string;
+  suggestedAction: string;
+  evidencePages: string[];
+  evidencePhrases: string[];
+  angle: string;
+  suggestedTitle: string;
+  structure: string[];
+  keyPoints: string[];
+  aiEnhanced: boolean;
+}
+
+/** AI-provided enhancement of the deterministic brief (angle/title/structure/key points). */
+export interface GeneratedBriefEnhancement {
+  angle: string;
+  title: string;
+  structure: string[];
+  keyPoints: string[];
+}

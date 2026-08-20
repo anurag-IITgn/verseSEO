@@ -3,7 +3,7 @@ import { parseGeminiResponse } from '../parsing.js';
 import type { AiProvider } from '../types.js';
 
 const GENERATE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const REQUEST_TIMEOUT_MS = 20_000;
+const REQUEST_TIMEOUT_MS = 60_000;
 
 /**
  * Official Google Gemini provider (free-tier API, server-side only). The API

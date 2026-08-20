@@ -1,5 +1,6 @@
 import { findCrawlRunById } from '../repositories/crawlRepo.js';
 import { findProjectById } from '../repositories/projectRepo.js';
+import { findOpportunityById } from '../repositories/searchRepo.js';
 import { AppError } from '../utils/errors.js';
 import { isValidUuid } from '../utils/uuid.js';
 
@@ -32,4 +33,27 @@ export async function requireCrawlOwned(userId: string, crawlId: string) {
   }
 
   return { crawl, project };
+}
+
+export async function requireOpportunityOwned(userId: string, opportunityId: string) {
+  if (!isValidUuid(opportunityId)) {
+    throw new AppError(400, 'Invalid opportunity id', 'INVALID_OPPORTUNITY_ID');
+  }
+
+  const opportunity = await findOpportunityById(opportunityId);
+  if (!opportunity) {
+    throw new AppError(404, 'Opportunity not found', 'OPPORTUNITY_NOT_FOUND');
+  }
+
+  const crawl = await findCrawlRunById(opportunity.crawlRunId);
+  if (!crawl) {
+    throw new AppError(404, 'Opportunity not found', 'OPPORTUNITY_NOT_FOUND');
+  }
+
+  const project = await findProjectById(crawl.projectId);
+  if (!project || project.userId !== userId) {
+    throw new AppError(404, 'Opportunity not found', 'OPPORTUNITY_NOT_FOUND');
+  }
+
+  return { opportunity, crawl, project };
 }

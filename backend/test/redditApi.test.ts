@@ -82,6 +82,20 @@ async function pollCrawl(crawlId: string, timeoutMs = 15000): Promise<Record<str
   throw new Error('Crawl did not finish within the timeout');
 }
 
+async function pollRedditOpportunities(crawlId: string, timeoutMs = 15000): Promise<Record<string, unknown>> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
+    assert.equal(res.statusCode, 200);
+    const body = res.json();
+    if (body.status !== 'pending') {
+      return body;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error('Reddit discovery did not settle within the timeout');
+}
+
 async function crawlFixtureSite(): Promise<string> {
   const projectRes = await authedInject({
     method: 'POST',
@@ -135,18 +149,20 @@ test('returns real Reddit discussions derived from a crawl with scoring and pers
   setRedditProviderForTesting(fakeProvider());
   const crawlId = await crawlFixtureSite();
   try {
-    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
+const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
     assert.equal(res.statusCode, 200);
-    const body = res.json();
+    const body = res.json() as Record<string, unknown>;
+    assert.equal(body.status, 'pending', 'the first request must kick off discovery and report it is pending');
 
-    assert.equal(body.status, 'ok');
-    assert.equal(body.reason, null);
-    assert.equal(body.crawlId, crawlId);
-    assert.equal(body.total, body.discussions.length);
-    assert.ok(body.total > 0, 'the fake provider must produce discussions');
-    assert.ok(body.topicsAnalyzed > 0);
+    const result = await pollRedditOpportunities(crawlId);
+    assert.equal(result.status, 'ok');
+    assert.equal(result.reason, null);
+    assert.equal(result.crawlId, crawlId);
+    assert.equal(result.total, result.discussions.length);
+    assert.ok(result.total > 0, 'the fake provider must produce discussions');
+    assert.ok(result.topicsAnalyzed > 0);
 
-    for (const d of body.discussions) {
+    for (const d of result.discussions) {
       assert.equal(typeof d.subreddit, 'string');
       assert.equal(typeof d.postTitle, 'string');
       assert.match(d.postUrl, /^https:\/\/www\.reddit\.com\//);
@@ -160,7 +176,7 @@ test('returns real Reddit discussions derived from a crawl with scoring and pers
     }
 
     const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM reddit_discussions WHERE crawl_run_id = $1', [crawlId]);
-    assert.equal(rows[0].total, body.total, 'discussions must be persisted');
+    assert.equal(rows[0].total, result.total, 'discussions must be persisted');
   } finally {
     await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
@@ -170,14 +186,46 @@ test('repeated requests are idempotent and never duplicate discussions', async (
   setRedditProviderForTesting(fakeProvider());
   const crawlId = await crawlFixtureSite();
   try {
-    const first = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
-    assert.equal(first.statusCode, 200);
+    const first = await pollRedditOpportunities(crawlId);
+    assert.equal(first.status, 'ok');
     const second = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
     assert.equal(second.statusCode, 200);
-    assert.deepEqual(second.json(), first.json(), 'the same crawl must always return the same discussions');
+    assert.deepEqual(second.json(), first, 'the same crawl must always return the same discussions');
 
-    const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM reddit_discussions WHERE crawl_run_id = $1', [crawlId]);
-    assert.equal(rows[0].total, first.json().total, 'discussions must never be duplicated');
+const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM reddit_discussions WHERE crawl_run_id = $1', [crawlId]);
+    assert.equal(rows[0].total, first.total, 'discussions must never be duplicated');
+  } finally {
+    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+  }
+});
+
+test('concurrent requests share one discovery pipeline instead of duplicating it', async () => {
+  let searches = 0;
+  setRedditProviderForTesting(
+    fakeProvider({
+      async search() {
+        searches++;
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        return cannedPosts;
+      },
+    }),
+  );
+  const crawlId = await crawlFixtureSite();
+  try {
+    const [a, b] = await Promise.all([
+      authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` }),
+      authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` }),
+    ]);
+    assert.equal(a.statusCode, 200);
+    assert.equal(b.statusCode, 200);
+    const statuses = [a.json().status, b.json().status];
+    assert.ok(statuses.includes('pending'), 'at least one concurrent call must observe the in-flight discovery');
+
+    const result = await pollRedditOpportunities(crawlId);
+    assert.equal(result.status, 'ok');
+    assert.equal(result.total, result.discussions.length);
+    assert.ok(result.total > 0);
+    assert.ok(searches <= 8, `only one pipeline may run (8 queries max); saw ${searches} searches`);
   } finally {
     await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
@@ -204,9 +252,7 @@ test('returns an honest unavailable state when the provider fails', async () => 
   setRedditProviderForTesting(fakeProvider({ async search() { throw new RedditUnavailableError('Reddit search request failed (HTTP 429).'); } }));
   const crawlId = await crawlFixtureSite();
   try {
-    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
-    assert.equal(res.statusCode, 200);
-    const body = res.json();
+    const body = await pollRedditOpportunities(crawlId);
     assert.equal(body.status, 'unavailable');
     assert.equal(body.reason, 'PROVIDER_ERROR');
     assert.match(body.message, /429/);
@@ -220,9 +266,7 @@ test('returns an empty result when the provider finds no relevant discussions', 
   setRedditProviderForTesting(fakeProvider({ async search() { return []; } }));
   const crawlId = await crawlFixtureSite();
   try {
-    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
-    assert.equal(res.statusCode, 200);
-    const body = res.json();
+    const body = await pollRedditOpportunities(crawlId);
     assert.equal(body.status, 'ok');
     assert.equal(body.total, 0);
     assert.deepEqual(body.discussions, []);
@@ -247,11 +291,9 @@ test('survives malformed external data by only storing well-formed discussions',
       },
     }),
   );
-  const crawlId = await crawlFixtureSite();
+const crawlId = await crawlFixtureSite();
   try {
-    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/reddit-opportunities` });
-    assert.equal(res.statusCode, 200);
-    const body = res.json();
+    const body = await pollRedditOpportunities(crawlId);
     assert.equal(body.status, 'ok');
     assert.equal(body.total, 1, 'only the well-formed post must be stored');
     assert.equal(body.discussions[0].postTitle, 'Tip math question');

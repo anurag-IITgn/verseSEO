@@ -1,37 +1,141 @@
 ---
-// GrowthGraph.astro — Organic / Direct / Referral Growth Visualization
-const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'];
+// GrowthGraph.astro — Foundable Visibility Index preview (dark)
+// Search / AI / Reddit visibility over time, in one clean chart.
 
-const data = {
-  organic: [20, 25, 32, 43, 57, 74],
-  direct: [35, 38, 42, 45, 48, 51],
-  referral: [18, 21, 24, 27, 30, 33],
+const ranges = {
+  '6W': {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+    values: {
+      search: [26, 33, 41, 53, 66, 79],
+      ai: [11, 17, 26, 38, 55, 72],
+      reddit: [15, 19, 24, 31, 39, 47],
+    },
+  },
+  '12W': {
+    labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9', 'W10', 'W11', 'W12'],
+    values: {
+      search: [22, 24, 27, 31, 35, 40, 46, 53, 60, 66, 72, 79],
+      ai: [8, 10, 14, 18, 24, 30, 38, 46, 55, 62, 67, 72],
+      reddit: [12, 14, 16, 19, 22, 26, 30, 35, 39, 43, 45, 47],
+    },
+  },
+  '6M': {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    values: {
+      search: [30, 38, 47, 58, 68, 79],
+      ai: [14, 22, 33, 47, 60, 72],
+      reddit: [18, 23, 29, 36, 42, 47],
+    },
+  },
 };
 
-const maxVal = 80;
-const chartWidth = 600;
-const chartHeight = 260;
-const paddingLeft = 48;
-const paddingRight = 24;
-const paddingTop = 24;
-const paddingBottom = 48;
-const innerWidth = chartWidth - paddingLeft - paddingRight;
-const innerHeight = chartHeight - paddingTop - paddingBottom;
+const defaultRange = '6W';
+const init = ranges[defaultRange];
 
-function toX(i: number) {
-  return paddingLeft + (i / (weeks.length - 1)) * innerWidth;
+const seriesMeta = [
+  { key: 'search', label: 'Search Visibility', color: '#2563eb' },
+  { key: 'ai', label: 'AI Visibility', color: '#7c3aed' },
+  { key: 'reddit', label: 'Reddit Visibility', color: '#f97316' },
+];
+
+const maxVal = 100;
+const chartW = 800;
+const chartH = 320;
+const padL = 40;
+const padR = 20;
+const padT = 18;
+const padB = 34;
+const innerW = chartW - padL - padR;
+const innerH = chartH - padT - padB;
+
+function toX(i: number, n: number) {
+  return padL + (i / (n - 1)) * innerW;
 }
 function toY(v: number) {
-  return paddingTop + innerHeight - (v / maxVal) * innerHeight;
+  return padT + innerH - (v / maxVal) * innerH;
 }
 
-function buildPath(values: number[]) {
-  return values.map((v, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+function smoothPath(vals: number[]) {
+  const n = vals.length;
+  const pts = vals.map((v, i) => ({ x: toX(i, n), y: toY(v) }));
+  let d = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(n - 1, i + 2)];
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
 }
 
-const organicPath = buildPath(data.organic);
-const directPath = buildPath(data.direct);
-const referralPath = buildPath(data.referral);
+function areaPath(vals: number[]) {
+  const n = vals.length;
+  return `${smoothPath(vals)} L ${toX(n - 1, n).toFixed(1)},${padT + innerH} L ${toX(0, n).toFixed(1)},${padT + innerH} Z`;
+}
+
+function pctChange(vals: number[]) {
+  const prev = vals[vals.length - 2];
+  const last = vals[vals.length - 1];
+  return Math.round(((last - prev) / prev) * 100);
+}
+
+const yTicks = [0, 25, 50, 75, 100];
+
+const initialSeries = seriesMeta.map((s) => ({
+  ...s,
+  vals: init.values[s.key],
+  line: smoothPath(init.values[s.key]),
+  area: areaPath(init.values[s.key]),
+  delta: pctChange(init.values[s.key]),
+}));
+
+// Chart 1 — Projected visitors by source (Semrush 2025 study)
+const projLabels = ['2025', '2026', '2027', '2028', '2029'];
+const projSeries = [
+  { key: 'llm', label: 'LLM & AI Search', color: '#7c3aed', vals: [28, 55, 95, 150, 205] },
+  { key: 'trad', label: 'Traditional organic', color: '#2563eb', vals: [120, 118, 112, 102, 96] },
+];
+const pW = 600, pH = 240, pPadL = 36, pPadR = 12, pPadT = 18, pPadB = 26;
+const pMax = 220;
+const pX = (i) => pPadL + (i / (projLabels.length - 1)) * (pW - pPadL - pPadR);
+const pY = (v) => pPadT + (pH - pPadT - pPadB) - (v / pMax) * (pH - pPadT - pPadB);
+function pLine(vals) {
+  const n = vals.length;
+  const pts = vals.map((v, i) => ({ x: pX(i), y: pY(v) }));
+  let d = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(n - 1, i + 2)];
+    const c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+function pArea(vals) {
+  const n = vals.length;
+  return `${pLine(vals)} L ${pX(n - 1).toFixed(1)},${pH - pPadB} L ${pX(0).toFixed(1)},${pH - pPadB} Z`;
+}
+const projLines = projSeries.map((s) => ({ ...s, line: pLine(s.vals), area: pArea(s.vals) }));
+const pYTicks = [0, 55, 110, 165, 220];
+
+// Chart 2 — Time to rank with AI content (Semrush 2024 report)
+const donutC = 2 * Math.PI * 74;
+const donutSegs = [
+  { label: 'Ranked within a month', pct: 34, color: '#34d399' },
+  { label: 'Ranked in 1–2 months', pct: 33, color: '#60a5fa' },
+  { label: 'Took 2+ months', pct: 33, color: '#a78bfa' },
+];
+let donutAngle = 0;
+const donutArcs = donutSegs.map((s) => {
+  const a = donutAngle;
+  donutAngle += (s.pct / 100) * 360;
+  return { ...s, dash: ((s.pct / 100) * donutC).toFixed(1), offset: ((s.pct / 100) * donutC).toFixed(1), rot: a.toFixed(1) };
+});
 ---
 
 <section class="py-16 sm:py-20">
@@ -40,148 +144,237 @@ const referralPath = buildPath(data.referral);
     <!-- Section Header -->
     <div class="text-center mb-10 sm:mb-14">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/5 border border-slate-900/10 text-xs font-bold text-slate-700 uppercase tracking-wider mb-4">
-        Acquisition Trends
+        The Visibility Index
       </div>
       <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-3xl mx-auto">
-        Turn search visibility into organic growth.
+        Every channel. One clear picture.
       </h2>
       <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-        Track how your acquisition mix changes as your search visibility improves.
+        Foundable merges your Google rankings, AI citations, and Reddit presence into a single visibility score — so growth is always measurable.
       </p>
     </div>
 
-    <!-- Graph Card -->
-    <div class="growth-chart relative bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-900/5 overflow-hidden">
-      
-      <!-- Card Header -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-6 sm:px-8 pt-6 sm:pt-8 pb-4">
-        <div>
-          <div class="text-sm font-bold text-slate-900">Traffic Acquisition by Source</div>
-          <div class="text-xs text-slate-500 mt-0.5">Illustrative demo data · Not actual customer results</div>
+    <!-- Sourced charts + Visibility Index graph -->
+    <div class="grid gap-4 lg:grid-cols-5 items-stretch">
+
+      <!-- Left column: two stacked sourced charts -->
+      <div id="src-cards" class="src-cards lg:col-span-2 flex flex-col gap-4 min-h-0">
+
+        <!-- Chart 1 · Projected visitors by source (Semrush 2025) -->
+        <div class="src-card relative flex flex-col rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl shadow-black/30 overflow-hidden flex-1 min-h-0">
+          <div class="flex items-center justify-between gap-2 px-5 pt-4 pb-1">
+            <div class="text-xs font-bold text-white">Projected visitors by source</div>
+            <span class="text-[10px] font-mono text-slate-500 shrink-0">2025→2029</span>
+          </div>
+          <div id="proj-chart-wrap" class="px-2 sm:px-3 pt-2 pb-1 flex-1 min-h-0 flex items-center justify-center relative w-full">
+            <svg id="proj-chart" viewBox="0 0 600 240" class="w-full h-full block" role="img" aria-label="Line chart showing LLM and AI search visitors overtaking traditional organic search by 2028">
+              <defs>
+                {projSeries.map((s) => (
+                  <linearGradient key={s.key} id={`proj-${s.key}-fill`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color={s.color} stop-opacity="0.18" />
+                    <stop offset="100%" stop-color={s.color} stop-opacity="0" />
+                  </linearGradient>
+                ))}
+              </defs>
+
+              {pYTicks.map((v) => (
+                <line key={v} x1={pPadL} y1={pY(v)} x2={pW - pPadR} y2={pY(v)} stroke="rgba(255,255,255,0.07)" stroke-width="1" stroke-dasharray={v === 0 ? '0' : '4,4'} />
+              ))}
+              {pYTicks.map((v) => (
+                <text key={v} x={pPadL - 8} y={pY(v) + 4} text-anchor="end" class="fill-slate-500 text-[9px]" style="font-family: 'JetBrains Mono', monospace;">{v}</text>
+              ))}
+              {projLabels.map((l, i) => (
+                <text key={l} x={pX(i)} y={pH - 8} text-anchor="middle" class="fill-slate-500 text-[9px]" style="font-family: 'JetBrains Mono', monospace;">{l}</text>
+              ))}
+
+              {projLines.map((s) => (
+                <path class="src-area" d={s.area} fill={`url(#proj-${s.key}-fill)`} />
+              ))}
+              {projLines.map((s) => (
+                <path class="src-line" pathLength="1" d={s.line} fill="none" stroke={s.color} stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              ))}
+              {projLines.map((s) => (
+                <circle class="src-last-dot" cx={pX(s.vals.length - 1).toFixed(1)} cy={pY(s.vals[s.vals.length - 1]).toFixed(1)} r="4" fill={s.color} stroke="#0b1020" stroke-width="2" />
+              ))}
+
+              <line x1={pX(3)} y1={pPadT} x2={pX(3)} y2={pH - pPadB} stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="4,4" />
+              <text x={pX(3) + 6} y={pPadT + 8} class="fill-slate-300 text-[9px] font-bold" style="font-family:'JetBrains Mono',monospace;">AI overtakes ≈2028</text>
+
+              <circle id="proj-hover-dot-llm" class="proj-hover-dot" r="5" fill="#7c3aed" stroke="#0b1020" stroke-width="2" opacity="0" />
+              <circle id="proj-hover-dot-trad" class="proj-hover-dot" r="5" fill="#2563eb" stroke="#0b1020" stroke-width="2" opacity="0" />
+            </svg>
+
+            <div id="proj-crosshair" class="absolute top-0 bottom-0 w-px bg-white/40 hidden pointer-events-none z-10"></div>
+            <div id="proj-tooltip" class="absolute hidden bg-white text-slate-900 text-xs rounded-lg px-3 py-2 shadow-2xl pointer-events-none z-20 whitespace-nowrap" style="font-family:'JetBrains Mono',monospace;"></div>
+          </div>
+          <div class="flex items-center justify-between gap-2 border-t border-white/10 px-5 py-2.5">
+            <span class="flex items-center gap-3">
+              {projSeries.map((s) => (
+                <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-300">
+                  <span class="w-2 h-2 rounded-full" style={`background:${s.color}`}></span>{s.label}
+                </span>
+              ))}
+            </span>
+          </div>
+          <div class="border-t border-white/10 px-5 py-2.5">
+            <span class="text-[10px] font-mono text-slate-500">Source: Semrush · AI Search &amp; SEO Traffic Study, 2025</span>
+          </div>
         </div>
-          <div class="flex items-center gap-4 sm:gap-5 text-xs font-medium">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#22c55e]"></span>
-            <span class="text-slate-700">Organic Search</span>
+
+        <!-- Chart 2 · Time to rank with AI content (Semrush 2024) -->
+        <div class="src-card relative flex flex-col rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl shadow-black/30 overflow-hidden flex-1 min-h-0">
+          <div class="flex items-center justify-between gap-2 px-5 pt-4 pb-1">
+            <div class="text-xs font-bold text-white">Time to rank with AI content</div>
+            <span class="text-[10px] font-mono text-slate-500 shrink-0">2024</span>
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-            <span class="text-slate-500">Direct</span>
+          <div id="donut-chart-wrap" class="donut-chart-wrap px-2 sm:px-3 pt-2 pb-1 flex-1 min-h-0 flex items-center justify-center relative w-full">
+            <svg id="donut-chart" viewBox="0 0 600 240" class="w-full h-full block" role="img" aria-label="Donut chart showing two-thirds of AI-generated content ranks within two months">
+              <g transform="translate(170,120)">
+                {donutArcs.map((s, i) => (
+                  <circle class="src-seg" data-idx={i} key={s.label} r="74" fill="none" stroke={s.color} stroke-width="16" stroke-linecap="butt" stroke-dasharray={`${s.dash} ${donutC.toFixed(1)}`} style={{ '--off': s.offset }} transform={`rotate(${s.rot})`} />
+                ))}
+                <text y="-8" text-anchor="middle" class="fill-white text-xl font-bold" style="font-family:'JetBrains Mono',monospace;">66%</text>
+                <text y="12" text-anchor="middle" class="fill-slate-400 text-[9px]">rank within 2 months</text>
+              </g>
+              <g transform="translate(360,54)">
+                {donutArcs.map((s, i) => (
+                  <g class="donut-legend-row" data-idx={i} key={s.label} transform={`translate(0,${i * 44})`}>
+                    <circle cx="4" cy="4" r="4" fill={s.color} />
+                    <text x="16" y="8" class="fill-slate-300 text-[11px] font-semibold">{s.label}</text>
+                    <text x="215" y="8" text-anchor="end" class="fill-white text-[11px] font-bold font-mono">{s.pct}%</text>
+                  </g>
+                ))}
+              </g>
+            </svg>
+
+            <div id="donut-tooltip" class="absolute hidden bg-white text-slate-900 text-xs rounded-lg px-3 py-2 shadow-2xl pointer-events-none z-20 whitespace-nowrap" style="font-family:'JetBrains Mono',monospace;"></div>
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-            <span class="text-slate-400">Referral</span>
+          <div class="flex items-center justify-between gap-2 border-t border-white/10 px-5 py-2.5">
+            <span class="text-[10px] text-slate-400">Two-thirds rank within two months of publishing</span>
+            <span class="text-[10px] font-mono text-slate-500 shrink-0">Illustrative</span>
           </div>
+          <div class="border-t border-white/10 px-5 py-2.5">
+            <span class="text-[10px] font-mono text-slate-500">Source: Semrush · AI Content Marketing Report, 2024</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right column: Visibility Index graph -->
+      <div class="lg:col-span-3">
+    <div id="vis-card" class="vis-card relative h-full bg-slate-900/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-white/10 shadow-2xl shadow-black/30 overflow-hidden">
+
+      <!-- Card Header -->
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 px-6 sm:px-8 pt-6 sm:pt-8 pb-1">
+        <div>
+          <div class="text-sm font-bold text-white">Visibility Over Time</div>
+          <div class="text-xs text-slate-400 mt-0.5">Illustrative demo data · Not actual customer results</div>
+        </div>
+        <div class="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-xl text-xs font-semibold" id="vis-range-tabs" role="tablist" aria-label="Time range">
+          <button type="button" class="vis-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-bold transition-colors cursor-pointer" data-range="6W" role="tab">6 Weeks</button>
+          <button type="button" class="vis-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-bold transition-colors cursor-pointer" data-range="12W" role="tab">12 Weeks</button>
+          <button type="button" class="vis-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-bold transition-colors cursor-pointer" data-range="6M" role="tab">6 Months</button>
         </div>
       </div>
 
+      <!-- Series KPI Chips -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 px-6 sm:px-8 pt-5">
+        {initialSeries.map((s) => (
+          <button
+            type="button"
+            class="vis-series-chip group text-left p-3.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+            data-series={s.key}
+            aria-pressed="false"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <span class="w-2.5 h-2.5 rounded-full" style={`background:${s.color}`}></span>
+                {s.label}
+              </span>
+              <span class="vis-chip-delta text-[10px] font-mono font-bold text-emerald-400">▲ {Math.abs(s.delta)}%</span>
+            </div>
+            <div class="vis-chip-val mt-2 text-2xl font-bold font-mono text-white tabular-nums">
+              {s.vals[s.vals.length - 1]}<span class="text-xs font-semibold text-slate-500 ml-1">/100</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
       <!-- SVG Chart -->
-      <div class="px-4 sm:px-6 pb-6 sm:pb-8">
-        <div class="relative w-full overflow-hidden">
+      <div class="px-4 sm:px-6 pt-5 pb-2">
+        <div class="relative w-full">
           <svg
-            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-            class="w-full h-auto"
+            id="vis-chart"
+            viewBox={`0 0 ${chartW} ${chartH}`}
+            class="w-full h-auto block"
             role="img"
-            aria-label="Line graph showing Organic Search growing faster than Direct and Referral over 6 weeks"
+            aria-label="Line chart of Search, AI and Reddit visibility scores trending upward over time"
           >
             <defs>
-              <linearGradient id="organicFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#22c55e" stop-opacity="0.15" />
-                <stop offset="100%" stop-color="#22c55e" stop-opacity="0" />
-              </linearGradient>
+              {seriesMeta.map((s) => (
+                <linearGradient key={s.key} id={`${s.key}-fill`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color={s.color} stop-opacity="0.16" />
+                  <stop offset="100%" stop-color={s.color} stop-opacity="0" />
+                </linearGradient>
+              ))}
             </defs>
 
             <!-- Grid lines -->
-            {[0, 20, 40, 60, 80].map((v) => (
-              <line
-                x1={paddingLeft}
-                y1={toY(v)}
-                x2={chartWidth - paddingRight}
-                y2={toY(v)}
-                stroke="#e2e8f0"
-                stroke-width="1"
-                stroke-dasharray={v === 0 ? "0" : "4,4"}
-              />
+            {yTicks.map((v) => (
+              <line key={v} x1={padL} y1={toY(v)} x2={chartW - padR} y2={toY(v)} stroke="rgba(255,255,255,0.07)" stroke-width="1" stroke-dasharray={v === 0 ? '0' : '4,4'} />
             ))}
 
             <!-- Y-axis labels -->
-            {[0, 20, 40, 60, 80].map((v) => (
-              <text
-                x={paddingLeft - 10}
-                y={toY(v) + 4}
-                text-anchor="end"
-                class="fill-slate-400 text-[10px]"
-                style="font-family: 'JetBrains Mono', monospace;"
-              >
-                {v}
-              </text>
+            {yTicks.map((v) => (
+              <text key={v} x={padL - 10} y={toY(v) + 4} text-anchor="end" class="fill-slate-500 text-[10px]" style="font-family: 'JetBrains Mono', monospace;">{v}</text>
             ))}
 
             <!-- X-axis labels -->
-            {weeks.map((w, i) => (
-              <text
-                x={toX(i)}
-                y={chartHeight - 12}
-                text-anchor="middle"
-                class="fill-slate-400 text-[10px]"
-                style="font-family: 'JetBrains Mono', monospace;"
-              >
-                {w}
-              </text>
-            ))}
+            <g id="vis-xlabels">
+              {init.labels.map((w, i) => (
+                <text key={i} x={toX(i, init.labels.length)} y={chartH - 10} text-anchor="middle" class="fill-slate-500 text-[10px]" style="font-family: 'JetBrains Mono', monospace;">{w}</text>
+              ))}
+            </g>
 
-            <!-- Organic area fill -->
-            <path
-              class="organic-area"
-              d={`${organicPath} L${toX(5)},${toY(0)} L${toX(0)},${toY(0)} Z`}
-              fill="url(#organicFill)"
-            />
+            <!-- Area fills -->
+            {initialSeries.map((s) => (
+              <path class="vis-area vis-elem" data-series={s.key} d={s.area} fill={`url(#${s.key}-fill)`} />
+            ))}
 
             <!-- Lines -->
-            <path class="line-path" pathLength="1" d={referralPath} fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path class="line-path" pathLength="1" d={directPath} fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path class="line-path" pathLength="1" d={organicPath} fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-
-            <!-- Data points -->
-            {data.referral.map((v, i) => (
-              <circle class="series-dot dot-referral" data-series="referral" data-week={i} cx={toX(i)} cy={toY(v)} r="3.5" fill="white" stroke="#cbd5e1" stroke-width="2" style={`transition-delay: ${0.6 + i * 0.1}s`} />
-            ))}
-            {data.direct.map((v, i) => (
-              <circle class="series-dot dot-direct" data-series="direct" data-week={i} cx={toX(i)} cy={toY(v)} r="3.5" fill="white" stroke="#94a3b8" stroke-width="2" style={`transition-delay: ${0.6 + i * 0.1}s`} />
-            ))}
-            {data.organic.map((v, i) => (
-              <circle class="series-dot dot-organic" data-series="organic" data-week={i} cx={toX(i)} cy={toY(v)} r="4" fill="white" stroke="#22c55e" stroke-width="2.5" style={`transition-delay: ${0.6 + i * 0.1}s`} />
+            {initialSeries.map((s) => (
+              <path class="vis-line vis-elem" data-series={s.key} pathLength="1" d={s.line} fill="none" stroke={s.color} stroke-width={s.key === 'reddit' ? 2.5 : 3} stroke-linecap="round" stroke-linejoin="round" />
             ))}
 
-            <!-- Organic end label -->
-            <text
-              x={toX(5) + 10}
-              y={toY(74) + 4}
-              class="fill-emerald-600 text-[11px] font-bold"
-              style="font-family: 'Plus Jakarta Sans', sans-serif;"
-            >
-              +270%
-            </text>
+            <!-- Latest point dots -->
+            {initialSeries.map((s) => (
+              <circle class="vis-last-dot vis-elem" data-series={s.key} cx={toX(s.vals.length - 1, s.vals.length)} cy={toY(s.vals[s.vals.length - 1])} r="4" fill={s.color} stroke="#0b1020" stroke-width="2" />
+            ))}
           </svg>
 
-          <!-- Hover tooltip -->
+          <!-- Hover crosshair & tooltip -->
+          <div id="vis-crosshair" class="absolute top-0 bottom-0 w-px bg-white/30 hidden pointer-events-none z-10"></div>
           <div
-            id="growth-tooltip"
-            class="absolute hidden bg-slate-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg pointer-events-none z-10 whitespace-nowrap"
+            id="vis-tooltip"
+            class="absolute hidden bg-white text-slate-900 text-xs rounded-lg px-3 py-2 shadow-2xl pointer-events-none z-20 whitespace-nowrap"
             style="font-family: 'JetBrains Mono', monospace;"
           ></div>
         </div>
       </div>
 
       <!-- Bottom insight bar -->
-      <div class="bg-emerald-50/60 border-t border-emerald-200/60 px-6 sm:px-8 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <div class="bg-emerald-500/10 border-t border-white/10 px-6 sm:px-8 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
-          <span class="text-xs font-semibold text-emerald-800">Organic is becoming the fastest-growing acquisition channel.</span>
+          <span class="text-xs font-semibold text-emerald-300">AI Visibility is your fastest-moving channel — growing 31% between the last two scans.</span>
         </div>
-        <span class="text-[11px] text-emerald-600 font-mono font-medium shrink-0">Illustrative · Not measured results</span>
+        <span class="text-[11px] text-emerald-400/80 font-mono font-medium shrink-0">Illustrative · Not measured results</span>
+      </div>
+
+    </div>
+
       </div>
 
     </div>
@@ -190,89 +383,402 @@ const referralPath = buildPath(data.referral);
 </section>
 
 <script>
-  const chart = document.querySelector('.growth-chart');
-  const tooltip = document.getElementById('growth-tooltip');
-  const dots = document.querySelectorAll<SVGElement>('.series-dot');
-  const chartContainer = dots[0]?.closest('div.relative');
-
-  const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'];
-  const series = {
-    organic: { label: 'Organic', color: '#22c55e', values: [20, 25, 32, 43, 57, 74] },
-    direct: { label: 'Direct', color: '#94a3b8', values: [35, 38, 42, 45, 48, 51] },
-    referral: { label: 'Referral', color: '#cbd5e1', values: [18, 21, 24, 27, 30, 33] },
+  const rangeData = {
+    '6W': {
+      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+      values: { search: [26, 33, 41, 53, 66, 79], ai: [11, 17, 26, 38, 55, 72], reddit: [15, 19, 24, 31, 39, 47] },
+    },
+    '12W': {
+      labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9', 'W10', 'W11', 'W12'],
+      values: { search: [22, 24, 27, 31, 35, 40, 46, 53, 60, 66, 72, 79], ai: [8, 10, 14, 18, 24, 30, 38, 46, 55, 62, 67, 72], reddit: [12, 14, 16, 19, 22, 26, 30, 35, 39, 43, 45, 47] },
+    },
+    '6M': {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      values: { search: [30, 38, 47, 58, 68, 79], ai: [14, 22, 33, 47, 60, 72], reddit: [18, 23, 29, 36, 42, 47] },
+    },
   };
 
-  // Draw-in animation when the chart scrolls into view
-  if (chart) {
+  const seriesMeta = [
+    { key: 'search', label: 'Search Visibility', color: '#2563eb' },
+    { key: 'ai', label: 'AI Visibility', color: '#7c3aed' },
+    { key: 'reddit', label: 'Reddit Visibility', color: '#f97316' },
+  ];
+
+  const chartW = 800, chartH = 320, padL = 40, padR = 20, padT = 18, padB = 34;
+  const innerW = chartW - padL - padR, innerH = chartH - padT - padB;
+  const maxVal = 100;
+  const toX = (i, n) => padL + (i / (n - 1)) * innerW;
+  const toY = (v) => padT + innerH - (v / maxVal) * innerH;
+
+  function smoothPath(vals) {
+    const n = vals.length;
+    const pts = vals.map((v, i) => ({ x: toX(i, n), y: toY(v) }));
+    let d = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(n - 1, i + 2)];
+      const c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+      const c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C ${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  function areaPath(vals) {
+    const n = vals.length;
+    return `${smoothPath(vals)} L ${toX(n - 1, n).toFixed(1)},${padT + innerH} L ${toX(0, n).toFixed(1)},${padT + innerH} Z`;
+  }
+
+  const card = document.getElementById('vis-card');
+  const svg = document.getElementById('vis-chart');
+  const wrap = svg ? svg.closest('div.relative') : null;
+  const crosshair = document.getElementById('vis-crosshair');
+  const tooltip = document.getElementById('vis-tooltip');
+  const xlabels = document.getElementById('vis-xlabels');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let activeRange = '6W';
+
+  function toggleRangeButtons(key) {
+    document.querySelectorAll('.vis-range-btn').forEach((btn) => {
+      const isActive = btn.getAttribute('data-range') === key;
+      btn.setAttribute('aria-selected', isActive.toString());
+      btn.className = isActive
+        ? 'vis-range-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs font-bold transition-colors cursor-pointer'
+        : 'vis-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-bold transition-colors cursor-pointer';
+    });
+  }
+
+  function renderRange(key) {
+    const data = rangeData[key];
+    const n = data.labels.length;
+
+    xlabels.innerHTML = data.labels
+      .map((l, i) => `<text x="${toX(i, n).toFixed(1)}" y="${chartH - 10}" text-anchor="middle" class="fill-slate-500 text-[10px]" style="font-family: 'JetBrains Mono', monospace;">${l}</text>`)
+      .join('');
+
+    seriesMeta.forEach((s, idx) => {
+      const vals = data.values[s.key];
+      const last = vals[vals.length - 1];
+      const prev = vals[vals.length - 2];
+      const delta = Math.round(((last - prev) / prev) * 100);
+
+      document.querySelector(`.vis-line[data-series="${s.key}"]`).setAttribute('d', smoothPath(vals));
+      document.querySelector(`.vis-area[data-series="${s.key}"]`).setAttribute('d', areaPath(vals));
+      const dot = document.querySelector(`.vis-last-dot[data-series="${s.key}"]`);
+      dot.setAttribute('cx', toX(n - 1, n).toFixed(1));
+      dot.setAttribute('cy', toY(last).toFixed(1));
+
+      const chip = document.querySelector(`.vis-series-chip[data-series="${s.key}"]`);
+      const valEl = chip.querySelector('.vis-chip-val') || (() => { const el = document.createElement('div'); el.className = 'vis-chip-val text-2xl font-bold font-mono text-white tabular-nums mt-2'; chip.appendChild(el); return el; })();
+      valEl.innerHTML = `${last}<span class="text-xs font-semibold text-slate-500 ml-1">/100</span>`;
+      const deltaEl = chip.querySelector('.vis-chip-delta');
+      deltaEl.textContent = `${delta >= 0 ? '▲' : '▼'} ${Math.abs(delta)}%`;
+      deltaEl.className = `vis-chip-delta text-[10px] font-mono font-bold ${delta >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+    });
+
+    activeRange = key;
+    toggleRangeButtons(key);
+    replayDraw();
+  }
+
+  function replayDraw() {
+    if (!card) return;
+    card.classList.remove('is-drawn');
+    if (prefersReducedMotion.matches) {
+      card.classList.add('is-drawn');
+      return;
+    }
+    void card.offsetWidth;
+    card.classList.add('is-drawn');
+  }
+
+  // Initial draw-in when scrolled into view
+  if (card && svg) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            chart.classList.add('is-drawn');
+            card.classList.add('is-drawn');
             observer.disconnect();
           }
         });
       },
       { threshold: 0.3 }
     );
-    observer.observe(chart);
+    observer.observe(card);
   }
 
-  // Hover tooltip across all three series
-  if (tooltip && chartContainer) {
-    dots.forEach((dot) => {
-      const seriesKey = dot.getAttribute('data-series') || 'organic';
-      const idx = parseInt(dot.getAttribute('data-week') || '0', 10);
+  // Draw-in for the stacked sourced charts
+  const srcCards = document.getElementById('src-cards');
+  if (srcCards) {
+    if (prefersReducedMotion.matches) {
+      srcCards.classList.add('is-drawn');
+    } else {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              srcCards.classList.add('is-drawn');
+              obs.disconnect();
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      obs.observe(srcCards);
+    }
+  }
 
-      dot.addEventListener('mouseenter', () => {
-        tooltip.innerHTML = `
-          <div class="font-bold mb-1">${weeks[idx]}</div>
-          ${Object.entries(series)
-            .map(([key, s]) => {
-              const active = key === seriesKey;
-              return `<div class="flex items-center gap-1.5 ${active ? 'font-bold' : ''}"><span class="w-1.5 h-1.5 rounded-full" style="background:${s.color}"></span> ${s.label}: ${s.values[idx]}</div>`;
-            })
-            .join('')}
-        `;
-        tooltip.classList.remove('hidden');
-      });
-
-      dot.addEventListener('mousemove', (e) => {
-        const rect = chartContainer.getBoundingClientRect();
-        const x = (e as MouseEvent).clientX - rect.left;
-        const y = (e as MouseEvent).clientY - rect.top;
-        tooltip.style.left = `${x + 12}px`;
-        tooltip.style.top = `${y - 10}px`;
-      });
-
-      dot.addEventListener('mouseleave', () => {
-        tooltip.classList.add('hidden');
-      });
+  // Time range tabs
+  document.querySelectorAll('.vis-range-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      renderRange(btn.getAttribute('data-range'));
     });
+  });
+
+  // Series focus chips
+  document.querySelectorAll('.vis-series-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const key = chip.getAttribute('data-series');
+      const wasActive = card.classList.contains('emph-' + key);
+      ['search', 'ai', 'reddit'].forEach((k) => card.classList.remove('emph-' + k));
+      document.querySelectorAll('.vis-series-chip').forEach((c) => {
+        c.classList.remove('chip-selected');
+        c.setAttribute('aria-pressed', 'false');
+      });
+      if (!wasActive) {
+        card.classList.add('emph-' + key);
+        chip.classList.add('chip-selected');
+        chip.setAttribute('aria-pressed', 'true');
+      }
+    });
+  });
+
+  // Hover crosshair + tooltip
+  if (svg && wrap && crosshair && tooltip) {
+    wrap.addEventListener('mousemove', (e) => {
+      const rect = svg.getBoundingClientRect();
+      const xFrac = (e.clientX - rect.left) / rect.width;
+      const xView = Math.min(Math.max(xFrac * chartW, padL), chartW - padR);
+      const data = rangeData[activeRange];
+      const n = data.labels.length;
+      const idx = Math.min(n - 1, Math.max(0, Math.round(((xView - padL) / innerW) * (n - 1))));
+      const xPx = e.clientX - rect.left;
+
+      crosshair.style.left = xPx + 'px';
+      crosshair.classList.remove('hidden');
+
+      tooltip.innerHTML =
+        `<div class="font-bold mb-1">${data.labels[idx]}</div>` +
+        seriesMeta
+          .map((s) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:${s.color}"></span> ${s.label}: <b>${data.values[s.key][idx]}</b></div>`)
+          .join('');
+      tooltip.classList.remove('hidden');
+
+      let left = xPx + 14;
+      const tt = tooltip.getBoundingClientRect();
+      if (left + tt.width > rect.width - 8) left = xPx - tt.width - 14;
+      tooltip.style.left = Math.max(8, left) + 'px';
+      tooltip.style.top = Math.max(6, e.clientY - rect.top - 16) + 'px';
+    });
+
+    wrap.addEventListener('mouseleave', () => {
+      crosshair.classList.add('hidden');
+      tooltip.classList.add('hidden');
+    });
+  }
+
+  // ─── Projected visitors chart interactivity ───
+  const projWrap = document.getElementById('proj-chart-wrap');
+  const projSvg = document.getElementById('proj-chart');
+  const projCross = document.getElementById('proj-crosshair');
+  const projTip = document.getElementById('proj-tooltip');
+  const projLabelsArr = ['2025', '2026', '2027', '2028', '2029'];
+  const projData = {
+    'LLM & AI Search': { color: '#7c3aed', vals: [28, 55, 95, 150, 205] },
+    'Traditional organic': { color: '#2563eb', vals: [120, 118, 112, 102, 96] },
+  };
+  const pW_ = 600, pH_ = 240, pPadL_ = 36, pPadR_ = 12, pPadT_ = 18, pPadB_ = 26, pMax_ = 220;
+  if (projWrap && projSvg && projCross && projTip) {
+    projWrap.addEventListener('mousemove', (e) => {
+      const rect = projSvg.getBoundingClientRect();
+      if (!rect.width) return;
+      const xView = ((e.clientX - rect.left) / rect.width) * pW_;
+      const n = projLabelsArr.length;
+      const idx = Math.min(n - 1, Math.max(0, Math.round(((xView - pPadL_) / (pW_ - pPadL_ - pPadR_)) * (n - 1))));
+      const xViewIdx = pPadL_ + (idx / (n - 1)) * (pW_ - pPadL_ - pPadR_);
+      const xPx = (xViewIdx / pW_) * rect.width;
+      const innerH = pH_ - pPadT_ - pPadB_;
+
+      projCross.style.left = xPx + 'px';
+      projCross.classList.remove('hidden');
+
+      const llmDot = document.getElementById('proj-hover-dot-llm');
+      const tradDot = document.getElementById('proj-hover-dot-trad');
+      llmDot.setAttribute('cx', xViewIdx);
+      llmDot.setAttribute('cy', pPadT_ + innerH - (projData['LLM & AI Search'].vals[idx] / pMax_) * innerH);
+      llmDot.setAttribute('opacity', 1);
+      tradDot.setAttribute('cx', xViewIdx);
+      tradDot.setAttribute('cy', pPadT_ + innerH - (projData['Traditional organic'].vals[idx] / pMax_) * innerH);
+      tradDot.setAttribute('opacity', 1);
+
+      projTip.innerHTML =
+        `<div class="font-bold mb-1">${projLabelsArr[idx]}</div>` +
+        Object.entries(projData)
+          .map(([label, s]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:${s.color}"></span> ${label}: <b>${s.vals[idx]}</b></div>`)
+          .join('');
+      projTip.classList.remove('hidden');
+
+      let left = (e.clientX - rect.left) + 14;
+      const tt = projTip.getBoundingClientRect();
+      if (left + tt.width > rect.width - 8) left = (e.clientX - rect.left) - tt.width - 14;
+      projTip.style.left = Math.max(8, left) + 'px';
+      projTip.style.top = Math.max(6, e.clientY - rect.top - 16) + 'px';
+    });
+
+    projWrap.addEventListener('mouseleave', () => {
+      projCross.classList.add('hidden');
+      projTip.classList.add('hidden');
+      document.querySelectorAll('.proj-hover-dot').forEach((d) => d.setAttribute('opacity', 0));
+    });
+  }
+
+  // ─── Donut chart interactivity ───
+  const donutWrap = document.getElementById('donut-chart-wrap');
+  const donutTip = document.getElementById('donut-tooltip');
+  const donutSegs = [
+    { label: 'Ranked within a month', pct: 34, color: '#34d399' },
+    { label: 'Ranked in 1–2 months', pct: 33, color: '#60a5fa' },
+    { label: 'Took 2+ months', pct: 33, color: '#a78bfa' },
+  ];
+  function showDonutTip(e, idx) {
+    const s = donutSegs[idx];
+    donutWrap.classList.add('seg-hovering');
+    donutWrap.querySelectorAll('.src-seg').forEach((seg) => seg.classList.toggle('seg-active', +seg.getAttribute('data-idx') === idx));
+    donutWrap.querySelectorAll('.donut-legend-row').forEach((row) => row.classList.toggle('row-active', +row.getAttribute('data-idx') === idx));
+    const rect = donutWrap.getBoundingClientRect();
+    donutTip.innerHTML =
+      `<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:${s.color}"></span> <b>${s.label}</b></div>` +
+      `<div class="font-mono font-bold mt-0.5">${s.pct}% of AI content</div>`;
+    donutTip.classList.remove('hidden');
+    let left = (e.clientX - rect.left) + 14;
+    const tt = donutTip.getBoundingClientRect();
+    if (left + tt.width > rect.width - 8) left = (e.clientX - rect.left) - tt.width - 14;
+    donutTip.style.left = Math.max(8, left) + 'px';
+    donutTip.style.top = Math.max(6, e.clientY - rect.top - 16) + 'px';
+  }
+  function hideDonutTip() {
+    donutWrap.classList.remove('seg-hovering');
+    donutWrap.querySelectorAll('.src-seg, .donut-legend-row').forEach((el) => el.classList.remove('seg-active', 'row-active'));
+    donutTip.classList.add('hidden');
+  }
+  if (donutWrap && donutTip) {
+    donutWrap.querySelectorAll('.src-seg').forEach((seg) => {
+      seg.addEventListener('mousemove', (e) => showDonutTip(e, +seg.getAttribute('data-idx')));
+      seg.addEventListener('mouseleave', hideDonutTip);
+    });
+    donutWrap.querySelectorAll('.donut-legend-row').forEach((row) => {
+      row.addEventListener('mousemove', (e) => showDonutTip(e, +row.getAttribute('data-idx')));
+      row.addEventListener('mouseleave', hideDonutTip);
+    });
+    donutWrap.addEventListener('mouseleave', hideDonutTip);
   }
 </script>
 
 <style>
-  .growth-chart .line-path {
+  .vis-card .vis-line {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
     transition: stroke-dashoffset 1.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .growth-chart.is-drawn .line-path {
+  .vis-card.is-drawn .vis-line {
     stroke-dashoffset: 0;
   }
-  .growth-chart .organic-area {
+  .vis-card .vis-area {
     opacity: 0;
-    transition: opacity 0.9s ease 1.1s;
+    transition: opacity 0.9s ease 1s;
   }
-  .growth-chart.is-drawn .organic-area {
+  .vis-card.is-drawn .vis-area {
     opacity: 1;
   }
-  .growth-chart .series-dot {
+  .vis-card .vis-last-dot {
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease 1.2s;
   }
-  .growth-chart.is-drawn .series-dot {
+  .vis-card.is-drawn .vis-last-dot {
     opacity: 1;
+  }
+
+  .vis-elem {
+    transition: opacity 0.35s ease;
+  }
+  .vis-card.emph-search .vis-elem:not([data-series="search"]) {
+    opacity: 0.18;
+  }
+  .vis-card.emph-ai .vis-elem:not([data-series="ai"]) {
+    opacity: 0.18;
+  }
+  .vis-card.emph-reddit .vis-elem:not([data-series="reddit"]) {
+    opacity: 0.18;
+  }
+  .chip-selected {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+  }
+
+  /* Stacked sourced charts (Semrush projections) */
+  .src-cards .src-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .src-cards.is-drawn .src-line {
+    stroke-dashoffset: 0;
+  }
+  .src-cards .src-area {
+    opacity: 0;
+    transition: opacity 0.8s ease 0.9s;
+  }
+  .src-cards.is-drawn .src-area {
+    opacity: 1;
+  }
+  .src-cards .src-last-dot {
+    opacity: 0;
+    transition: opacity 0.3s ease 1.1s;
+  }
+  .src-cards.is-drawn .src-last-dot {
+    opacity: 1;
+  }
+  .src-cards .src-seg {
+    opacity: 0;
+    stroke-dashoffset: var(--off, 0);
+    transition: opacity 0.2s ease, stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+  }
+  .src-cards.is-drawn .src-seg {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  /* Donut segment hover — dim the rest, highlight the active one */
+  .donut-chart-wrap .src-seg {
+    cursor: pointer;
+  }
+  .donut-chart-wrap.seg-hovering .src-seg {
+    opacity: 0.2;
+  }
+  .donut-chart-wrap.seg-hovering .src-seg.seg-active {
+    opacity: 1;
+  }
+  .donut-legend-row {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  .donut-chart-wrap.seg-hovering .donut-legend-row {
+    opacity: 0.4;
+  }
+  .donut-chart-wrap.seg-hovering .donut-legend-row.row-active {
+    opacity: 1;
+  }
+  .donut-legend-row.row-active text {
+    fill: #ffffff;
   }
 </style>

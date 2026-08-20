@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { AnalyzablePage } from '../src/analysis/types.js';
+import { classifyIntent, coverageForType } from '../src/search/intent.js';
 import { analyzeSearchOpportunities } from '../src/search/opportunities.js';
 import { scoreToPriority, MAX_OPPORTUNITIES, MAX_PER_TYPE } from '../src/search/rules.js';
-import type { OpportunityType } from '../src/search/types.js';
+import type { OpportunityType, SearchIntent } from '../src/search/types.js';
 
 let sequence = 0;
 
@@ -138,6 +139,22 @@ test('does not flag intent when the page is complete', () => {
   assert.ok(!findOpportunity(result, 'SEARCH_INTENT_GAP'), 'a complete page must not be flagged for intent');
 });
 
+test('does not flag utility pages (about/contact/legal) as search-intent gaps', () => {
+  const result = analyzeSearchOpportunities([
+    makePage({ url: 'http://site.test/contact', title: 'Contact Tip Calculator', metaDescription: 'a short meta', wordCount: 100 }),
+    makePage({ url: 'http://site.test/how-much-to-tip', title: 'How Much Should You Tip | Tip Calculator', metaDescription: 'a short meta', wordCount: 100 }),
+  ]);
+
+  assert.ok(
+    !result.opportunities.some((o) => o.type === 'SEARCH_INTENT_GAP' && o.relatedPageUrl === 'http://site.test/contact'),
+    'utility pages must not produce search-intent gaps',
+  );
+  assert.ok(
+    result.opportunities.some((o) => o.type === 'SEARCH_INTENT_GAP' && o.relatedPageUrl === 'http://site.test/how-much-to-tip'),
+    'a thin content page with an intent modifier must still be flagged',
+  );
+});
+
 test('flags pages with no incoming internal links as orphan pages', () => {
   const result = analyzeSearchOpportunities([
     makePage({ url: 'http://site.test/', title: 'Home Page', metaDescription: 'home', wordCount: 500, internalLinks: [] }),
@@ -229,4 +246,47 @@ test('scoring is deterministic, bounded, and self-consistent', () => {
     assert.equal(o.score.total, o.score.relevance + o.score.impact + o.score.confidence, 'total must equal the component sum');
     assert.equal(o.score.priority, scoreToPriority(o.score.total), 'priority must follow the documented thresholds');
   }
+});
+
+test('classifies search intent deterministically from phrase text', () => {
+  assert.equal(classifyIntent('best resume builder tools', 'resumebuilder'), 'commercial');
+  assert.equal(classifyIntent('tip calculator', 'tipcalculatorlive'), 'transactional');
+  assert.equal(classifyIntent('free tip calculator', 'tipcalculatorlive'), 'transactional');
+  assert.equal(classifyIntent('how much to tip', 'tipcalculatorlive'), 'informational');
+  assert.equal(classifyIntent('restaurant bill splitting', 'tipcalculatorlive'), 'informational');
+  assert.equal(classifyIntent('tip calculator live', 'tipcalculatorlive'), 'navigational');
+  assert.equal(classifyIntent('', 'tipcalculatorlive'), 'informational');
+});
+
+test('coverage state maps from opportunity type', () => {
+  assert.equal(coverageForType('CONTENT_GAP'), 'GAP');
+  assert.equal(coverageForType('WEAK_TOPIC_COVERAGE'), 'IMPROVEMENT');
+  assert.equal(coverageForType('EXISTING_PAGE_OPTIMIZATION'), 'IMPROVEMENT');
+  assert.equal(coverageForType('SEARCH_INTENT_GAP'), 'IMPROVEMENT');
+  assert.equal(coverageForType('INTERNAL_LINK_OPPORTUNITY'), 'IMPROVEMENT');
+});
+
+test('every opportunity carries intent, coverage and source evidence', () => {
+  const result = analyzeSearchOpportunities([
+    makePage({ url: 'http://site.test/', title: 'Home Page', metaDescription: 'crypto wallet storage guide', wordCount: 400 }),
+    makePage({ url: 'http://site.test/alpha', title: 'Alpha Basics', metaDescription: 'crypto wallet storage tips', wordCount: 500 }),
+    makePage({ url: 'http://site.test/no-title', title: null, metaDescription: null, wordCount: 120 }),
+  ]);
+  assert.ok(result.opportunities.length > 0);
+
+  const validIntents: SearchIntent[] = ['informational', 'commercial', 'transactional', 'navigational'];
+  for (const o of result.opportunities) {
+    assert.ok(validIntents.includes(o.intent), `unknown intent ${o.intent}`);
+    assert.ok(['GAP', 'IMPROVEMENT', 'EXISTING'].includes(o.coverage), `unknown coverage ${o.coverage}`);
+    assert.ok(Array.isArray(o.evidence.sourcePages), 'evidence must list source pages');
+    assert.ok(o.evidence.sourcePages.length > 0, 'evidence must reference at least one source page');
+    assert.ok(Array.isArray(o.evidence.sourcePhrases) && o.evidence.sourcePhrases.length > 0, 'evidence must include source phrases');
+  }
+
+  const gap = findOpportunity(result, 'CONTENT_GAP', 'crypto wallet');
+  assert.ok(gap, 'the fixture must still produce a content gap');
+  assert.equal(gap.coverage, 'GAP', 'a content gap maps to the GAP coverage state');
+  assert.equal(gap.intent, 'informational');
+  assert.ok(gap.evidence.sourcePages.some((p) => p.url === 'http://site.test/beta' || p.url === 'http://site.test/alpha'), 'evidence lists the covering pages');
+  assert.ok(gap.evidence.sourcePhrases.includes('crypto wallet'));
 });

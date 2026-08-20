@@ -196,10 +196,57 @@ import HeroProductVisual from './HeroProductVisual.astro';
 
   let currentIndex = 0;
   let isPausedByUser = false;
+  let cardWidth = 0;
+  let step = 0;
   const headlineEl = document.getElementById('hero-dynamic-text');
   const tabs = document.querySelectorAll<HTMLButtonElement>('.hero-tab-btn');
   const panels = document.querySelectorAll<HTMLElement>('.hero-view-panel');
   const ambientGlow = document.getElementById('visual-ambient-glow');
+  const display = document.getElementById('hero-visual-display');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function updateAmbientGlow(index: number) {
+    if (!ambientGlow) return;
+    if (index === 1) {
+      ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-orange-500/20 via-rose-500/20 to-amber-500/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
+    } else if (index === 2) {
+      ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-violet-600/20 via-purple-600/20 to-indigo-600/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
+    } else if (index === 3) {
+      ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-teal-500/20 via-emerald-500/20 to-cyan-500/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
+    } else {
+      ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-violet-600/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
+    }
+  }
+
+  function layoutCarousel() {
+    if (!display) return;
+    const w = display.clientWidth;
+    cardWidth = w * (w > 768 ? 0.62 : 0.9);
+    step = cardWidth * 0.93;
+    panels.forEach((panel) => {
+      panel.style.width = cardWidth + 'px';
+    });
+    updateCarousel();
+  }
+
+  function updateCarousel() {
+    if (!display) return;
+    panels.forEach((panel, i) => {
+      const offset = currentIndex - i;
+      const scale = Math.pow(0.72, Math.abs(offset));
+      const x = offset * step;
+      panel.style.transform = `translate(-50%, -50%) translateX(${x}px) scale(${scale})`;
+      panel.style.zIndex = String(100 - Math.abs(offset) * 10);
+      panel.style.pointerEvents = offset === 0 ? 'auto' : 'none';
+    });
+    const active = panels[currentIndex];
+    if (active) {
+      display.style.height = active.offsetHeight + 'px';
+    }
+    if (display.classList.contains('opacity-0')) {
+      display.classList.remove('opacity-0');
+    }
+  }
 
   function switchView(index: number) {
     // Update Tab UI
@@ -213,37 +260,12 @@ import HeroProductVisual from './HeroProductVisual.astro';
       }
     });
 
-    // Update Panels
-    panels.forEach((panel, i) => {
-      if (i === index) {
-        panel.classList.remove('hidden');
-        setTimeout(() => {
-          panel.classList.remove('opacity-0');
-          panel.classList.add('opacity-100');
-        }, 30);
-      } else {
-        panel.classList.remove('opacity-100');
-        panel.classList.add('opacity-0');
-        setTimeout(() => {
-          if (panel.classList.contains('opacity-0')) {
-            panel.classList.add('hidden');
-          }
-        }, 200);
-      }
+    currentIndex = index;
+    panels.forEach((panel) => {
+      panel.style.transition = prefersReducedMotion.matches ? 'none' : '';
     });
-
-    // Subtly alter ambient glow tone per channel
-    if (ambientGlow) {
-      if (index === 1) {
-        ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-orange-500/20 via-rose-500/20 to-amber-500/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
-      } else if (index === 2) {
-        ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-violet-600/20 via-purple-600/20 to-indigo-600/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
-      } else if (index === 3) {
-        ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-teal-500/20 via-emerald-500/20 to-cyan-500/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
-      } else {
-        ambientGlow.className = 'absolute -inset-1.5 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-violet-600/20 rounded-3xl blur-2xl opacity-60 -z-10 transition-all duration-700 pointer-events-none';
-      }
-    }
+    updateCarousel();
+    updateAmbientGlow(index);
   }
 
   // Allow manual clicking on tabs
@@ -300,6 +322,11 @@ import HeroProductVisual from './HeroProductVisual.astro';
 
   // Start auto-rotation every 2.6 seconds
   setInterval(rotateHeadline, 2600);
+
+  // Initialize the carousel layout
+  layoutCarousel();
+  window.addEventListener('resize', layoutCarousel);
+  window.addEventListener('load', layoutCarousel);
 
   // Quick preset chips event handlers
   const presetChips = document.querySelectorAll<HTMLButtonElement>('.hero-preset-chip');

@@ -1,0 +1,1 @@
+ALTER TABLE "reddit_discussions" ADD COLUMN "comments" jsonb;

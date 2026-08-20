@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { AnalyzablePage } from '../src/analysis/types.js';
-import { mapRedditSearchResponse } from '../src/reddit/mapping.js';
+import { mapApifyRedditItems, mapRedditSearchResponse } from '../src/reddit/mapping.js';
+import { MAX_REDDIT_QUERIES, MIN_REDDIT_QUERIES, selectRedditQueries } from '../src/reddit/queries.js';
 import { scoreDiscussion } from '../src/reddit/scoring.js';
-import { selectRedditQueries } from '../src/reddit/queries.js';
 import type { RedditPost } from '../src/reddit/types.js';
 import { RedditUnavailableError } from '../src/reddit/errors.js';
 
@@ -173,12 +173,100 @@ test('selects queries from existing core topics and search opportunities', () =>
   assert.ok(queries.length > 0, 'a site with core topics must produce Reddit queries');
   assert.ok(queries.some((q) => q.includes('resume builder')), 'core topics must become queries');
   assert.ok(coreTopicTerms.includes('resume builder'));
-  assert.ok(queries.length <= 3, 'query count must be capped');
+  assert.ok(queries.length <= MAX_REDDIT_QUERIES, 'query count must be capped');
 });
 
 test('returns no queries for a single clean page', () => {
   const { queries } = selectRedditQueries([makePage({ url: 'http://site.test/', title: 'Home', wordCount: 500 })]);
   assert.deepEqual(queries, []);
+});
+
+test('a small sparse site still produces meaningful Reddit queries', () => {
+  const pages = [
+    makePage({
+      url: 'https://tipexample.com/tip-calculator',
+      title: 'Tip Calculator',
+      metaDescription: 'A tip calculator for restaurant bills: choose a tip percentage, split the bill, round up, and copy the result.',
+    }),
+  ];
+  const { queries, coreTopicTerms } = selectRedditQueries(pages);
+  assert.ok(queries.length >= MIN_REDDIT_QUERIES, 'a single topical page must still produce a useful query set');
+  assert.ok(queries.length <= MAX_REDDIT_QUERIES, 'the query set must stay bounded');
+  assert.ok(queries.includes('tip calculator'), 'the core phrase must be generated despite no repetition across pages');
+  assert.ok(queries.includes('split bill'), 'a topical phrase from the content must be generated');
+  assert.ok(queries.includes('restaurant bills'));
+  assert.ok(queries.includes('tip percentage'));
+  assert.deepEqual(coreTopicTerms, [], 'a sparse single page has no repeated terms to feed scoring');
+});
+
+test('sparse site with topical URL slugs produces natural phrase queries', () => {
+  const pages = [
+    makePage({ url: 'https://tipexample.com/how-much-to-tip' }),
+    makePage({ url: 'https://tipexample.com/tip-guide' }),
+    makePage({ url: 'https://tipexample.com/tip-by-country' }),
+  ];
+  const { queries } = selectRedditQueries(pages);
+  assert.ok(queries.includes('how much to tip'), 'slug evidence must produce the natural phrase');
+  assert.ok(queries.includes('tip by country'));
+  assert.ok(queries.includes('tip guide'));
+});
+
+test('generic and noisy topics are filtered', () => {
+  const pages = [
+    makePage({
+      url: 'https://generic.example.com/software-solutions',
+      title: 'Business Software Solutions',
+      metaDescription: 'Our software provides business tools and services for companies.',
+    }),
+  ];
+  const { queries } = selectRedditQueries(pages);
+  assert.deepEqual(queries, [], 'a page with only generic topics must not produce Reddit queries');
+});
+
+test('duplicate and equivalent queries are removed', () => {
+  const pages = [
+    makePage({ url: 'https://tipexample.com/tip-by-country' }),
+    makePage({ url: 'https://tipexample.com/tip-calculator', title: 'Tip Calculator', metaDescription: 'tip calculator guide for restaurant bills' }),
+  ];
+  const { queries } = selectRedditQueries(pages);
+  assert.ok(queries.includes('tip by country'), 'the natural slug phrase must be the query');
+  assert.ok(!queries.includes('tip country'), 'the bigram equivalent must be subsumed by the phrase');
+  assert.ok(queries.includes('tip calculator'));
+  assert.ok(!queries.includes('calculator'), 'the generic single word must be filtered');
+  assert.equal(new Set(queries).size, queries.length, 'the final query set must not contain duplicates');
+});
+
+test('generated queries remain grounded in the site content', () => {
+  const pages = [
+    makePage({
+      url: 'https://tipexample.com/how-much-to-tip',
+      title: 'Tip Calculator',
+      metaDescription: 'Calculate restaurant tips and split the bill with a tip percentage.',
+    }),
+  ];
+  const sources = [
+    ...pages.flatMap((p) => [p.title ?? '', p.metaDescription ?? '', p.url]),
+  ].map((value) => value.toLowerCase().replace(/[^a-z0-9\s-]/g, ' '));
+  const { queries } = selectRedditQueries(pages);
+  assert.ok(queries.length > 0);
+  for (const query of queries) {
+    const tokens = query.split(/\s+/);
+    const grounded = sources.some((source) => tokens.every((token) => source.includes(token)));
+    assert.ok(grounded, `query "${query}" must be derivable from the site content`);
+  }
+});
+
+test('sparse query output feeds the existing scoring pipeline unchanged', () => {
+  const pages = [
+    makePage({ url: 'https://tipexample.com/tip-calculator', title: 'Tip Calculator', metaDescription: 'A tip calculator for restaurant bills: split the bill and choose a tip percentage.' }),
+  ];
+  const { queries, coreTopicTerms } = selectRedditQueries(pages);
+  assert.ok(queries.length > 0);
+  const post = makePost();
+  const scored = scoreDiscussion(post, queries[0], coreTopicTerms, 1_752_000_000_000);
+  assert.equal(scored.topic, queries[0]);
+  assert.ok(scored.opportunityScore >= 0 && scored.opportunityScore <= 100);
+  assert.equal(scored.opportunityScore, scored.relevance + scored.impact + scored.confidence);
 });
 
 test('selectRedditQueries never returns duplicate queries', () => {
@@ -194,4 +282,83 @@ test('provider failure surfaces a typed RedditUnavailableError', () => {
   const error = new RedditUnavailableError('Reddit search request failed (HTTP 429).');
   assert.ok(error instanceof Error);
   assert.equal(error.message, 'Reddit search request failed (HTTP 429).');
+});
+
+function apifyPost(overrides: Record<string, unknown> = {}) {
+  return {
+    type: 'post',
+    id: '1m9a2x2',
+    subreddit: 'mildlyinfuriating',
+    title: 'The way the tips are "calculated"',
+    author: 'exampleuser',
+    selftext: 'Went and got food at a local restaurant where they calculate tips.',
+    url: 'https://www.reddit.com/r/mildlyinfuriating/comments/1m9a2x2/the_way_the_tips_are_calculated/',
+    score: 3817,
+    numComments: 673,
+    created: '2025-07-25T20:32:26+00:00',
+    ...overrides,
+  };
+}
+
+function apifyComment(overrides: Record<string, unknown> = {}) {
+  return {
+    type: 'comment',
+    id: 'comment1',
+    postId: '1m9a2x2',
+    subreddit: 'mildlyinfuriating',
+    author: 'commenter',
+    body: 'Tips are supposed to be BEFORE tax.',
+    score: 1916,
+    created: '2025-07-25T21:00:00+00:00',
+    ...overrides,
+  };
+}
+
+test('maps Apify post and comment items into posts with grouped comments', () => {
+  const posts = mapApifyRedditItems([apifyPost(), apifyComment(), apifyComment({ author: '[deleted]', score: 5 })]);
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].subreddit, 'mildlyinfuriating');
+  assert.equal(posts[0].title, 'The way the tips are "calculated"');
+  assert.equal(posts[0].permalink, '/r/mildlyinfuriating/comments/1m9a2x2/the_way_the_tips_are_calculated/');
+  assert.equal(posts[0].author, 'exampleuser');
+  assert.equal(posts[0].score, 3817);
+  assert.equal(posts[0].numComments, 673);
+  assert.equal(posts[0].createdAt, '2025-07-25T20:32:26.000Z');
+  assert.equal(posts[0].bodySnippet, 'Went and got food at a local restaurant where they calculate tips.');
+  assert.equal(posts[0].comments?.length, 2);
+  assert.equal(posts[0].comments?.[0].body, 'Tips are supposed to be BEFORE tax.');
+  assert.equal(posts[0].comments?.[0].score, 1916);
+  assert.equal(posts[0].comments?.[1].author, null, '[deleted] comment authors become null');
+});
+
+test('Apify mapping skips malformed, removed and unrelated entries', () => {
+  const posts = mapApifyRedditItems([
+    'garbage',
+    null,
+    apifyPost({ id: 'x1', title: '[removed]' }),
+    apifyPost({ id: 'x2', subreddit: '' }),
+    apifyPost({ id: 'x3', url: 'not-a-url' }),
+    apifyPost({ id: 'x4' }),
+    apifyComment({ postId: 'unknown', body: 'orphan comment' }),
+  ]);
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].subreddit, 'mildlyinfuriating');
+});
+
+test('Apify mapping is tolerant of a malformed dataset payload', () => {
+  assert.deepEqual(mapApifyRedditItems(null), []);
+  assert.deepEqual(mapApifyRedditItems('nope'), []);
+  assert.deepEqual(mapApifyRedditItems({ data: [] }), []);
+});
+
+test('Apify mapping truncates long selftext into a bounded snippet', () => {
+  const posts = mapApifyRedditItems([apifyPost({ selftext: 'z'.repeat(2000) })]);
+  assert.equal(posts[0].bodySnippet?.length, 500);
+});
+
+test('scored discussions carry real Apify comments through unchanged', () => {
+  const posts = mapApifyRedditItems([apifyPost(), apifyComment({ body: 'Useful conversation text.' })]);
+  const scored = scoreDiscussion(posts[0], 'tip calculator', ['tip calculator'], 1_752_000_000_000);
+  assert.equal(scored.comments.length, 1);
+  assert.equal(scored.comments[0].body, 'Useful conversation text.');
 });

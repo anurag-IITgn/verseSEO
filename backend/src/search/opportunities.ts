@@ -1,5 +1,6 @@
 import type { AnalyzablePage } from '../analysis/types.js';
 import { buildPageProfiles, extractTopics, isContentEligible, type PageProfile, type Topic } from './extract.js';
+import { classifyIntent, coverageForType } from './intent.js';
 import {
   CONFIDENCE_MAX,
   CORE_TOPIC_MIN_DOC_FREQ,
@@ -16,11 +17,21 @@ import {
   WEAK_COVERAGE_WORDS,
   WEAK_PAGE_WORDS,
 } from './rules.js';
-import type { OpportunityType, SearchOpportunitiesResult, SearchOpportunityInput } from './types.js';
+import type {
+  CoverageState,
+  OpportunityEvidence,
+  OpportunityType,
+  SearchIntent,
+  SearchOpportunitiesResult,
+  SearchOpportunityInput,
+} from './types.js';
 
 interface OpportunitySpec {
   query: string;
   type: OpportunityType;
+  intent: SearchIntent;
+  coverage: CoverageState;
+  evidence: OpportunityEvidence;
   relevance: number;
   impact: number;
   confidence: number;
@@ -57,6 +68,9 @@ function makeOpportunity(spec: OpportunitySpec): SearchOpportunityInput {
   return {
     query: spec.query,
     type: spec.type,
+    intent: spec.intent,
+    coverage: spec.coverage,
+    evidence: spec.evidence,
     score: { relevance, impact, confidence, total, priority: scoreToPriority(total) },
     reason: spec.reason,
     suggestedAction: spec.suggestedAction,
@@ -65,10 +79,48 @@ function makeOpportunity(spec: OpportunitySpec): SearchOpportunityInput {
   };
 }
 
+/** Evidence pointing back at the pages/phrases that triggered an opportunity. */
+function evidenceFor(pages: Array<AnalyzablePage | null | undefined>, phrases: string[], cap = 5): OpportunityEvidence {
+  const seen = new Set<string>();
+  const sourcePages: Array<{ url: string; id: string | null }> = [];
+  for (const page of pages) {
+    if (!page || seen.has(page.url)) continue;
+    seen.add(page.url);
+    sourcePages.push({ url: page.url, id: page.id });
+    if (sourcePages.length >= cap) break;
+  }
+  return { sourcePages, sourcePhrases: phrases.slice(0, cap) };
+}
+
+/** Site brand (domain minus TLD) used for navigational-intent detection. */
+function siteBrand(pages: AnalyzablePage[]): string | null {
+  for (const page of pages) {
+    try {
+      return new URL(page.url).hostname.replace(/^www\./, '').split('.')[0];
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+/** Utility/boilerplate paths (about, contact, legal) that are not content pages. */
+const UTILITY_PATH_PATTERN = /^\/(about|contact|privacy|terms|legal|tos|login|register|signup)([/?#]|$)/i;
+
+function isUtilityPage(url: string): boolean {
+  try {
+    return UTILITY_PATH_PATTERN.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Deterministic search-opportunity analysis over a crawl's real pages.
  * All inference is derived from crawled titles, meta descriptions, URLs,
  * word counts and internal-link structure. No external metrics are produced.
+ * Each opportunity carries a classified search intent, a coverage state
+ * (GAP vs IMPROVEMENT) and the evidence (pages/phrases) that triggered it.
  */
 export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOpportunitiesResult {
   const contentPages = pages.filter(isContentEligible);
@@ -83,6 +135,7 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
 
   const byId = new Map(contentPages.map((page) => [page.id, page]));
   const byUrl = new Map(contentPages.map((page) => [page.url, page]));
+  const brand = siteBrand(contentPages);
 
   const opportunities: SearchOpportunityInput[] = [];
 
@@ -100,6 +153,9 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
         makeOpportunity({
           query: topic.term,
           type: 'CONTENT_GAP',
+          intent: classifyIntent(topic.term, brand),
+          coverage: coverageForType('CONTENT_GAP'),
+          evidence: evidenceFor(coveringPages, [topic.term]),
           relevance: relevanceFor(topic),
           impact: IMPACT_MAX,
           confidence: min(CONFIDENCE_MAX, 10 + 4 * topic.docFreq),
@@ -119,6 +175,9 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
           makeOpportunity({
             query: topic.term,
             type: 'WEAK_TOPIC_COVERAGE',
+            intent: classifyIntent(topic.term, brand),
+            coverage: coverageForType('WEAK_TOPIC_COVERAGE'),
+            evidence: evidenceFor(dedicatedPages, [topic.term]),
             relevance: relevanceFor(topic),
             impact: max(5, IMPACT_MAX - Math.floor(totalWords / 50)),
             confidence: min(CONFIDENCE_MAX, 10 + 3 * topic.docFreq + topic.dedicatedPageIds.length * 2),
@@ -147,10 +206,14 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
     const pageOpts: SearchOpportunityInput[] = [];
 
     if (!profile.title) {
+      const query = topTopic?.term ?? (profile.slug || page.url);
       pageOpts.push(
         makeOpportunity({
-          query: topTopic?.term ?? (profile.slug || page.url),
+          query,
           type: 'EXISTING_PAGE_OPTIMIZATION',
+          intent: classifyIntent(query, brand),
+          coverage: coverageForType('EXISTING_PAGE_OPTIMIZATION'),
+          evidence: evidenceFor([page], [profile.slug || page.url]),
           relevance,
           impact: 18 + (missingSlugToken ? 4 : 0),
           confidence,
@@ -161,10 +224,14 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
       );
     } else {
       if (profile.title.length < TITLE_MIN_LENGTH || profile.title.length > TITLE_MAX_LENGTH) {
+        const query = topTopic?.term ?? profile.title;
         pageOpts.push(
           makeOpportunity({
-            query: topTopic?.term ?? profile.title,
+            query,
             type: 'EXISTING_PAGE_OPTIMIZATION',
+            intent: classifyIntent(query, brand),
+            coverage: coverageForType('EXISTING_PAGE_OPTIMIZATION'),
+            evidence: evidenceFor([page], [profile.title]),
             relevance,
             impact: 18,
             confidence,
@@ -177,10 +244,14 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
     }
 
     if (!profile.meta) {
+      const query = topTopic?.term ?? (profile.title || page.url);
       pageOpts.push(
         makeOpportunity({
-          query: topTopic?.term ?? (profile.title || page.url),
+          query,
           type: 'EXISTING_PAGE_OPTIMIZATION',
+          intent: classifyIntent(query, brand),
+          coverage: coverageForType('EXISTING_PAGE_OPTIMIZATION'),
+          evidence: evidenceFor([page], [profile.title || profile.slug || page.url]),
           relevance,
           impact: 16,
           confidence,
@@ -190,10 +261,14 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
         }),
       );
     } else if (profile.meta.length < META_MIN_LENGTH) {
+      const query = topTopic?.term ?? profile.title;
       pageOpts.push(
         makeOpportunity({
-          query: topTopic?.term ?? profile.title,
+          query,
           type: 'EXISTING_PAGE_OPTIMIZATION',
+          intent: classifyIntent(query, brand),
+          coverage: coverageForType('EXISTING_PAGE_OPTIMIZATION'),
+          evidence: evidenceFor([page], [profile.title]),
           relevance,
           impact: 14,
           confidence,
@@ -205,10 +280,14 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
     }
 
     if (missingSlugToken) {
+      const query = topTopic?.term ?? missingSlugToken;
       pageOpts.push(
         makeOpportunity({
-          query: topTopic?.term ?? missingSlugToken,
+          query,
           type: 'EXISTING_PAGE_OPTIMIZATION',
+          intent: classifyIntent(query, brand),
+          coverage: coverageForType('EXISTING_PAGE_OPTIMIZATION'),
+          evidence: evidenceFor([page], [missingSlugToken]),
           relevance,
           impact: 14,
           confidence,
@@ -228,6 +307,7 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
     if (!profile) continue;
     const title = profile.title;
     if (!title) continue;
+    if (isUtilityPage(page.url)) continue;
     const lowerTitle = title.toLowerCase();
     const modifier = INTENT_MODIFIERS.find((value) => lowerTitle.includes(value));
     if (!modifier) continue;
@@ -241,6 +321,9 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
       makeOpportunity({
         query: title,
         type: 'SEARCH_INTENT_GAP',
+        intent: classifyIntent(title, brand),
+        coverage: coverageForType('SEARCH_INTENT_GAP'),
+        evidence: evidenceFor([page], [title]),
         relevance: topTopic ? relevanceFor(topTopic) : 8,
         impact: 12 + (words < 200 ? 10 : 6) + (metaMissing ? 4 : 0),
         confidence: min(CONFIDENCE_MAX, 12 + (topTopic ? 3 * topTopic.docFreq : 3) + 4),
@@ -265,10 +348,14 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
       if ((incoming.get(page.id) ?? 0) > 0) continue;
       const profile = profiles.get(page.id);
       const topTopic = profile ? bestTopicForPage(profile, coreTopics) : null;
+      const query = topTopic?.term ?? (profile?.slug || page.url);
       opportunities.push(
         makeOpportunity({
-          query: topTopic?.term ?? (profile?.slug || page.url),
+          query,
           type: 'INTERNAL_LINK_OPPORTUNITY',
+          intent: classifyIntent(query, brand),
+          coverage: coverageForType('INTERNAL_LINK_OPPORTUNITY'),
+          evidence: evidenceFor([page], [profile?.slug || page.url]),
           relevance: topTopic ? relevanceFor(topTopic) : 5,
           impact: 22,
           confidence: min(CONFIDENCE_MAX, 20 + (topTopic ? 4 * Math.min(topTopic.docFreq, 4) : 0)),
@@ -296,6 +383,9 @@ export function analyzeSearchOpportunities(pages: AnalyzablePage[]): SearchOppor
             makeOpportunity({
               query: topic.term,
               type: 'INTERNAL_LINK_OPPORTUNITY',
+              intent: classifyIntent(topic.term, brand),
+              coverage: coverageForType('INTERNAL_LINK_OPPORTUNITY'),
+              evidence: evidenceFor([a, b], [topic.term]),
               relevance: relevanceFor(topic),
               impact: 16 + (topic.docFreq >= 3 ? 4 : 0),
               confidence: min(CONFIDENCE_MAX, 12 + 4 * Math.min(topic.docFreq, 4)),

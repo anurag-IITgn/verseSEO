@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import http from 'node:http';
 import { after, before, test } from 'node:test';
 import { crawlSite } from '../src/crawler/crawler.js';
+import { fetchPage } from '../src/crawler/http.js';
 import type { CrawlPageData, CrawlerSink } from '../src/crawler/types.js';
 import { closeFixtureServer, startFixtureServer, type FixtureSite } from './helpers/fixtureSite.js';
 
@@ -82,4 +84,31 @@ test('stops crawling once MAX_PAGES is reached', async () => {
 
   assert.equal(summary.pagesCrawled, 3);
   assert.ok(summary.pagesDiscovered > 3, 'more URLs are discovered than crawled');
+});
+
+test('follows trailing-slash redirects instead of collapsing them into a self-redirect', async () => {
+  const server = http.createServer((req, res) => {
+    if (req.url === '/topic') {
+      res.writeHead(307, { location: '/topic/' });
+      res.end();
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end('<!doctype html><html><head><title>Topic Page</title></head><body><p>real content</p></body></html>');
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+
+  try {
+    const port = (server.address() as { port: number }).port;
+    const result = await fetchPage(`http://127.0.0.1:${port}/topic`, {
+      domain: '127.0.0.1',
+      timeoutMs: 1000,
+      userAgent: 'VisibilityCrawler/1.0',
+    });
+    assert.equal(result.statusCode, 200, 'a trailing-slash redirect must be followed to the real page');
+    assert.equal(result.finalUrl, `http://127.0.0.1:${port}/topic/`, 'the final URL keeps the trailing slash');
+    assert.ok(result.body.toString().includes('real content'), 'the body of the redirected page must be captured');
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
 });

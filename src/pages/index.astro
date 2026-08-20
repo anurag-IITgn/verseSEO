@@ -33,15 +33,15 @@ import Footer from '../components/Footer.astro';
     <!-- Fragmented Discovery Shift ("Your customers don't search in just one place") -->
     <SearchEverywhere />
 
-    <!-- Five Product Modules — Cohesive Section Background -->
-    <div class="relative bg-[#0c1021] py-16 sm:py-20">
+    <!-- Five Product Modules — Floating Rounded Card -->
+    <div class="relative mx-3 sm:mx-6 lg:mx-10 rounded-[2rem] sm:rounded-[3rem] bg-[#0c1021] py-16 sm:py-20 shadow-2xl shadow-black/25 overflow-hidden">
       <!-- Ambient depth layers -->
       <div class="absolute inset-0 pointer-events-none overflow-hidden">
         <div class="absolute top-0 left-1/4 w-[600px] h-[400px] bg-blue-500/10 rounded-full blur-[120px]"></div>
         <div class="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[100px]"></div>
       </div>
 
-      <div class="relative">
+      <div class="relative module-stack">
         <!-- Five Product Modules Section Header -->
         <section class="pb-12 sm:pb-16" id="modules">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -199,8 +199,6 @@ import Footer from '../components/Footer.astro';
 
       </div>
 
-      <!-- Fade transition into the next light section -->
-      <div class="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-b from-transparent to-[#faf9f5] pointer-events-none"></div>
     </div>
 
     <!-- Growth Visualization — Organic / Direct / Referral -->

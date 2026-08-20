@@ -2,11 +2,13 @@ import { eq } from 'drizzle-orm';
 import type { AnalyzablePage } from '../analysis/types.js';
 import { db } from '../db/client.js';
 import { searchOpportunities } from '../db/schema.js';
+import type { GscSummary } from '../gsc/types.js';
 import { findPagesByCrawl, type CrawledPageRow } from '../repositories/pageRepo.js';
 import { findOpportunitiesByCrawl, insertSearchOpportunities, type SearchOpportunityRow } from '../repositories/searchRepo.js';
 import { extractTopics } from '../search/extract.js';
 import { analyzeSearchOpportunities } from '../search/opportunities.js';
 import { AppError } from '../utils/errors.js';
+import { enrichSearchOpportunities } from './gscService.js';
 import { requireCrawlOwned } from './ownership.js';
 
 export interface SearchOpportunitiesResponse {
@@ -14,6 +16,7 @@ export interface SearchOpportunitiesResponse {
   total: number;
   topicsAnalyzed: number;
   opportunities: SearchOpportunityRow[];
+  gsc: GscSummary | null;
 }
 
 function toAnalyzablePage(page: CrawledPageRow): AnalyzablePage {
@@ -43,7 +46,7 @@ function topicsAnalyzedFor(pages: CrawledPageRow[]): number {
  * crawl, so repeated calls are idempotent and never produce duplicates.
  */
 export async function getSearchOpportunities(userId: string, crawlId: string): Promise<SearchOpportunitiesResponse> {
-  const { crawl } = await requireCrawlOwned(userId, crawlId);
+  const { crawl, project } = await requireCrawlOwned(userId, crawlId);
   if (crawl.status !== 'COMPLETED') {
     throw new AppError(409, 'Crawl run is not completed', 'CRAWL_NOT_COMPLETED');
   }
@@ -57,6 +60,9 @@ export async function getSearchOpportunities(userId: string, crawlId: string): P
       crawlRunId: crawlId,
       query: o.query,
       opportunityType: o.type,
+      intent: o.intent,
+      coverage: o.coverage,
+      evidence: o.evidence,
       score: o.score.total,
       priority: o.score.priority,
       relevance: o.score.relevance,
@@ -76,10 +82,16 @@ export async function getSearchOpportunities(userId: string, crawlId: string): P
     opportunities = await findOpportunitiesByCrawl(crawlId);
   }
 
+  const gsc = await enrichSearchOpportunities(userId, crawlId, project, opportunities);
+  if (gsc?.status === 'ok') {
+    opportunities = await findOpportunitiesByCrawl(crawlId);
+  }
+
   return {
     crawlId,
     total: opportunities.length,
     topicsAnalyzed: topicsAnalyzedFor(pages),
     opportunities,
+    gsc,
   };
 }

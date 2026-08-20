@@ -192,6 +192,11 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Floating rounded modules card — no border on the last module block */
+.module-stack > :last-child {
+  border-bottom-width: 0;
+}
+
 .card-hover {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }

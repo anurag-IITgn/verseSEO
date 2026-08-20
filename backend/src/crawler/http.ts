@@ -1,5 +1,5 @@
 import type { CrawlOptions } from './types.js';
-import { normalizeInternalLink } from './url.js';
+import { resolveRedirectTarget } from './url.js';
 
 export interface FetchResult {
   statusCode: number;
@@ -56,7 +56,7 @@ export async function fetchPage(url: string, options: CrawlOptions): Promise<Fet
       if (!location) {
         return { statusCode: response.status, statusText: response.statusText, contentType: null, body: Buffer.alloc(0), finalUrl: current, responseTimeMs };
       }
-      const target = normalizeInternalLink(location, current, options.domain);
+      const target = resolveRedirectTarget(location, current, options.domain);
       if (!target || target === current) {
         return { statusCode: response.status, statusText: response.statusText, contentType: null, body: Buffer.alloc(0), finalUrl: current, responseTimeMs };
       }

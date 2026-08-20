@@ -1,4 +1,6 @@
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import type { GscEncryptedTokens, GscOpportunityMetrics, GscQueryRow } from '../gsc/types.js';
+import type { OpportunityContentBrief } from '../content/types.js';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -30,6 +32,7 @@ export const projects = pgTable(
     name: text('name'),
     websiteUrl: text('website_url').notNull(),
     domain: text('domain').notNull(),
+    gscSiteId: uuid('gsc_site_id').references(() => gscSites.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -99,6 +102,53 @@ export const seoIssues = pgTable(
   (table) => [index('seo_issues_crawl_run_id_idx').on(table.crawlRunId)],
 );
 
+export const gscConnections = pgTable(
+  'gsc_connections',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .unique()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokens: jsonb('tokens').$type<GscEncryptedTokens>().notNull(),
+    scope: text('scope'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('gsc_connections_user_id_idx').on(table.userId)],
+);
+
+export const gscSites = pgTable(
+  'gsc_sites',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    siteUrl: text('site_url').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('gsc_sites_user_site_url_idx').on(table.userId, table.siteUrl)],
+);
+
+export const gscQuerySnapshots = pgTable(
+  'gsc_query_snapshots',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    siteUrl: text('site_url').notNull(),
+    startDate: text('start_date').notNull(),
+    endDate: text('end_date').notNull(),
+    queries: jsonb('queries').$type<GscQueryRow[]>().notNull(),
+    fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('gsc_snapshots_user_site_url_idx').on(table.userId, table.siteUrl)],
+);
+
 export const searchOpportunities = pgTable(
   'search_opportunities',
   {
@@ -108,6 +158,9 @@ export const searchOpportunities = pgTable(
       .references(() => crawlRuns.id, { onDelete: 'cascade' }),
     query: text('query').notNull(),
     opportunityType: text('opportunity_type').notNull(),
+    intent: text('intent').notNull().default('informational'),
+    coverage: text('coverage').notNull().default('IMPROVEMENT'),
+    evidence: jsonb('evidence'),
     score: integer('score').notNull(),
     priority: text('priority').notNull(),
     relevance: integer('relevance').notNull(),
@@ -117,6 +170,7 @@ export const searchOpportunities = pgTable(
     suggestedAction: text('suggested_action').notNull(),
     relatedPageId: uuid('related_page_id').references(() => crawledPages.id, { onDelete: 'set null' }),
     relatedPageUrl: text('related_page_url'),
+    gsc: jsonb('gsc').$type<GscOpportunityMetrics | null>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('search_opportunities_crawl_run_id_idx').on(table.crawlRunId)],
@@ -138,6 +192,7 @@ export const redditDiscussions = pgTable(
     numComments: integer('num_comments').notNull().default(0),
     postedAt: timestamp('posted_at', { withTimezone: true }),
     bodySnippet: text('body_snippet'),
+    comments: jsonb('comments'),
     topic: text('topic').notNull(),
     relevance: integer('relevance').notNull(),
     impact: integer('impact').notNull(),
@@ -192,4 +247,28 @@ export const contentRecommendations = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('content_recommendations_crawl_run_id_idx').on(table.crawlRunId)],
+);
+
+export const contentGenerations = pgTable(
+  'content_generations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    crawlRunId: uuid('crawl_run_id')
+      .notNull()
+      .references(() => crawlRuns.id, { onDelete: 'cascade' }),
+    opportunityId: uuid('opportunity_id')
+      .notNull()
+      .unique()
+      .references(() => searchOpportunities.id, { onDelete: 'cascade' }),
+    brief: jsonb('brief').$type<OpportunityContentBrief>().notNull(),
+    title: text('title').notNull(),
+    intent: text('intent').notNull(),
+    draft: text('draft').notNull(),
+    status: text('status').notNull().default('GENERATED'),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('content_generations_opportunity_id_idx').on(table.opportunityId)],
 );

@@ -1,6 +1,6 @@
 import { scoreToPriority } from '../search/rules.js';
 import { significantTokens } from '../search/extract.js';
-import type { RedditPost } from './types.js';
+import type { RedditComment, RedditPost } from './types.js';
 
 export interface ScoredDiscussion {
   subreddit: string;
@@ -11,6 +11,7 @@ export interface ScoredDiscussion {
   numComments: number;
   postedAt: string | null;
   bodySnippet: string | null;
+  comments: RedditComment[];
   topic: string;
   relevance: number;
   impact: number;
@@ -94,6 +95,7 @@ export function scoreDiscussion(post: RedditPost, query: string, coreTopicTerms:
     numComments: post.numComments,
     postedAt: post.createdAt,
     bodySnippet: post.bodySnippet,
+    comments: post.comments ?? [],
     topic: query,
     relevance,
     impact,

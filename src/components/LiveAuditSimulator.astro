@@ -578,14 +578,18 @@ const { mode = 'teaser' } = Astro.props;
     return `${Math.max(1, Math.floor(ms / 60_000))}m ago`;
   }
 
-  function renderRedditPanelLoading() {
+  function renderRedditPanelLoading(elapsedSeconds = 0) {
     if (redditStatus) {
       redditStatus.classList.remove('text-slate-500', 'text-amber-700', 'text-rose-600');
       redditStatus.classList.add('text-orange-700');
-      redditStatus.textContent = 'Searching Reddit...';
+      redditStatus.textContent = elapsedSeconds > 0
+        ? `Searching Reddit... (${elapsedSeconds}s)`
+        : 'Searching Reddit...';
     }
     if (redditItems) {
-      redditItems.innerHTML = '<div class="text-slate-400">Looking for relevant Reddit discussions...</div>';
+      redditItems.innerHTML = elapsedSeconds > 0
+        ? `<div class="text-slate-400">Looking for relevant Reddit discussions... (${elapsedSeconds}s)</div>`
+        : '<div class="text-slate-400">Looking for relevant Reddit discussions...</div>';
     }
   }
 
@@ -671,6 +675,30 @@ const { mode = 'teaser' } = Astro.props;
         `;
       }).join('');
     }
+  }
+
+  async function loadRedditPanel(crawlId: string): Promise<void> {
+    const deadline = Date.now() + 900000; // bounded wait for the provider pipeline
+    const startedAt = Date.now();
+    renderRedditPanelLoading(0);
+    while (Date.now() < deadline) {
+      try {
+        const redditRes = await apiFetch(`/api/crawls/${crawlId}/reddit-opportunities`);
+        if (!redditRes.ok) throw await backendError(redditRes);
+        const data = await redditRes.json();
+        if (data.status === 'pending') {
+          renderRedditPanelLoading(Math.floor((Date.now() - startedAt) / 1000));
+          await sleep(3000);
+          continue;
+        }
+        renderRedditPanel(data);
+        return;
+      } catch (error) {
+        renderRedditPanelError(error instanceof Error ? error.message : 'Could not load Reddit discussions.');
+        return;
+      }
+    }
+    renderRedditPanelError('Reddit discovery took too long. Re-run the scan to try again.');
   }
 
   // Panel 4 (AI Engine Footprint) reports what the configured AI provider
@@ -1106,14 +1134,7 @@ const { mode = 'teaser' } = Astro.props;
       renderSearchPanelError(error instanceof Error ? error.message : 'Could not load search opportunities.');
     }
 
-    renderRedditPanelLoading();
-    try {
-      const redditRes = await apiFetch(`/api/crawls/${crawlId}/reddit-opportunities`);
-      if (!redditRes.ok) throw await backendError(redditRes);
-      renderRedditPanel(await redditRes.json());
-    } catch (error) {
-      renderRedditPanelError(error instanceof Error ? error.message : 'Could not load Reddit discussions.');
-    }
+    await loadRedditPanel(crawlId);
 
     renderAiPanelLoading();
     try {

@@ -46,9 +46,18 @@ const envSchema = z
     REDDIT_CLIENT_ID: z.string().optional(),
     REDDIT_CLIENT_SECRET: z.string().optional(),
     REDDIT_USER_AGENT: z.string().default('FoundableMicrotool/0.1 (SEO research tool)'),
+    // Reddit discovery via Apify (apify.com) when an API token is configured.
+    APIFY_API_TOKEN: z.string().optional(),
     // AI visibility (official Google Gemini API, free tier).
     GEMINI_API_KEY: z.string().optional(),
-    GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
+    GEMINI_MODEL: z.string().default('gemini-3.1-flash-lite'),
+
+    // Google Search Console enrichment. All optional; GSC is disabled until a
+    // full set (including a token-encryption key) is present.
+    GSC_CLIENT_ID: z.string().optional(),
+    GSC_CLIENT_SECRET: z.string().optional(),
+    GSC_REDIRECT_URI: z.string().optional(),
+    GSC_TOKEN_ENCRYPTION_KEY: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.FRONTEND_ORIGIN) {

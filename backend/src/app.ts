@@ -9,6 +9,7 @@ import { aiVisibilityRoutes } from './routes/aiVisibility.js';
 import { authRoutes } from './routes/auth.js';
 import { contentRoutes } from './routes/content.js';
 import { crawlRoutes } from './routes/crawls.js';
+import { gscRoutes } from './routes/gsc.js';
 import { projectRoutes } from './routes/projects.js';
 import { redditRoutes } from './routes/reddit.js';
 import { scanRoutes } from './routes/scans.js';
@@ -60,6 +61,7 @@ export function buildApp() {
   app.register(analysisRoutes);
   app.register(searchRoutes);
   app.register(redditRoutes);
+  app.register(gscRoutes);
   app.register(aiVisibilityRoutes);
   app.register(contentRoutes);
   app.register(scanRoutes);

@@ -74,7 +74,7 @@ export async function listProjectsByOwner(userId: string): Promise<Project[]> {
 export async function listProjectsByOwnerWithLatestScan(userId: string): Promise<ProjectWithLatestScan[]> {
   const { rows } = await pool.query(
     `SELECT
-       p.id, p.user_id, p.name, p.website_url, p.domain, p.created_at, p.updated_at,
+       p.id, p.user_id, p.name, p.website_url, p.domain, p.gsc_site_id, p.created_at, p.updated_at,
        (SELECT COUNT(*) FROM crawl_runs WHERE project_id = p.id)::int AS scan_count,
        cr.id AS latest_scan_id,
        cr.status AS latest_scan_status,
@@ -99,6 +99,7 @@ export async function listProjectsByOwnerWithLatestScan(userId: string): Promise
     name: row.name,
     websiteUrl: row.website_url,
     domain: row.domain,
+    gscSiteId: row.gsc_site_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     scanCount: row.scan_count,

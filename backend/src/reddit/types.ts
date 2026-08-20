@@ -1,3 +1,11 @@
+export interface RedditComment {
+  author: string | null;
+  body: string;
+  score: number;
+  /** ISO timestamp of the comment, or null when absent. */
+  createdAt: string | null;
+}
+
 export interface RedditPost {
   subreddit: string;
   title: string;
@@ -12,6 +20,8 @@ export interface RedditPost {
   createdAt: string | null;
   /** First 500 characters of the real selftext, or null when absent. */
   bodySnippet: string | null;
+  /** Real conversation comments when the provider returned them (Apify). */
+  comments?: RedditComment[];
 }
 
 export interface RedditSearchOptions {

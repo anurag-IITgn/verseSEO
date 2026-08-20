@@ -109,7 +109,7 @@ test('returns search opportunities derived from a real crawl', async () => {
     assert.ok(body.total > 0, 'the fixture site must yield opportunities');
     assert.ok(body.topicsAnalyzed > 0, 'topics must be derived from the crawl');
 
-    for (const opp of body.opportunities) {
+for (const opp of body.opportunities) {
       assert.ok(VALID_TYPES.has(opp.opportunityType), `unknown opportunity type: ${opp.opportunityType}`);
       assert.equal(typeof opp.query, 'string');
       assert.equal(typeof opp.reason, 'string');
@@ -118,6 +118,10 @@ test('returns search opportunities derived from a real crawl', async () => {
       assert.ok(['high', 'medium', 'low'].includes(opp.priority));
       assert.equal(opp.relevance + opp.impact + opp.confidence, opp.score, 'stored score must equal the component sum');
       assert.ok(opp.relatedPageUrl === null || typeof opp.relatedPageUrl === 'string');
+      assert.ok(['informational', 'commercial', 'transactional', 'navigational'].includes(opp.intent), `unknown intent: ${opp.intent}`);
+      assert.ok(['GAP', 'IMPROVEMENT', 'EXISTING'].includes(opp.coverage), `unknown coverage: ${opp.coverage}`);
+      assert.ok(Array.isArray(opp.evidence?.sourcePages) && opp.evidence.sourcePages.length > 0, 'evidence must list source pages');
+      assert.ok(Array.isArray(opp.evidence?.sourcePhrases) && opp.evidence.sourcePhrases.length > 0, 'evidence must include source phrases');
     }
 
     const types = body.opportunities.map((o: { opportunityType: string }) => o.opportunityType);
