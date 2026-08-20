@@ -676,6 +676,23 @@ async function init() {
   const avatar = $('sidebar-user-avatar');
   if (avatar && currentUser) avatar.textContent = currentUser.email.charAt(0).toUpperCase();
   await loadProjects();
+
+  // Handle post-signup website parameter: auto-open create modal with prefilled URL
+  const params = new URLSearchParams(window.location.search);
+  const websiteParam = params.get('website');
+  if (websiteParam) {
+    // Clean up URL
+    const cleanUrl = websiteParam.startsWith('http') ? websiteParam : `https://${websiteParam}`;
+    params.delete('website');
+    const newSearch = params.toString();
+    const newUrl = newSearch ? `${window.location.pathname}?${newSearch}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+
+    // Prefill the create modal and open it
+    const urlInput = $('input-create-url') as HTMLInputElement | null;
+    if (urlInput) urlInput.value = cleanUrl;
+    openCreateModal();
+  }
 }
 
 window.addEventListener('foundable:scan-complete', () => void loadProjects());

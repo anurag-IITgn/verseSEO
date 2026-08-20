@@ -58,12 +58,14 @@ export const authLimiter = new FixedWindowLimiter({ max: env.RATE_LIMIT_AUTH_MAX
 export const createLimiter = new FixedWindowLimiter({ max: env.RATE_LIMIT_CREATE_MAX, windowMs: env.RATE_LIMIT_WINDOW_MS });
 export const crawlLimiter = new FixedWindowLimiter({ max: env.RATE_LIMIT_CRAWL_MAX, windowMs: env.RATE_LIMIT_WINDOW_MS });
 export const analyzeLimiter = new FixedWindowLimiter({ max: env.RATE_LIMIT_ANALYZE_MAX, windowMs: env.RATE_LIMIT_WINDOW_MS });
+export const demoLimiter = new FixedWindowLimiter({ max: 10, windowMs: 60 * 60 * 1000 });
 
 export function resetRateLimiters(): void {
   authLimiter.clear();
   createLimiter.clear();
   crawlLimiter.clear();
   analyzeLimiter.clear();
+  demoLimiter.clear();
 }
 
 export function rateLimitByIp(limiter: FixedWindowLimiter) {

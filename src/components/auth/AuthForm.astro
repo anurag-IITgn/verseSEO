@@ -134,7 +134,9 @@ const isLogin = mode === 'login';
   const website = params.get('website') || '';
 
   if (websiteHint && website) {
-    websiteHint.textContent = `After signing in you can scan ${website} from your dashboard.`;
+    websiteHint.textContent = isLogin
+      ? `After signing in you can scan ${website} from your dashboard.`
+      : `After creating your account, we'll set up a scan for ${website}.`;
     websiteHint.classList.remove('hidden');
   }
 

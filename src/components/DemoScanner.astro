@@ -1,0 +1,465 @@
+---
+// DemoScanner.astro — Anonymous limited demo scan (Tech + AI only) with signup CTA
+---
+
+<section class="py-16 sm:py-24 bg-[#FAF9F5] border-b border-slate-200/80 relative" id="demo">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Live Free Scan
+      </div>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        See what Foundable finds on your site.
+      </h2>
+      <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+        Get a real technical health score and AI visibility check in under 30 seconds. No signup required.
+      </p>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 p-6 sm:p-8 lg:p-10 max-w-5xl mx-auto">
+
+      <!-- Input Controls -->
+      <div class="space-y-4 mb-8">
+        <!-- Preset selector chips -->
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Select Sample Site:</span>
+          <div class="flex flex-wrap gap-2" id="demo-persona-chips">
+            <button type="button" class="demo-persona-btn active px-3 py-1.5 rounded-lg bg-[#0c1021] text-white text-xs font-semibold cursor-pointer transition-all" data-domain="resumeforge.io">
+              SaaS Startup
+            </button>
+            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="aeroroast.co">
+              E-Commerce
+            </button>
+            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="apexpt.com">
+              Local Clinic
+            </button>
+            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="coursecraft.dev">
+              Creator Platform
+            </button>
+          </div>
+        </div>
+
+        <!-- URL Input & Scan Action Bar -->
+        <div class="flex flex-col sm:flex-row items-center gap-2 p-2 bg-white rounded-2xl border border-slate-300 shadow-sm focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
+          <div class="flex items-center gap-2.5 w-full px-3 py-1.5">
+            <span class="text-slate-400 font-mono text-xs sm:text-sm">https://</span>
+            <input
+              type="text"
+              id="demo-domain-input"
+              value="resumeforge.io"
+              class="w-full text-sm sm:text-base font-semibold text-slate-900 focus:outline-none bg-transparent"
+              placeholder="e.g. yourcompany.com"
+            />
+          </div>
+          <button
+            type="button"
+            id="demo-run-btn"
+            class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/20 cursor-pointer transition-all"
+          >
+            <span id="demo-btn-text">Analyze</span>
+            <svg id="demo-btn-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div id="demo-progress-box" class="hidden p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-4 mb-8">
+        <div class="flex justify-center">
+          <div class="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-base font-bold text-slate-900" id="demo-progress-title">Scanning Website...</h4>
+          <p class="text-xs text-slate-500 font-mono" id="demo-progress-subtitle">Crawling pages and analyzing technical SEO</p>
+        </div>
+        <div class="w-full max-w-md mx-auto bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div id="demo-progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 15%"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="demo-results-box" class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-8 space-y-6">
+
+        <!-- Header -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Target Scanned</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">Demo Scan</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-black text-slate-900 mt-1 font-mono" id="demo-result-domain">resumeforge.io</h3>
+          </div>
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-2xl px-5 py-3 text-right">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-900 block">Omni-Visibility Index</span>
+            <div class="text-2xl sm:text-3xl font-black text-blue-700" id="demo-result-score">
+              -- <span class="text-sm font-normal text-slate-400">/ 100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 Module Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- 1. Technical Health — UNLOCKED -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-white/70 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 1. Technical Health
+              </span>
+              <span class="text-xs font-bold text-emerald-700" id="demo-tech-status">Awaiting scan</span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-600 font-mono" id="demo-tech-items">
+              <div class="text-slate-400">Run a scan to see real technical SEO results.</div>
+            </div>
+          </div>
+
+          <!-- 2. Search Intent — LOCKED -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span> 2. Search Intent
+              </span>
+              <span class="text-xs font-bold text-slate-500" id="demo-search-status">
+                <span class="mr-1">&#128274;</span> Free Preview
+              </span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-600" id="demo-search-items">
+              <div class="text-slate-500">Discover high-intent keywords your customers are searching for. <strong class="text-slate-700">Unlock with Foundable.</strong></div>
+            </div>
+          </div>
+
+          <!-- 3. Reddit Intel — LOCKED -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span> 3. Reddit Intel
+              </span>
+              <span class="text-xs font-bold text-slate-500" id="demo-reddit-status">
+                <span class="mr-1">&#128274;</span> Free Preview
+              </span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-600" id="demo-reddit-items">
+              <div class="text-slate-500">Find authentic buyer discussions on Reddit. <strong class="text-slate-700">Unlock with Foundable.</strong></div>
+            </div>
+          </div>
+
+          <!-- 4. AI Engine Footprint — UNLOCKED -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-white/70 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-violet-600"></span> 4. AI Engine Footprint
+              </span>
+              <span class="text-xs font-bold text-violet-700" id="demo-ai-status">Awaiting scan</span>
+            </div>
+            <div class="space-y-1 text-xs text-slate-600 font-mono" id="demo-ai-items">
+              <div class="text-slate-400">Run a scan to check your AI engine footprint.</div>
+            </div>
+          </div>
+
+          <!-- 5. Content Generator — LOCKED -->
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-indigo-600"></span> 5. Content Generator
+              </span>
+              <span class="text-xs font-bold text-slate-500" id="demo-content-status">
+                <span class="mr-1">&#128274;</span> Free Preview
+              </span>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-600" id="demo-content-items">
+              <div class="text-slate-500">Turn opportunities into SEO content briefs and drafts. <strong class="text-slate-700">Unlock with Foundable.</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signup CTA -->
+        <div id="demo-cta" class="hidden p-5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-center space-y-3">
+          <p class="text-sm font-semibold text-slate-800">See what else Foundable can find.</p>
+          <a
+            id="demo-signup-link"
+            href="/register"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/20 transition-all"
+          >
+            Create your free account
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+          </a>
+          <p class="text-xs text-slate-500">No credit card required. Full access to all 5 modules.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+
+  const domainInput = document.getElementById('demo-domain-input') as HTMLInputElement | null;
+  const runBtn = document.getElementById('demo-run-btn') as HTMLButtonElement | null;
+  const btnText = document.getElementById('demo-btn-text');
+  const personaBtns = document.querySelectorAll<HTMLButtonElement>('#demo-persona-chips .demo-persona-btn');
+  const progressBox = document.getElementById('demo-progress-box');
+  const resultsBox = document.getElementById('demo-results-box');
+  const progressBar = document.getElementById('demo-progress-bar') as HTMLElement | null;
+  const progressTitle = document.getElementById('demo-progress-title');
+  const progressSubtitle = document.getElementById('demo-progress-subtitle');
+
+  const resDomain = document.getElementById('demo-result-domain');
+  const resScore = document.getElementById('demo-result-score');
+  const techStatus = document.getElementById('demo-tech-status');
+  const techItems = document.getElementById('demo-tech-items');
+  const aiStatus = document.getElementById('demo-ai-status');
+  const aiItems = document.getElementById('demo-ai-items');
+  const signupLink = document.getElementById('demo-signup-link') as HTMLAnchorElement | null;
+  const ctaBox = document.getElementById('demo-cta');
+
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  function toWebsiteUrl(input: string): string {
+    const trimmed = input.trim();
+    if (!trimmed) return '';
+    if (/^https?:\/\//i.test(trimmed)) return trimmed.replace(/\/+$/, '');
+    return `https://${trimmed.replace(/^www\./i, '')}`;
+  }
+
+  function domainKey(input: string): string {
+    return input.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/.*$/, '');
+  }
+
+  function escapeHtml(v: string): string {
+    return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function scoreLabel(score: number): string {
+    if (score >= 90) return 'Excellent';
+    if (score >= 75) return 'Healthy';
+    if (score >= 60) return 'Good';
+    if (score >= 40) return 'Needs Fixes';
+    return 'Critical';
+  }
+
+  const issueLabels: Record<string, string> = {
+    MISSING_HTTPS: 'Website not served over HTTPS',
+    MISSING_ROBOTS_TXT: 'Missing robots.txt',
+    MISSING_SITEMAP: 'Missing XML sitemap',
+    MISSING_TITLE: 'Missing title tags',
+    DUPLICATE_TITLE: 'Duplicate title tags',
+    TITLE_TOO_SHORT: 'Titles below recommended length',
+    TITLE_TOO_LONG: 'Titles above recommended length',
+    MISSING_META_DESCRIPTION: 'Missing meta descriptions',
+    DUPLICATE_META_DESCRIPTION: 'Duplicate meta descriptions',
+    MISSING_CANONICAL: 'Missing canonical tags',
+    NOINDEX_PAGE: 'Pages set to noindex',
+    BROKEN_INTERNAL_LINK: 'Broken internal links',
+    NON_200_PAGE: 'Pages returning non-200 responses',
+  };
+
+  const issueOrder = [
+    'MISSING_HTTPS', 'MISSING_ROBOTS_TXT', 'MISSING_SITEMAP',
+    'MISSING_TITLE', 'DUPLICATE_TITLE', 'TITLE_TOO_SHORT', 'TITLE_TOO_LONG',
+    'MISSING_META_DESCRIPTION', 'DUPLICATE_META_DESCRIPTION',
+    'MISSING_CANONICAL', 'NOINDEX_PAGE', 'BROKEN_INTERNAL_LINK', 'NON_200_PAGE',
+  ];
+
+  function showProgress(title: string, subtitle: string, width = 15) {
+    if (!progressBox || !resultsBox || !progressBar) return;
+    resultsBox.classList.add('hidden');
+    progressBox.classList.remove('hidden');
+    progressBar.classList.remove('bg-rose-600');
+    progressBar.classList.add('bg-blue-600');
+    progressBar.style.width = `${width}%`;
+    if (progressTitle) progressTitle.textContent = title;
+    if (progressSubtitle) progressSubtitle.textContent = subtitle;
+  }
+
+  function showError(message: string) {
+    if (!progressBox || !resultsBox || !progressBar) return;
+    resultsBox.classList.add('hidden');
+    progressBox.classList.remove('hidden');
+    progressBar.classList.remove('bg-blue-600');
+    progressBar.classList.add('bg-rose-600');
+    progressBar.style.width = '100%';
+    if (progressTitle) progressTitle.textContent = 'Scan Failed';
+    if (progressSubtitle) progressSubtitle.textContent = message;
+  }
+
+  function showResults() {
+    if (progressBox) progressBox.classList.add('hidden');
+    if (resultsBox) resultsBox.classList.remove('hidden');
+  }
+
+  function renderTechPanel(domain: string, tech: {
+    healthScore: number | null;
+    pagesCrawled: number;
+    robotsFound: boolean | null;
+    sitemapFound: boolean | null;
+    issueCount: number;
+    issueCounts: Record<string, number>;
+    issues: Array<{ issueType: string; severity: string; message: string }>;
+  }) {
+    const healthScore = tech.healthScore ?? 0;
+    if (resDomain) resDomain.textContent = domain;
+    if (resScore) resScore.innerHTML = `${healthScore} <span class="text-sm font-normal text-slate-400">/ 100</span>`;
+    if (techStatus) techStatus.textContent = `${healthScore}% (${scoreLabel(healthScore)})`;
+
+    const lines: string[] = [];
+    for (const type of issueOrder) {
+      const n = tech.issueCounts[type] ?? 0;
+      if (n > 0) lines.push(`\u26A0 ${n} ${issueLabels[type]}`);
+    }
+    if (tech.issueCount === 0) lines.push('\u2713 No technical issues found');
+    if (tech.robotsFound) lines.push('\u2713 robots.txt found');
+    if (tech.sitemapFound) lines.push('\u2713 XML sitemap found');
+    if (tech.pagesCrawled > 0) lines.push(`\u2713 Crawled ${tech.pagesCrawled} pages`);
+    if (lines.length === 0) lines.push('\u2713 No technical issues found');
+
+    if (techItems) {
+      techItems.innerHTML = lines.map(line => {
+        const isGood = line.startsWith('\u2713');
+        return `<div class="flex items-center gap-1.5 ${isGood ? 'text-emerald-700' : 'text-amber-700'}">${escapeHtml(line)}</div>`;
+      }).join('');
+    }
+  }
+
+  function renderAiPanel(ai: {
+    status: string;
+    message?: string | null;
+    provider?: string | null;
+    model?: string | null;
+    overallVisibilityScore?: number;
+    mentionedCount?: number;
+    citedCount?: number;
+    results?: Array<{
+      topic: string;
+      mentioned: boolean;
+      cited: boolean;
+      stance: string;
+      visibilityScore: number;
+      reason: string;
+      competitors: string[];
+    }>;
+  }) {
+    if (ai.status === 'unavailable') {
+      if (aiStatus) { aiStatus.classList.add('text-slate-500'); aiStatus.textContent = 'Not connected'; }
+      if (aiItems) aiItems.innerHTML = `<div class="text-amber-700">${escapeHtml(ai.message ?? 'AI visibility is unavailable.')}</div>`;
+      return;
+    }
+    const results = ai.results ?? [];
+    if (results.length === 0) {
+      if (aiStatus) { aiStatus.classList.add('text-violet-700'); aiStatus.textContent = 'No results'; }
+      if (aiItems) aiItems.innerHTML = '<div class="text-slate-400">No AI visibility results for this crawl.</div>';
+      return;
+    }
+
+    const mentioned = ai.mentionedCount ?? 0;
+    const cited = ai.citedCount ?? 0;
+    if (aiStatus) {
+      aiStatus.classList.remove('text-slate-500', 'text-amber-700');
+      aiStatus.classList.add('text-violet-700');
+      aiStatus.textContent = `${mentioned} mentioned \u00B7 ${cited} cited`;
+    }
+    if (aiItems) {
+      const modelLabel = [ai.provider, ai.model].filter(Boolean).join(' \u00B7 ');
+      aiItems.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500">${escapeHtml(modelLabel || 'AI provider')}</span>
+          <span class="text-violet-700 font-bold">Score ${ai.overallVisibilityScore ?? 0}/100</span>
+        </div>
+      ` + results.slice(0, 5).map(r => {
+        const stanceClass = r.stance === 'recommendation' ? 'text-emerald-700 font-bold'
+          : r.stance === 'negative' ? 'text-rose-600 font-bold' : 'text-slate-600';
+        const mentionLabel = r.cited ? '\u2713 Mentioned & linked'
+          : r.mentioned ? '\u2713 Mentioned' : '\u2715 Not mentioned';
+        const mentionClass = r.mentioned ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold';
+        return `
+          <div class="bg-white p-2 rounded border border-slate-200/80 space-y-0.5">
+            <div class="flex justify-between items-center gap-2">
+              <span class="font-semibold truncate">"${escapeHtml(r.topic)}"</span>
+              <span class="text-violet-700 font-bold font-mono ml-2 shrink-0">${r.visibilityScore}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="${mentionClass}">${mentionLabel}</span>
+              <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border border-violet-200 text-violet-700">${escapeHtml(r.stance)}</span>
+            </div>
+            <div class="text-[11px] text-slate-600">${escapeHtml(r.reason)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  async function runDemoScan() {
+    const raw = domainInput?.value.trim() ?? '';
+    const websiteUrl = toWebsiteUrl(raw);
+    if (!websiteUrl) { showError('Please enter a website URL.'); return; }
+
+    const domain = domainKey(raw);
+    if (signupLink) signupLink.href = `/register?next=/app&website=${encodeURIComponent(domain)}`;
+
+    if (runBtn) { runBtn.disabled = true; runBtn.classList.add('opacity-60', 'cursor-wait'); }
+    showProgress('Scanning website...', 'Crawling pages and analyzing technical SEO', 20);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/demo/scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ websiteUrl }),
+      });
+
+      if (res.status === 429) {
+        const body = await res.json().catch(() => null);
+        showError(body?.error?.message ?? 'Too many demo scans. Please try again later.');
+        return;
+      }
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        showError(body?.error?.message ?? `Backend request failed (${res.status})`);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.status === 'FAILED') {
+        showError(data.errorMessage ?? 'The scan failed.');
+        return;
+      }
+
+      showProgress('Analyzing results...', 'Computing health score and AI visibility', 85);
+      await sleep(300);
+
+      if (data.tech) renderTechPanel(domain, data.tech);
+      if (data.ai) renderAiPanel(data.ai);
+
+      showResults();
+      if (ctaBox) ctaBox.classList.remove('hidden');
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Could not reach the backend.');
+    } finally {
+      if (runBtn) { runBtn.disabled = false; runBtn.classList.remove('opacity-60', 'cursor-wait'); }
+    }
+  }
+
+  // Persona chips
+  personaBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      personaBtns.forEach(b => {
+        b.className = 'demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all';
+      });
+      btn.className = 'demo-persona-btn active px-3 py-1.5 rounded-lg bg-[#0c1021] text-white text-xs font-semibold cursor-pointer transition-all';
+      const domain = btn.getAttribute('data-domain') || 'resumeforge.io';
+      if (domainInput) domainInput.value = domain;
+    });
+  });
+
+  // Run button
+  runBtn?.addEventListener('click', () => void runDemoScan());
+
+  // Enter key
+  domainInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); void runDemoScan(); }
+  });
+</script>
