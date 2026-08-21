@@ -249,3 +249,31 @@ test('ai visibility endpoint rejects crawls that did not complete', async () => 
     await deleteProject(projectId);
   }
 });
+
+test('response includes plan field — free by default', async () => {
+  setAiProviderForTesting(fakeProvider());
+  const crawlId = await crawlFixtureSite();
+  try {
+    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/ai-visibility` });
+    assert.equal(res.statusCode, 200);
+    const body = res.json();
+    assert.equal(body.plan, 'free', 'new user must be on the free plan');
+  } finally {
+    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+  }
+});
+
+test('response includes plan field — pro after upgrade', async () => {
+  setAiProviderForTesting(fakeProvider());
+  await pool.query('UPDATE users SET plan = $1 WHERE email = $2', ['pro', userEmail]);
+  const crawlId = await crawlFixtureSite();
+  try {
+    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/ai-visibility` });
+    assert.equal(res.statusCode, 200);
+    const body = res.json();
+    assert.equal(body.plan, 'pro', 'upgraded user must be on the pro plan');
+  } finally {
+    await pool.query('UPDATE users SET plan = $1 WHERE email = $2', ['free', userEmail]);
+    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+  }
+});

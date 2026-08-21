@@ -66,12 +66,44 @@ function hostsFromText(text: string): string[] {
   }
   for (const match of text.toLowerCase().match(DOMAIN_TOKEN_PATTERN) ?? []) {
     const host = match.replace(/^www\./, '');
+    if (/^u\.?s\.?$/.test(host)) continue;
     if (!seen.has(host)) {
       seen.add(host);
       hosts.push(host);
     }
   }
   return hosts;
+}
+
+/**
+ * Extract competitor brand names from structured AI responses where tools/services
+ * are presented in bold with a colon separator (e.g. "**BrandName:** description").
+ * Handles multi-brand entries separated by slashes.
+ */
+const BRAND_EXCLUSION = /^(u\.?s\.?|for\s)/i;
+
+function brandsFromText(text: string): string[] {
+  const brands: string[] = [];
+  const seen = new Set<string>();
+  for (const m of text.match(/\*\*([^*]+?)\*\*/g) ?? []) {
+    const inner = m.replace(/^\*\*|\*\*$/g, '');
+    if (!inner.includes(':')) continue;
+    const name = inner.replace(/:$/, '').trim();
+    if (!name || /^\d/.test(name)) continue;
+    const parts = name.includes('/') ? name.split('/') : [name];
+    for (const raw of parts) {
+      const brand = raw.trim();
+      if (!brand || brand.length < 2) continue;
+      if (BRAND_EXCLUSION.test(brand)) continue;
+      if (/\(/.test(brand) || /\)/.test(brand)) continue;
+      const lower = brand.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        brands.push(brand);
+      }
+    }
+  }
+  return brands;
 }
 
 /**
@@ -84,6 +116,7 @@ export function analyzeMention(text: string, domain: string): MentionAnalysis {
   const host = domain.replace(/^www\./, '').toLowerCase();
   const brand = bareBrand(domain);
   const hosts = hostsFromText(text);
+  const brandNames = brandsFromText(text);
 
   const cited = hosts.includes(host);
   const mentioned =
@@ -98,9 +131,18 @@ export function analyzeMention(text: string, domain: string): MentionAnalysis {
     else stance = 'neutral';
   }
 
-  const competitors = hosts
-    .filter((candidate) => candidate !== host)
-    .slice(0, 6);
+  const hostLower = host;
+  const seen = new Set<string>();
+  const competitors: string[] = [];
+  for (const c of [...hosts, ...brandNames]) {
+    const lower = c.toLowerCase();
+    if (lower === hostLower) continue;
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      competitors.push(c);
+    }
+    if (competitors.length >= 6) break;
+  }
 
   return { mentioned, cited, stance, competitors };
 }

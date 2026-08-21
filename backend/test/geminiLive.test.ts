@@ -79,7 +79,7 @@ test('REAL Gemini live integration against tipcalculatorlive.com (existing provi
       cited: scored.cited,
       stance: scored.stance,
       visibilityScore: scored.visibilityScore,
-      competitors: scored.stance === 'absent' ? [] : analysis.competitors,
+      competitors: analysis.competitors,
     });
   }
 

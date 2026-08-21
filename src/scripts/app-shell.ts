@@ -1943,6 +1943,7 @@ function renderAiReport(data: Record<string, any>) {
     return;
   }
 
+  const plan: string = data?.plan ?? 'free';
   const results: any[] = data?.results ?? [];
   const displayScore: number = data?.displayScore ?? 15;
   const overallRaw: number = data?.overallVisibilityScore ?? 0;
@@ -2301,7 +2302,8 @@ function renderAiReport(data: Record<string, any>) {
     }
 
     if (opps.length > 0) {
-      const oppHtml = opps.map((o, i) => {
+      const visibleOpps = plan === 'pro' ? opps : opps.slice(0, 1);
+      const oppHtml = visibleOpps.map((o, i) => {
         const pColor = o.priority === 'high' ? 'rose' : 'amber';
         return `
           <div class="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-100">
@@ -2321,6 +2323,7 @@ function renderAiReport(data: Record<string, any>) {
         <div class="mb-8">
           <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">AI Visibility Opportunities</h2>
           <div class="space-y-2">${oppHtml}</div>
+          ${plan !== 'pro' && opps.length > 1 ? proBoundary('Unlock all opportunities', `See all ${opps.length} opportunities with detailed actions to improve your AI visibility.`, 'Visibility') : ''}
         </div>`);
     }
   }
@@ -2386,10 +2389,10 @@ function renderAiReport(data: Record<string, any>) {
 
   // --- SECTION 12: Recommended AI Visibility Plan ---
   {
-    const plan: Array<{ step: string; problem: string; why: string; action: string }> = [];
+    const actionSteps: Array<{ step: string; problem: string; why: string; action: string }> = [];
 
     if (notFound.length > 0) {
-      plan.push({
+      actionSteps.push({
         step: '01',
         problem: `Missing topic coverage for ${notFound.length} tested quer${notFound.length > 1 ? 'ies' : 'y'}`,
         why: 'AI systems need clear, comprehensive content to associate your site with a topic. Without dedicated content, AI cannot recognize your expertise.',
@@ -2397,32 +2400,33 @@ function renderAiReport(data: Record<string, any>) {
       });
     }
     if (mentionedCount > 0 && citedCount === 0) {
-      plan.push({
-        step: plan.length === 0 ? '01' : '02',
+      actionSteps.push({
+        step: actionSteps.length === 0 ? '01' : '02',
         problem: 'Mentioned but not cited',
         why: 'AI recognized your site but did not use it as a source. This means your content exists but lacks the directness and specificity AI systems require for citation.',
         action: 'Add structured data, direct answers to common questions, and clear factual content on your primary topic pages.',
       });
     }
     if (citedCount > 0) {
-      plan.push({
-        step: String(plan.length + 1).padStart(2, '0'),
+      actionSteps.push({
+        step: String(actionSteps.length + 1).padStart(2, '0'),
         problem: 'Build on cited topics',
         why: `AI already cited your site for ${citedCount} topic${citedCount > 1 ? 's' : ''}. Deepening this coverage strengthens your position.`,
         action: 'Expand cited pages with more detail, add supporting subtopic pages, and strengthen internal linking.',
       });
     }
     if (topCompetitors.length > 0) {
-      plan.push({
-        step: String(plan.length + 1).padStart(2, '0'),
+      actionSteps.push({
+        step: String(actionSteps.length + 1).padStart(2, '0'),
         problem: 'Competitor visibility gaps',
         why: `AI surfaced ${topCompetitors.length} other source${topCompetitors.length > 1 ? 's' : ''} instead of or alongside your site.`,
         action: 'Analyze what content structure, depth, and topical coverage these competitors provide. Create content that fills the gaps.',
       });
     }
 
-    if (plan.length > 0) {
-      const planHtml = plan.map(p => `
+    if (actionSteps.length > 0) {
+      const visibleSteps = plan === 'pro' ? actionSteps : actionSteps.slice(0, 1);
+      const planHtml = visibleSteps.map(p => `
         <div class="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-100">
           <span class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black bg-violet-100 text-violet-700 border border-violet-200">${p.step}</span>
           <div class="flex-1">
@@ -2437,6 +2441,7 @@ function renderAiReport(data: Record<string, any>) {
           <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Your AI Visibility Action Plan</h2>
           <p class="text-xs text-slate-500 mb-4">Prioritized steps to improve how AI systems find, understand, and cite your site.</p>
           <div class="space-y-2">${planHtml}</div>
+          ${plan !== 'pro' && actionSteps.length > 1 ? proBoundary('Unlock the full action plan', `Get all ${actionSteps.length} prioritized steps with specific actions to improve your AI visibility.`, 'Visibility') : ''}
         </div>`);
     }
   }
@@ -3778,7 +3783,7 @@ function closeCreateModal() { $('modal-create')?.classList.add('hidden'); }
 $('btn-new-project')?.addEventListener('click', openCreateModal);
 $('btn-empty-new')?.addEventListener('click', openCreateModal);
 $('btn-create-cancel')?.addEventListener('click', closeCreateModal);
-$('modal-create')?.addEventListener('click', e => { if ((e.target as HTMLElement).hasAttribute('data-modal-panel')) return; closeCreateModal(); });
+$('modal-create')?.addEventListener('click', e => { if ((e.target as HTMLElement).closest('[data-modal-panel]')) return; closeCreateModal(); });
 
 $('form-create')?.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -3817,7 +3822,7 @@ function openRenameModal(p: Project) {
 }
 function closeRenameModal() { $('modal-rename')?.classList.add('hidden'); renameTarget = null; }
 $('btn-rename-cancel')?.addEventListener('click', closeRenameModal);
-$('modal-rename')?.addEventListener('click', e => { if ((e.target as HTMLElement).hasAttribute('data-modal-panel')) return; closeRenameModal(); });
+$('modal-rename')?.addEventListener('click', e => { if ((e.target as HTMLElement).closest('[data-modal-panel]')) return; closeRenameModal(); });
 $('btn-rename-submit')?.addEventListener('click', async () => {
   if (!renameTarget) return;
   const name = (($('input-rename') as HTMLInputElement | null)?.value ?? '').trim();
@@ -3844,7 +3849,7 @@ function openDeleteModal(p: Project) {
 }
 function closeDeleteModal() { $('modal-delete')?.classList.add('hidden'); deleteTarget = null; }
 $('btn-delete-cancel')?.addEventListener('click', closeDeleteModal);
-$('modal-delete')?.addEventListener('click', e => { if ((e.target as HTMLElement).hasAttribute('data-modal-panel')) return; closeDeleteModal(); });
+$('modal-delete')?.addEventListener('click', e => { if ((e.target as HTMLElement).closest('[data-modal-panel]')) return; closeDeleteModal(); });
 $('btn-delete-submit')?.addEventListener('click', async () => {
   if (!deleteTarget) return;
   hideBanner($('delete-error'));

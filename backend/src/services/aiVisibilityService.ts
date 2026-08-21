@@ -6,7 +6,7 @@ import { selectAiPrompts } from '../ai/prompts.js';
 import { getAiProvider } from '../ai/registry.js';
 import { scoreVisibility } from '../ai/scoring.js';
 import { db } from '../db/client.js';
-import { aiVisibilityResults } from '../db/schema.js';
+import { aiVisibilityResults, users } from '../db/schema.js';
 import { findPagesByCrawl, type CrawledPageRow } from '../repositories/pageRepo.js';
 import { findProjectById } from '../repositories/projectRepo.js';
 import {
@@ -34,6 +34,7 @@ export interface AiVisibilityResultView {
 
 export interface AiVisibilityResponse {
   crawlId: string;
+  plan: 'free' | 'pro';
   status: 'ok' | 'unavailable';
   reason: string | null;
   message: string | null;
@@ -101,6 +102,9 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
     throw new AppError(409, 'Crawl run is not completed', 'CRAWL_NOT_COMPLETED');
   }
 
+  const [userRow] = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
+  const plan: 'free' | 'pro' = (userRow?.plan as 'free' | 'pro') ?? 'free';
+
   const project = await findProjectById(crawl.projectId);
   const domain = project?.domain ?? '';
 
@@ -110,13 +114,14 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
 
   const stored = await findAiVisibilityResultsByCrawl(crawlId);
   if (stored.length > 0) {
-    return buildResponse(crawlId, stored[0].provider, stored[0].model, stored, topicsAnalyzed);
+    return buildResponse(crawlId, plan, stored[0].provider, stored[0].model, stored, topicsAnalyzed);
   }
 
   const provider = getAiProvider();
   if (!provider) {
     return {
       crawlId,
+      plan,
       status: 'unavailable',
       reason: 'NOT_CONFIGURED',
       message: 'AI visibility is not connected. Add GEMINI_API_KEY (official Google Gemini API) to enable it.',
@@ -137,6 +142,7 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
   if (prompts.length === 0) {
     return {
       crawlId,
+      plan,
       status: 'ok',
       reason: null,
       message: null,
@@ -178,13 +184,14 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
           domain,
           empty,
         }),
-        competitors: scored.stance === 'absent' ? [] : analysis.competitors,
+        competitors: analysis.competitors,
       });
     }
   } catch (error) {
     const message = error instanceof AiUnavailableError ? error.message : 'AI visibility is temporarily unavailable.';
     return {
       crawlId,
+      plan,
       status: 'unavailable',
       reason: 'PROVIDER_ERROR',
       message,
@@ -209,11 +216,12 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
   }
 
   const storedResults = await findAiVisibilityResultsByCrawl(crawlId);
-  return buildResponse(crawlId, provider.name, provider.model, storedResults, topicsAnalyzed);
+  return buildResponse(crawlId, plan, provider.name, provider.model, storedResults, topicsAnalyzed);
 }
 
 function buildResponse(
   crawlId: string,
+  plan: 'free' | 'pro',
   providerName: string | null,
   providerModel: string | null,
   rows: AiVisibilityRow[],
@@ -230,6 +238,7 @@ function buildResponse(
 
   return {
     crawlId,
+    plan,
     status: 'ok',
     reason: null,
     message: null,
