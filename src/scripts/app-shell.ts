@@ -1458,30 +1458,21 @@ function renderSearchReport(data: Record<string, any>) {
   if (!content) return;
   content.classList.remove('hidden');
 
-  const opps: any[] = data?.opportunities ?? [];
-  const total = data?.total ?? opps.length;
+  const plan = data?.plan ?? 'free';
+  const isPro = plan === 'pro';
+  const agg = data?.aggregate ?? {};
+  const allOpps: any[] = data?.opportunities ?? [];
+  const total = data?.total ?? allOpps.length;
   const topicsAnalyzed = data?.topicsAnalyzed ?? 0;
 
-  const high = opps.filter(o => o.priority === 'high');
-  const medium = opps.filter(o => o.priority === 'medium');
-  const low = opps.filter(o => o.priority === 'low');
+  // Use aggregate stats for charts/counts (always reflects ALL opportunities)
+  const highCount = agg.high ?? allOpps.filter(o => o.priority === 'high').length;
+  const mediumCount = agg.medium ?? allOpps.filter(o => o.priority === 'medium').length;
+  const lowCount = agg.low ?? allOpps.filter(o => o.priority === 'low').length;
 
-  const typeCounts: Record<string, number> = {};
-  for (const o of opps) typeCounts[o.opportunityType] = (typeCounts[o.opportunityType] || 0) + 1;
-
-  const intentCounts: Record<string, number> = {};
-  for (const o of opps) intentCounts[o.intent] = (intentCounts[o.intent] || 0) + 1;
-
-  const coverageCounts: Record<string, number> = {};
-  for (const o of opps) coverageCounts[o.coverage] = (coverageCounts[o.coverage] || 0) + 1;
-
-  const internalLinkOpps = opps.filter(o => o.opportunityType === 'INTERNAL_LINK_OPPORTUNITY');
-  const contentGapOpps = opps.filter(o => o.opportunityType === 'CONTENT_GAP');
-  const weakCovOpps = opps.filter(o => o.opportunityType === 'WEAK_TOPIC_COVERAGE');
-  const pageOptOpps = opps.filter(o => o.opportunityType === 'EXISTING_PAGE_OPTIMIZATION');
-  const intentGapOpps = opps.filter(o => o.opportunityType === 'SEARCH_INTENT_GAP');
-
-  const topOpps = [...opps].sort((a, b) => b.score - a.score).slice(0, 10);
+  const typeCounts: Record<string, number> = agg.typeCounts ?? {};
+  const intentCounts: Record<string, number> = agg.intentCounts ?? {};
+  const coverageCounts: Record<string, number> = agg.coverageCounts ?? {};
 
   const typeBarMax = Math.max(1, ...Object.values(typeCounts));
   const typeBars = Object.entries(typeCounts)
@@ -1494,7 +1485,10 @@ function renderSearchReport(data: Record<string, any>) {
     .map(([i, c]) => ({ label: intentLabels[i] ?? i, value: c, color: i === 'commercial' ? '#3b82f6' : i === 'transactional' ? '#10b981' : i === 'navigational' ? '#8b5cf6' : '#6b7280' }));
 
   let avgScore = 0;
-  if (opps.length > 0) avgScore = Math.round(opps.reduce((s, o) => s + o.score, 0) / opps.length);
+  if (allOpps.length > 0) avgScore = Math.round(allOpps.reduce((s, o) => s + o.score, 0) / allOpps.length);
+
+  // Top 3 for Free, top 10 for Pro
+  const topOpps = [...allOpps].sort((a, b) => b.score - a.score).slice(0, isPro ? 10 : 3);
 
   const sections: string[] = [];
 
@@ -1508,15 +1502,15 @@ function renderSearchReport(data: Record<string, any>) {
           <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1.5">Opportunities</div>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 text-center">
-          <div class="text-3xl font-black text-rose-600 leading-none">${high.length}</div>
+          <div class="text-3xl font-black text-rose-600 leading-none">${highCount}</div>
           <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1.5">High Priority</div>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 text-center">
-          <div class="text-3xl font-black text-amber-500 leading-none">${medium.length}</div>
+          <div class="text-3xl font-black text-amber-500 leading-none">${mediumCount}</div>
           <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1.5">Medium</div>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 text-center">
-          <div class="text-3xl font-black text-slate-400 leading-none">${low.length}</div>
+          <div class="text-3xl font-black text-slate-400 leading-none">${lowCount}</div>
           <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1.5">Low</div>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 text-center">
@@ -1528,8 +1522,7 @@ function renderSearchReport(data: Record<string, any>) {
         <div class="text-sm text-slate-700 leading-relaxed">
           Foundable identified <strong>${total} search opportunit${total === 1 ? 'y' : 'ies'}</strong> across your crawled pages
           ${avgScore > 0 ? ` with an average opportunity score of <strong>${avgScore}</strong>` : ''}.
-          ${high.length > 0 ? `<span class="font-semibold text-rose-600">${high.length} high-priority</span> opportunit${high.length === 1 ? 'y needs' : 'ies need'} immediate attention.` : 'No high-priority opportunities were detected.'}
-          ${contentGapOpps.length > 0 ? ` Most opportunities relate to topics your site mentions but does not fully target.` : ''}
+          ${highCount > 0 ? `<span class="font-semibold text-rose-600">${highCount} high-priority</span> opportunit${highCount === 1 ? 'y needs' : 'ies need'} immediate attention.` : 'No high-priority opportunities were detected.'}
         </div>
       </div>
     </div>`);
@@ -1546,7 +1539,7 @@ function renderSearchReport(data: Record<string, any>) {
       </div>`);
   }
 
-  // --- SECTION 3: Top 10 High-Intent Opportunities ---
+  // --- SECTION 3: Top High-Intent Opportunities ---
   if (topOpps.length > 0) {
     const topHtml = topOpps.map((o, i) => `
       <div class="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-100">
@@ -1563,113 +1556,171 @@ function renderSearchReport(data: Record<string, any>) {
         <span class="shrink-0 text-sm font-bold text-slate-700">${o.score}</span>
       </div>`).join('');
 
+    const remaining = total - topOpps.length;
+    let remainingHtml = '';
+    if (!isPro && remaining > 0) {
+      remainingHtml = `
+        <div class="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-2xl border border-slate-200 border-dashed p-6 text-center mt-3">
+          <div class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 mb-2">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <p class="text-sm font-bold text-slate-900 mb-1">${remaining} more opportunit${remaining === 1 ? 'y' : 'ies'} available with Pro</p>
+          <p class="text-xs text-slate-500 mb-3">Unlock the complete opportunity list to see all identified search opportunities.</p>
+          <a href="/pricing" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-colors">Upgrade to Pro →</a>
+        </div>`;
+    }
+
     sections.push(`
       <div class="mb-8">
-        <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Top ${Math.min(10, topOpps.length)} High-Intent Opportunities</h2>
+        <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Top ${topOpps.length} High-Intent Opportunities</h2>
         <p class="text-xs text-slate-500 mb-4">These are Foundable's recommended search opportunities derived from your site's crawl and opportunity analysis. They are not externally verified keyword data.</p>
         <div class="space-y-2">${topHtml}</div>
+        ${remainingHtml}
       </div>`);
   }
 
   // --- SECTION 4: Priority Opportunities ---
-  function renderPriorityGroup(label: string, color: string, group: any[]): string {
-    if (group.length === 0) return '';
-    const cards = group.map((o, i) => opportunityCard(o, i)).join('');
-    return `
-      <div class="mb-6">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="w-2 h-2 rounded-full bg-${color}-500"></span>
-          <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">${label}</h3>
-          <span class="text-xs text-slate-400 font-medium">(${group.length})</span>
-        </div>
-        <div class="space-y-2">${cards}</div>
-      </div>`;
-  }
-
-  const priorityHtml = [
-    renderPriorityGroup('High Priority', 'rose', high),
-    renderPriorityGroup('Medium Priority', 'amber', medium),
-    renderPriorityGroup('Low Priority', 'slate', low),
-  ].filter(Boolean).join('');
-
-  if (priorityHtml) {
+  if (!isPro) {
+    // Free users see a Pro boundary instead of the full inventory
     sections.push(`
       <div class="mb-8">
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">All Opportunities by Priority</h2>
-        ${priorityHtml}
+        ${proBoundary(
+          'Complete Opportunity Inventory',
+          'See every identified opportunity with full details, priority, intent and affected page with Pro.'
+        )}
       </div>`);
-  }
+  } else {
+    // Pro users see the full priority-grouped inventory
+    function renderPriorityGroup(label: string, color: string, group: any[]): string {
+      if (group.length === 0) return '';
+      const cards = group.map((o, i) => opportunityCard(o, i)).join('');
+      return `
+        <div class="mb-6">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-${color}-500"></span>
+            <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">${label}</h3>
+            <span class="text-xs text-slate-400 font-medium">(${group.length})</span>
+          </div>
+          <div class="space-y-2">${cards}</div>
+        </div>`;
+    }
 
-  // --- SECTION 6: Existing Page vs New Page ---
-  const improveOpps = opps.filter(o => o.opportunityType === 'EXISTING_PAGE_OPTIMIZATION' || o.opportunityType === 'WEAK_TOPIC_COVERAGE');
-  const createOpps = opps.filter(o => o.opportunityType === 'CONTENT_GAP');
-  const connectOpps = opps.filter(o => o.opportunityType === 'INTERNAL_LINK_OPPORTUNITY');
+    const high = allOpps.filter(o => o.priority === 'high');
+    const medium = allOpps.filter(o => o.priority === 'medium');
+    const low = allOpps.filter(o => o.priority === 'low');
 
-  if (improveOpps.length > 0 || createOpps.length > 0 || connectOpps.length > 0) {
-    const actionCards = [
-      improveOpps.length > 0 ? `
-        <div class="bg-blue-50 rounded-xl border border-blue-200 p-4">
-          <div class="flex items-center gap-2 mb-2">
-            <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            <span class="text-sm font-bold text-blue-900">IMPROVE EXISTING</span>
-            <span class="text-xs text-blue-600 font-medium">${improveOpps.length} opportunit${improveOpps.length === 1 ? 'y' : 'ies'}</span>
-          </div>
-          <div class="space-y-1.5">${improveOpps.map(o => `<div class="text-xs text-blue-800"><span class="font-semibold">"${esc(o.query)}"</span> — ${o.relatedPageUrl ? esc(o.relatedPageUrl) : 'expand coverage'}</div>`).join('')}</div>
-        </div>` : '',
-      createOpps.length > 0 ? `
-        <div class="bg-red-50 rounded-xl border border-red-200 p-4">
-          <div class="flex items-center gap-2 mb-2">
-            <svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span class="text-sm font-bold text-red-900">CREATE NEW CONTENT</span>
-            <span class="text-xs text-red-600 font-medium">${createOpps.length} opportunit${createOpps.length === 1 ? 'y' : 'ies'}</span>
-          </div>
-          <div class="space-y-1.5">${createOpps.map(o => `<div class="text-xs text-red-800"><span class="font-semibold">"${esc(o.query)}"</span> — ${esc(o.reason.slice(0, 80))}</div>`).join('')}</div>
-        </div>` : '',
-      connectOpps.length > 0 ? `
-        <div class="bg-violet-50 rounded-xl border border-violet-200 p-4">
-          <div class="flex items-center gap-2 mb-2">
-            <svg class="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-            <span class="text-sm font-bold text-violet-900">ADD INTERNAL LINKS</span>
-            <span class="text-xs text-violet-600 font-medium">${connectOpps.length} opportunit${connectOpps.length === 1 ? 'y' : 'ies'}</span>
-          </div>
-          <div class="space-y-1.5">${connectOpps.map(o => `<div class="text-xs text-violet-800"><span class="font-semibold">"${esc(o.query)}"</span> — ${esc(o.suggestedAction.slice(0, 80))}</div>`).join('')}</div>
-        </div>` : '',
+    const priorityHtml = [
+      renderPriorityGroup('High Priority', 'rose', high),
+      renderPriorityGroup('Medium Priority', 'amber', medium),
+      renderPriorityGroup('Low Priority', 'slate', low),
     ].filter(Boolean).join('');
 
+    if (priorityHtml) {
+      sections.push(`
+        <div class="mb-8">
+          <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">All Opportunities by Priority</h2>
+          ${priorityHtml}
+        </div>`);
+    }
+  }
+
+  // --- SECTION 6: Content Opportunity Map ---
+  if (!isPro) {
+    // Free users see a Pro boundary
     sections.push(`
       <div class="mb-8">
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Content Opportunity Map</h2>
         <p class="text-xs text-slate-500 mb-4">A strategic view of what to improve, create, and connect.</p>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">${actionCards}</div>
+        ${proBoundary(
+          'Unlock the Content Opportunity Map',
+          'See improve existing, create new content, and add internal links opportunities with Pro.'
+        )}
       </div>`);
+  } else {
+    // Pro users see the full content opportunity map
+    const improveOpps = allOpps.filter(o => o.opportunityType === 'EXISTING_PAGE_OPTIMIZATION' || o.opportunityType === 'WEAK_TOPIC_COVERAGE');
+    const createOpps = allOpps.filter(o => o.opportunityType === 'CONTENT_GAP');
+    const connectOpps = allOpps.filter(o => o.opportunityType === 'INTERNAL_LINK_OPPORTUNITY');
+
+    if (improveOpps.length > 0 || createOpps.length > 0 || connectOpps.length > 0) {
+      const actionCards = [
+        improveOpps.length > 0 ? `
+          <div class="bg-blue-50 rounded-xl border border-blue-200 p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              <span class="text-sm font-bold text-blue-900">IMPROVE EXISTING</span>
+              <span class="text-xs text-blue-600 font-medium">${improveOpps.length} opportunit${improveOpps.length === 1 ? 'y' : 'ies'}</span>
+            </div>
+            <div class="space-y-1.5">${improveOpps.map(o => `<div class="text-xs text-blue-800"><span class="font-semibold">"${esc(o.query)}"</span> — ${o.relatedPageUrl ? esc(o.relatedPageUrl) : 'expand coverage'}</div>`).join('')}</div>
+          </div>` : '',
+        createOpps.length > 0 ? `
+          <div class="bg-red-50 rounded-xl border border-red-200 p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span class="text-sm font-bold text-red-900">CREATE NEW CONTENT</span>
+              <span class="text-xs text-red-600 font-medium">${createOpps.length} opportunit${createOpps.length === 1 ? 'y' : 'ies'}</span>
+            </div>
+            <div class="space-y-1.5">${createOpps.map(o => `<div class="text-xs text-red-800"><span class="font-semibold">"${esc(o.query)}"</span> — ${esc(o.reason.slice(0, 80))}</div>`).join('')}</div>
+          </div>` : '',
+        connectOpps.length > 0 ? `
+          <div class="bg-violet-50 rounded-xl border border-violet-200 p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+              <span class="text-sm font-bold text-violet-900">ADD INTERNAL LINKS</span>
+              <span class="text-xs text-violet-600 font-medium">${connectOpps.length} opportunit${connectOpps.length === 1 ? 'y' : 'ies'}</span>
+            </div>
+            <div class="space-y-1.5">${connectOpps.map(o => `<div class="text-xs text-violet-800"><span class="font-semibold">"${esc(o.query)}"</span> — ${esc(o.suggestedAction.slice(0, 80))}</div>`).join('')}</div>
+          </div>` : '',
+      ].filter(Boolean).join('');
+
+      sections.push(`
+        <div class="mb-8">
+          <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Content Opportunity Map</h2>
+          <p class="text-xs text-slate-500 mb-4">A strategic view of what to improve, create, and connect.</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">${actionCards}</div>
+        </div>`);
+    }
   }
 
   // --- SECTION 7: Topic Coverage ---
-  const strongTopics = opps.filter(o => o.coverage === 'EXISTING');
-  const weakTopics = opps.filter(o => o.coverage === 'IMPROVEMENT');
-  const gapTopics = opps.filter(o => o.coverage === 'GAP');
+  const strongCount = coverageCounts['EXISTING'] ?? 0;
+  const weakCount = coverageCounts['IMPROVEMENT'] ?? 0;
+  const gapCount = coverageCounts['GAP'] ?? 0;
 
-  if (opps.length > 0) {
-    const coverageBarMax = Math.max(1, strongTopics.length, weakTopics.length, gapTopics.length);
+  if (total > 0) {
+    const coverageBarMax = Math.max(1, strongCount, weakCount, gapCount);
     const covBars = [
-      { label: 'Strong Coverage', value: strongTopics.length, color: '#10b981' },
-      { label: 'Needs Improvement', value: weakTopics.length, color: '#f59e0b' },
-      { label: 'Gap / Opportunity', value: gapTopics.length, color: '#ef4444' },
+      { label: 'Strong Coverage', value: strongCount, color: '#10b981' },
+      { label: 'Needs Improvement', value: weakCount, color: '#f59e0b' },
+      { label: 'Gap / Opportunity', value: gapCount, color: '#ef4444' },
     ].filter(b => b.value > 0);
 
-    sections.push(`
+    let topicCoverageHtml = `
       <div class="mb-8">
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Topic Coverage Analysis</h2>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
           <div class="text-xs text-slate-500 mb-3">How your site covers detected topics</div>
           ${barChartH(covBars, coverageBarMax, 340)}
           <div class="mt-4 grid grid-cols-3 gap-3 text-center">
-            <div><div class="text-lg font-bold text-emerald-600">${strongTopics.length}</div><div class="text-[10px] text-slate-500">Well covered</div></div>
-            <div><div class="text-lg font-bold text-amber-500">${weakTopics.length}</div><div class="text-[10px] text-slate-500">Needs work</div></div>
-            <div><div class="text-lg font-bold text-red-500">${gapTopics.length}</div><div class="text-[10px] text-slate-500">Missing</div></div>
+            <div><div class="text-lg font-bold text-emerald-600">${strongCount}</div><div class="text-[10px] text-slate-500">Well covered</div></div>
+            <div><div class="text-lg font-bold text-amber-500">${weakCount}</div><div class="text-[10px] text-slate-500">Needs work</div></div>
+            <div><div class="text-lg font-bold text-red-500">${gapCount}</div><div class="text-[10px] text-slate-500">Missing</div></div>
           </div>
-        </div>
-      </div>`);
+        </div>`;
+
+    if (!isPro) {
+      topicCoverageHtml += `
+        <div class="mt-3">
+          ${proBoundary(
+            'Detailed Topic-to-Opportunity Mapping',
+            'See exactly which topics map to which opportunities with Pro.'
+          )}
+        </div>`;
+    }
+
+    topicCoverageHtml += `</div>`;
+    sections.push(topicCoverageHtml);
   }
 
   // --- SECTION 8: Search Intent ---
@@ -1677,7 +1728,6 @@ function renderSearchReport(data: Record<string, any>) {
     const intentDetails = Object.entries(intentCounts)
       .sort((a, b) => b[1] - a[1])
       .map(([i, c]) => {
-        const examples = opps.filter(o => o.intent === i).slice(0, 2);
         const desc = i === 'commercial' ? 'Users comparing options or looking for recommendations.'
           : i === 'transactional' ? 'Users ready to take action or use a tool.'
           : i === 'navigational' ? 'Users looking for a specific page or brand.'
@@ -1689,7 +1739,6 @@ function renderSearchReport(data: Record<string, any>) {
               <span class="text-xs text-slate-400">${c} opportunit${c === 1 ? 'y' : 'ies'}</span>
             </div>
             <div class="text-[10px] text-slate-500 mb-1.5">${desc}</div>
-            <div class="space-y-0.5">${examples.map(o => `<div class="text-[10px] text-slate-600">"${esc(o.query)}" <span class="text-slate-400">· ${oppTypeLabels[o.opportunityType] ?? o.opportunityType}</span></div>`).join('')}</div>
           </div>`;
       }).join('');
 
@@ -1704,61 +1753,91 @@ function renderSearchReport(data: Record<string, any>) {
   }
 
   // --- SECTION 10: Internal Linking ---
-  if (internalLinkOpps.length > 0) {
-    const linkCards = internalLinkOpps.map(o => {
-      const ev = o.evidence ?? {};
-      const pages: Array<{ url: string }> = ev.sourcePages ?? [];
-      const pageList = pages.length > 0
-        ? pages.map(p => `<div class="text-xs text-slate-600 truncate" title="${esc(p.url)}">↗ ${esc(p.url)}</div>`).join('')
-        : (o.relatedPageUrl ? `<div class="text-xs text-slate-600 truncate">↗ ${esc(o.relatedPageUrl)}</div>` : '<div class="text-xs text-slate-400 italic">No page data</div>');
-
-      return `
-        <div class="bg-white rounded-lg border border-slate-100 p-3">
-          <div class="text-xs font-bold text-slate-800 mb-1">"${esc(o.query)}"</div>
-          ${pageList}
-          <div class="mt-1.5 text-[10px] text-slate-500">${esc(o.suggestedAction)}</div>
-        </div>`;
-    }).join('');
-
+  if (!isPro) {
+    // Free users see a Pro boundary
     sections.push(`
       <div class="mb-8">
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Internal Linking Opportunities</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${linkCards}</div>
+        ${proBoundary(
+          'Unlock Internal Linking Opportunities',
+          'Discover which pages should link to each other to boost SEO with Pro.'
+        )}
       </div>`);
+  } else {
+    // Pro users see the full internal linking opportunities
+    const internalLinkOpps = allOpps.filter(o => o.opportunityType === 'INTERNAL_LINK_OPPORTUNITY');
+    if (internalLinkOpps.length > 0) {
+      const linkCards = internalLinkOpps.map(o => {
+        const ev = o.evidence ?? {};
+        const pages: Array<{ url: string }> = ev.sourcePages ?? [];
+        const pageList = pages.length > 0
+          ? pages.map(p => `<div class="text-xs text-slate-600 truncate" title="${esc(p.url)}">↗ ${esc(p.url)}</div>`).join('')
+          : (o.relatedPageUrl ? `<div class="text-xs text-slate-600 truncate">↗ ${esc(o.relatedPageUrl)}</div>` : '<div class="text-xs text-slate-400 italic">No page data</div>');
+
+        return `
+          <div class="bg-white rounded-lg border border-slate-100 p-3">
+            <div class="text-xs font-bold text-slate-800 mb-1">"${esc(o.query)}"</div>
+            ${pageList}
+            <div class="mt-1.5 text-[10px] text-slate-500">${esc(o.suggestedAction)}</div>
+          </div>`;
+      }).join('');
+
+      sections.push(`
+        <div class="mb-8">
+          <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Internal Linking Opportunities</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${linkCards}</div>
+        </div>`);
+    }
   }
 
   // --- SECTION 11: Action Roadmap ---
-  if (opps.length > 0) {
-    const sorted = [...opps].sort((a, b) => {
-      const pw: Record<string, number> = { high: 0, medium: 1, low: 2 };
-      const aw = pw[a.priority] ?? 3;
-      const bw = pw[b.priority] ?? 3;
-      if (aw !== bw) return aw - bw;
-      return b.score - a.score;
-    });
-    const roadmapItems = sorted.slice(0, 10).map((o, i) => {
-      const actionLabel = oppActionLabel(o.opportunityType);
-      const actionColor = oppActionColor(o.opportunityType);
-      return `
-        <div class="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-100">
-          <span class="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black bg-slate-100 text-slate-600">${String(i + 1).padStart(2, '0')}</span>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-sm font-bold text-slate-900">"${esc(o.query)}"</span>
-              <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-${oppPriorityColor(o.priority)}-100 text-${oppPriorityColor(o.priority)}-700">${o.priority}</span>
+  if (!isPro) {
+    // Free users see a Pro boundary
+    if (total > 0) {
+      sections.push(`
+        <div class="mb-8">
+          <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Action Roadmap</h2>
+          <p class="text-xs text-slate-500 mb-4">If you only have one hour this week, start here.</p>
+          ${proBoundary(
+            'Unlock Your Prioritized Action Roadmap',
+            'Get a specific, prioritized list of recommended actions, affected pages, and step-by-step fixes with Pro.'
+          )}
+        </div>`);
+    }
+  } else {
+    // Pro users see the full action roadmap
+    if (allOpps.length > 0) {
+      const sorted = [...allOpps].sort((a, b) => {
+        const pw: Record<string, number> = { high: 0, medium: 1, low: 2 };
+        const aw = pw[a.priority] ?? 3;
+        const bw = pw[b.priority] ?? 3;
+        if (aw !== bw) return aw - bw;
+        return b.score - a.score;
+      });
+      const roadmapItems = sorted.slice(0, 10).map((o, i) => {
+        const actionLabel = oppActionLabel(o.opportunityType);
+        const actionColor = oppActionColor(o.opportunityType);
+        return `
+          <div class="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-100">
+            <span class="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black bg-slate-100 text-slate-600">${String(i + 1).padStart(2, '0')}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-bold text-slate-900">"${esc(o.query)}"</span>
+                <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-${oppPriorityColor(o.priority)}-100 text-${oppPriorityColor(o.priority)}-700">${o.priority}</span>
+              </div>
+              <div class="mt-0.5 text-xs text-slate-500">${esc(o.suggestedAction)}</div>
+              <div class="mt-1"><span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded border ${actionColor}">${actionLabel}</span></div>
             </div>
-            <div class="mt-0.5 text-xs text-slate-500">${esc(o.suggestedAction)}</div>
-            <div class="mt-1"><span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded border ${actionColor}">${actionLabel}</span></div>
-          </div>
-        </div>`;
-    }).join('');
+          </div>`;
+      }).join('');
 
-    sections.push(`
-      <div class="mb-8">
-        <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Action Roadmap</h2>
-        <p class="text-xs text-slate-500 mb-4">If you only have one hour this week, start here.</p>
-        <div class="space-y-2">${roadmapItems}</div>
-      </div>`);
+      sections.push(`
+        <div class="mb-8">
+          <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Action Roadmap</h2>
+          <p class="text-xs text-slate-500 mb-4">If you only have one hour this week, start here.</p>
+          <div class="space-y-2">${roadmapItems}</div>
+        </div>`);
+    }
   }
 
   // --- Empty state ---
