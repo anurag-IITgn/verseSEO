@@ -65,6 +65,15 @@ test('POST /api/demo/scan completes a limited scan against fixture site', async 
   assert.ok(typeof body.tech.healthScore === 'number');
   assert.ok(body.tech.pagesCrawled > 0);
   assert.ok(body.tech.issueCount >= 0);
+  // Verify pageStats are present and accurate
+  assert.ok(body.tech.pageStats, 'pageStats should be present');
+  assert.ok(typeof body.tech.pageStats.total === 'number');
+  assert.ok(typeof body.tech.pageStats.http200 === 'number');
+  assert.ok(typeof body.tech.pageStats.withTitle === 'number');
+  assert.ok(typeof body.tech.pageStats.withMetaDescription === 'number');
+  assert.ok(typeof body.tech.pageStats.withCanonical === 'number');
+  assert.ok(body.tech.pageStats.total > 0, 'total pages should be > 0');
+  assert.ok(body.tech.pageStats.http200 <= body.tech.pageStats.total, 'http200 should not exceed total');
   demoProjectIds.push(body.projectId);
 });
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { after, before, test } from 'node:test';
+import { after, before, beforeEach, test } from 'node:test';
 import 'dotenv/config';
 
 process.env.NODE_ENV = 'test';
@@ -12,7 +12,8 @@ const { setRedditProviderForTesting } = await import('../src/reddit/registry.js'
 const { RedditUnavailableError } = await import('../src/reddit/errors.js');
 const { mapRedditSearchResponse } = await import('../src/reddit/mapping.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
+const { resetRedditUsageForTesting } = await import('../src/services/redditService.js');
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 type RedditProvider = import('../src/reddit/types.js').RedditProvider;
 type RedditPost = import('../src/reddit/types.js').RedditPost;
@@ -119,6 +120,7 @@ before(async () => {
   userEmail = `reddit-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
   sessionToken = user.sessionToken;
+  await setUserPlan(user.userId, 'pro');
   blockedServer = http.createServer((req, res) => {
     if (req.url === '/robots.txt') {
       res.writeHead(200, { 'content-type': 'text/plain' });
@@ -129,6 +131,10 @@ before(async () => {
     res.end('not found');
   });
   await new Promise<void>((resolve) => blockedServer.listen(0, '127.0.0.1', resolve));
+});
+
+beforeEach(() => {
+  resetRedditUsageForTesting();
 });
 
 after(async () => {

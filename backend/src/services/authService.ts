@@ -9,6 +9,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export interface PublicUser {
   id: string;
   email: string;
+  plan: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +23,7 @@ export function toPublicUser(user: User): PublicUser {
   return {
     id: user.id,
     email: user.email,
+    plan: user.plan,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

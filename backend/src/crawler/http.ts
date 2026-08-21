@@ -8,6 +8,7 @@ export interface FetchResult {
   body: Buffer;
   finalUrl: string;
   responseTimeMs: number;
+  headers: Headers;
 }
 
 export class FetchError extends Error {
@@ -54,11 +55,11 @@ export async function fetchPage(url: string, options: CrawlOptions): Promise<Fet
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location');
       if (!location) {
-        return { statusCode: response.status, statusText: response.statusText, contentType: null, body: Buffer.alloc(0), finalUrl: current, responseTimeMs };
+        return { statusCode: response.status, statusText: response.statusText, contentType: null, body: Buffer.alloc(0), finalUrl: current, responseTimeMs, headers: response.headers };
       }
       const target = resolveRedirectTarget(location, current, options.domain);
       if (!target || target === current) {
-        return { statusCode: response.status, statusText: response.statusText, contentType: null, body: Buffer.alloc(0), finalUrl: current, responseTimeMs };
+        return { statusCode: response.status, statusText: response.statusText, contentType: null, body: Buffer.alloc(0), finalUrl: current, responseTimeMs, headers: response.headers };
       }
       current = target;
       continue;
@@ -66,7 +67,7 @@ export async function fetchPage(url: string, options: CrawlOptions): Promise<Fet
 
     const contentType = response.headers.get('content-type');
     const body = Buffer.from(await response.arrayBuffer());
-    return { statusCode: response.status, statusText: response.statusText, contentType, body, finalUrl: current, responseTimeMs };
+    return { statusCode: response.status, statusText: response.statusText, contentType, body, finalUrl: current, responseTimeMs, headers: response.headers };
   }
 
   throw new FetchError('REDIRECT_LIMIT', url, `Redirect limit exceeded for ${url}`);

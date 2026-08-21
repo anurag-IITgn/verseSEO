@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { AnalyzablePage } from '../analysis/types.js';
 import { AiUnavailableError } from '../ai/errors.js';
 import { analyzeMention } from '../ai/mentionDetection.js';
@@ -10,13 +10,14 @@ import { crawlSite } from '../crawler/crawler.js';
 import { FetchError } from '../crawler/http.js';
 import type { CrawlSiteConfig, CrawlerSink } from '../crawler/types.js';
 import { db } from '../db/client.js';
-import { aiVisibilityResults, seoIssues } from '../db/schema.js';
+import { aiVisibilityResults, crawledPages, seoIssues } from '../db/schema.js';
 import { createCrawlRun, setCrawlRunCounters, setCrawlRunSignals, updateCrawlRunStatus } from '../repositories/crawlRepo.js';
 import { findPagesByCrawl, type CrawledPageRow } from '../repositories/pageRepo.js';
 import { insertCrawledPage } from '../repositories/pageRepo.js';
 import { insertProject, deleteProjectById } from '../repositories/projectRepo.js';
 import { extractTopics } from '../search/extract.js';
 import { AppError } from '../utils/errors.js';
+import { toAnalyzablePage } from '../utils/pageAdapter.js';
 import { assertPublicTargetUrl } from '../utils/ssrfGuard.js';
 import { performAnalysis } from './analysisService.js';
 
@@ -34,38 +35,23 @@ function reasonFor(input: {
   return `"${input.domain}" appeared in the answer to "${input.topic}" (${input.stance}).`;
 }
 
-function toAnalyzablePage(page: CrawledPageRow): AnalyzablePage {
-  return {
-    id: page.id,
-    url: page.url,
-    statusCode: page.statusCode,
-    contentType: page.contentType,
-    title: page.title,
-    metaDescription: page.metaDescription,
-    canonicalUrl: page.canonicalUrl,
-    robotsDirective: page.robotsDirective,
-    isIndexable: page.isIndexable,
-    wordCount: page.wordCount,
-    responseTimeMs: page.responseTimeMs,
-    internalLinks: page.internalLinks ?? [],
-  };
+function displayFromRaw(raw: number): number {
+  return Math.min(75, Math.max(15, Math.round(raw / 5) * 5));
 }
 
 export interface DemoAiResult {
   status: 'ok' | 'unavailable';
   reason: string | null;
   message: string | null;
-  provider: string | null;
-  model: string | null;
   overallVisibilityScore: number;
+  displayScore: number;
   mentionedCount: number;
   citedCount: number;
   recommendationCount: number;
+  queryCount: number;
+  topCompetitors: string[];
   results: Array<{
     topic: string;
-    prompt: string;
-    provider: string;
-    model: string;
     mentioned: boolean;
     cited: boolean;
     stance: string;
@@ -82,12 +68,13 @@ async function runDemoAiVisibility(crawlId: string, domain: string): Promise<Dem
       status: 'unavailable',
       reason: 'NOT_CONFIGURED',
       message: 'AI visibility is not connected.',
-      provider: null,
-      model: null,
       overallVisibilityScore: 0,
+      displayScore: displayFromRaw(0),
       mentionedCount: 0,
       citedCount: 0,
       recommendationCount: 0,
+      queryCount: 0,
+      topCompetitors: [],
       results: [],
     };
   }
@@ -102,12 +89,13 @@ async function runDemoAiVisibility(crawlId: string, domain: string): Promise<Dem
       status: 'ok',
       reason: null,
       message: null,
-      provider: provider.name,
-      model: provider.model,
       overallVisibilityScore: 0,
+      displayScore: displayFromRaw(0),
       mentionedCount: 0,
       citedCount: 0,
       recommendationCount: 0,
+      queryCount: 0,
+      topCompetitors: [],
       results: [],
     };
   }
@@ -148,12 +136,13 @@ async function runDemoAiVisibility(crawlId: string, domain: string): Promise<Dem
       status: 'unavailable',
       reason: 'PROVIDER_ERROR',
       message,
-      provider: provider.name,
-      model: provider.model,
       overallVisibilityScore: 0,
+      displayScore: displayFromRaw(0),
       mentionedCount: 0,
       citedCount: 0,
       recommendationCount: 0,
+      queryCount: 0,
+      topCompetitors: [],
       results: [],
     };
   }
@@ -171,28 +160,41 @@ async function runDemoAiVisibility(crawlId: string, domain: string): Promise<Dem
   const overallVisibilityScore =
     rows.length === 0 ? 0 : Math.round(rows.reduce((sum, r) => sum + (r.visibilityScore ?? 0), 0) / rows.length);
 
+  const allCompetitors = rows.flatMap((r) => r.competitors ?? []);
+  const competitorCounts = new Map<string, number>();
+  for (const c of allCompetitors) {
+    competitorCounts.set(c, (competitorCounts.get(c) ?? 0) + 1);
+  }
+  const topCompetitors = [...competitorCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([host]) => host);
+
   return {
     status: 'ok',
     reason: null,
     message: null,
-    provider: provider.name,
-    model: provider.model,
     overallVisibilityScore,
+    displayScore: displayFromRaw(overallVisibilityScore),
     mentionedCount,
     citedCount,
     recommendationCount,
-    results: rows.map((r) => ({
-      topic: r.prompt,
-      prompt: r.prompt,
-      provider: r.provider,
-      model: r.model,
-      mentioned: r.mentioned,
-      cited: r.cited,
-      stance: r.stance,
-      visibilityScore: r.visibilityScore,
-      reason: r.reason,
-      competitors: r.competitors ?? [],
-    })),
+    queryCount: rows.length,
+    topCompetitors,
+    results: rows.map((r) => {
+      const promptText: string = r.prompt;
+      const topicMatch = promptText.match(/"([^"]+)"\??\s*$/);
+      const topic = topicMatch ? topicMatch[1] : promptText;
+      return {
+        topic,
+        mentioned: r.mentioned,
+        cited: r.cited,
+        stance: r.stance,
+        visibilityScore: r.visibilityScore,
+        reason: r.reason,
+        competitors: r.competitors ?? [],
+      };
+    }),
   };
 }
 
@@ -210,8 +212,162 @@ export interface DemoScanResult {
     issueCount: number;
     issueCounts: Record<string, number>;
     issues: Array<{ issueType: string; severity: string; message: string }>;
+    pageStats: {
+      total: number;
+      http200: number;
+      withTitle: number;
+      withMetaDescription: number;
+      withCanonical: number;
+    };
+    headingStats: {
+      totalH1: number;
+      totalH2: number;
+      totalH3: number;
+      totalH4: number;
+      totalH5: number;
+      totalH6: number;
+      pagesWithH1: number;
+      pagesWithMultipleH1: number;
+    };
+    imageStats: {
+      totalImages: number;
+      totalMissingAlt: number;
+    };
+    structuredDataStats: {
+      totalJsonLdBlocks: number;
+      schemaTypes: string[];
+    };
+    socialStats: {
+      pagesWithOgTags: number;
+      pagesWithTwitterTags: number;
+    };
+    performanceStats: {
+      avgResponseTimeMs: number | null;
+      maxResponseTimeMs: number | null;
+      avgWordCount: number | null;
+    };
+    httpStatusDistribution: Record<number, number>;
+    serverInfo: {
+      servers: string[];
+      cdns: string[];
+    };
   } | null;
   ai: DemoAiResult | null;
+}
+
+async function getPageStats(crawlId: string): Promise<{
+  total: number;
+  http200: number;
+  withTitle: number;
+  withMetaDescription: number;
+  withCanonical: number;
+}> {
+  const [row] = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      http200: sql<number>`count(*) filter (where ${crawledPages.statusCode} = 200)::int`,
+      withTitle: sql<number>`count(*) filter (where ${crawledPages.title} is not null and ${crawledPages.title} != '')::int`,
+      withMetaDescription: sql<number>`count(*) filter (where ${crawledPages.metaDescription} is not null and ${crawledPages.metaDescription} != '')::int`,
+      withCanonical: sql<number>`count(*) filter (where ${crawledPages.canonicalUrl} is not null and ${crawledPages.canonicalUrl} != '')::int`,
+    })
+    .from(crawledPages)
+    .where(eq(crawledPages.crawlRunId, crawlId));
+
+  return {
+    total: row?.total ?? 0,
+    http200: row?.http200 ?? 0,
+    withTitle: row?.withTitle ?? 0,
+    withMetaDescription: row?.withMetaDescription ?? 0,
+    withCanonical: row?.withCanonical ?? 0,
+  };
+}
+
+async function getHeadingStats(crawlId: string) {
+  const [row] = await db
+    .select({
+      totalH1: sql<number>`coalesce(sum(${crawledPages.h1Count}), 0)::int`,
+      totalH2: sql<number>`coalesce(sum(${crawledPages.h2Count}), 0)::int`,
+      totalH3: sql<number>`coalesce(sum(${crawledPages.h3Count}), 0)::int`,
+      totalH4: sql<number>`coalesce(sum(${crawledPages.h4Count}), 0)::int`,
+      totalH5: sql<number>`coalesce(sum(${crawledPages.h5Count}), 0)::int`,
+      totalH6: sql<number>`coalesce(sum(${crawledPages.h6Count}), 0)::int`,
+      pagesWithH1: sql<number>`count(*) filter (where ${crawledPages.h1Count} > 0)::int`,
+      pagesWithMultipleH1: sql<number>`count(*) filter (where ${crawledPages.h1Count} > 1)::int`,
+    })
+    .from(crawledPages)
+    .where(eq(crawledPages.crawlRunId, crawlId));
+  return {
+    totalH1: row?.totalH1 ?? 0,
+    totalH2: row?.totalH2 ?? 0,
+    totalH3: row?.totalH3 ?? 0,
+    totalH4: row?.totalH4 ?? 0,
+    totalH5: row?.totalH5 ?? 0,
+    totalH6: row?.totalH6 ?? 0,
+    pagesWithH1: row?.pagesWithH1 ?? 0,
+    pagesWithMultipleH1: row?.pagesWithMultipleH1 ?? 0,
+  };
+}
+
+async function getImageStats(crawlId: string) {
+  const [row] = await db
+    .select({
+      totalImages: sql<number>`coalesce(sum(${crawledPages.imageCount}), 0)::int`,
+      totalMissingAlt: sql<number>`coalesce(sum(${crawledPages.imagesMissingAlt}), 0)::int`,
+    })
+    .from(crawledPages)
+    .where(eq(crawledPages.crawlRunId, crawlId));
+  return { totalImages: row?.totalImages ?? 0, totalMissingAlt: row?.totalMissingAlt ?? 0 };
+}
+
+async function getStructuredDataStats(crawlId: string) {
+  const rows = await db.select({ types: crawledPages.jsonLdTypes }).from(crawledPages).where(eq(crawledPages.crawlRunId, crawlId));
+  const allTypes = new Set<string>();
+  let totalBlocks = 0;
+  for (const row of rows) {
+    if (row.types && row.types.length > 0) {
+      totalBlocks += row.types.length;
+      for (const t of row.types) allTypes.add(t);
+    }
+  }
+  return { totalJsonLdBlocks: totalBlocks, schemaTypes: [...allTypes] };
+}
+
+async function getSocialStats(crawlId: string) {
+  const [row] = await db
+    .select({
+      pagesWithOgTags: sql<number>`count(*) filter (where (${crawledPages.ogTitle} is not null and ${crawledPages.ogTitle} != '') or (${crawledPages.ogDescription} is not null and ${crawledPages.ogDescription} != ''))::int`,
+      pagesWithTwitterTags: sql<number>`count(*) filter (where (${crawledPages.twitterCard} is not null and ${crawledPages.twitterCard} != ''))::int`,
+    })
+    .from(crawledPages)
+    .where(eq(crawledPages.crawlRunId, crawlId));
+  return { pagesWithOgTags: row?.pagesWithOgTags ?? 0, pagesWithTwitterTags: row?.pagesWithTwitterTags ?? 0 };
+}
+
+async function getPerformanceStats(crawlId: string) {
+  const [row] = await db
+    .select({
+      avgResponseTimeMs: sql<number>`avg(${crawledPages.responseTimeMs})::int`,
+      maxResponseTimeMs: sql<number>`max(${crawledPages.responseTimeMs})::int`,
+      avgWordCount: sql<number>`avg(${crawledPages.wordCount})::int`,
+    })
+    .from(crawledPages)
+    .where(eq(crawledPages.crawlRunId, crawlId));
+  return { avgResponseTimeMs: row?.avgResponseTimeMs ?? null, maxResponseTimeMs: row?.maxResponseTimeMs ?? null, avgWordCount: row?.avgWordCount ?? null };
+}
+
+async function getHttpStatusDistribution(crawlId: string) {
+  const rows = await db.select({ statusCode: crawledPages.statusCode, count: sql<number>`count(*)::int` }).from(crawledPages).where(eq(crawledPages.crawlRunId, crawlId)).groupBy(crawledPages.statusCode);
+  const dist: Record<number, number> = {};
+  for (const row of rows) { if (row.statusCode !== null) dist[row.statusCode] = row.count; }
+  return dist;
+}
+
+async function getServerInfo(crawlId: string) {
+  const rows = await db.selectDistinct({ serverHeader: crawledPages.serverHeader, cdnHeader: crawledPages.cdnHeader }).from(crawledPages).where(eq(crawledPages.crawlRunId, crawlId));
+  const servers = new Set<string>();
+  const cdns = new Set<string>();
+  for (const row of rows) { if (row.serverHeader) servers.add(row.serverHeader); if (row.cdnHeader) cdns.add(row.cdnHeader); }
+  return { servers: [...servers], cdns: [...cdns] };
 }
 
 export async function runDemoScan(websiteUrl: string): Promise<DemoScanResult> {
@@ -277,6 +433,15 @@ export async function runDemoScan(websiteUrl: string): Promise<DemoScanResult> {
       .from(seoIssues)
       .where(eq(seoIssues.crawlRunId, run.id));
 
+    const pageStats = await getPageStats(run.id);
+    const headingStats = await getHeadingStats(run.id);
+    const imageStats = await getImageStats(run.id);
+    const structuredDataStats = await getStructuredDataStats(run.id);
+    const socialStats = await getSocialStats(run.id);
+    const performanceStats = await getPerformanceStats(run.id);
+    const httpStatusDistribution = await getHttpStatusDistribution(run.id);
+    const serverInfo = await getServerInfo(run.id);
+
     let aiResult: DemoAiResult | null = null;
     try {
       aiResult = await runDemoAiVisibility(run.id, domain);
@@ -299,6 +464,14 @@ export async function runDemoScan(websiteUrl: string): Promise<DemoScanResult> {
         issueCount: analysis.issueCount,
         issueCounts: analysis.issueCounts,
         issues: issues.map((i) => ({ issueType: i.issueType, severity: i.severity, message: i.message })),
+        pageStats,
+        headingStats,
+        imageStats,
+        structuredDataStats,
+        socialStats,
+        performanceStats,
+        httpStatusDistribution,
+        serverInfo,
       },
       ai: aiResult,
     };

@@ -48,6 +48,8 @@ const envSchema = z
     REDDIT_USER_AGENT: z.string().default('FoundableMicrotool/0.1 (SEO research tool)'),
     // Reddit discovery via Apify (apify.com) when an API token is configured.
     APIFY_API_TOKEN: z.string().optional(),
+    // Reddit discovery via Brave Search API (brave.com).
+    BRAVE_API_KEY: z.string().optional(),
     // AI visibility (official Google Gemini API, free tier).
     GEMINI_API_KEY: z.string().optional(),
     GEMINI_MODEL: z.string().default('gemini-3.1-flash-lite'),

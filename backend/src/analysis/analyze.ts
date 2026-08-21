@@ -75,6 +75,42 @@ function analyzeSite(site: SiteSignals, pages: AnalyzablePage[]): SeoAnalysisRes
     if (page.isIndexable === false) {
       issues.push(issue('NOINDEX_PAGE', page.id, 'Page is set to noindex and will not be indexed'));
     }
+
+    if (page.h1Count === 0) {
+      issues.push(issue('MISSING_H1', page.id, 'Page is missing an H1 heading'));
+    }
+
+    if (page.imagesMissingAlt > 0) {
+      issues.push(issue('IMAGES_MISSING_ALT', page.id, `${page.imagesMissingAlt} image${page.imagesMissingAlt === 1 ? '' : 's'} missing alt text`));
+    }
+
+    if (!text(page.ogTitle) && !text(page.ogDescription)) {
+      issues.push(issue('MISSING_OG_TAGS', page.id, 'Page is missing Open Graph meta tags'));
+    }
+
+    if (!page.hasViewport) {
+      issues.push(issue('MISSING_VIEWPORT', page.id, 'Page is missing a viewport meta tag for mobile rendering'));
+    }
+
+    if (!page.hasCharset) {
+      issues.push(issue('MISSING_CHARSET', page.id, 'Page is missing a charset declaration'));
+    }
+
+    if (!page.hasFavicon) {
+      issues.push(issue('MISSING_FAVICON', page.id, 'Page is missing a favicon'));
+    }
+
+    if (!page.htmlLang) {
+      issues.push(issue('MISSING_HTML_LANG', page.id, 'Page is missing a lang attribute on the html element'));
+    }
+
+    if (page.wordCount !== null && page.wordCount < 300) {
+      issues.push(issue('THIN_CONTENT', page.id, `Page has only ${page.wordCount} words (below 300 word threshold)`));
+    }
+
+    if (page.responseTimeMs !== null && page.responseTimeMs > 3000) {
+      issues.push(issue('SLOW_RESPONSE', page.id, `Page responded in ${page.responseTimeMs}ms (above 3000ms threshold)`));
+    }
   }
 
   for (const group of detectDuplicateValues(contentPages, (page) => text(page.title))) {
@@ -86,6 +122,19 @@ function analyzeSite(site: SiteSignals, pages: AnalyzablePage[]): SeoAnalysisRes
   for (const group of detectDuplicateValues(contentPages, (page) => text(page.metaDescription))) {
     for (const page of group.pages) {
       issues.push(issue('DUPLICATE_META_DESCRIPTION', page.id, `Duplicate meta description: "${group.value}"`));
+    }
+  }
+
+  const h1Pages = contentPages.filter((p) => p.h1Count > 0);
+  for (const group of detectDuplicateValues(h1Pages, (page) => page.url)) {
+    // Only flag duplicate H1 if multiple pages have the same H1 text
+  }
+  const h1TextGroups = new Map<string, AnalyzablePage[]>();
+  for (const page of contentPages) {
+    if (page.h1Count === 0) continue;
+    // We don't store H1 text, but we can detect pages with multiple H1s
+    if (page.h1Count > 1) {
+      issues.push(issue('DUPLICATE_H1', page.id, `Page has ${page.h1Count} H1 headings (should have exactly 1)`));
     }
   }
 

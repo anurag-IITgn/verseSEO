@@ -114,6 +114,16 @@
             <div class="space-y-1.5 text-xs text-slate-600 font-mono" id="demo-tech-items">
               <div class="text-slate-400">Run a scan to see real technical SEO results.</div>
             </div>
+            <!-- Conversion CTA (hidden until scan completes) -->
+            <div id="demo-tech-cta" class="hidden pt-3 mt-3 border-t border-slate-100 text-center space-y-2">
+              <p class="text-[11px] font-semibold text-slate-700">Want the full diagnosis?</p>
+              <p class="text-[11px] text-slate-500 leading-relaxed">See what's wrong, why it matters, which pages are affected, and how to fix it.</p>
+              <a id="demo-tech-signup" href="/register" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all">
+                Create your free account
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+              </a>
+              <p class="text-[10px] text-slate-400">No credit card required.</p>
+            </div>
           </div>
 
           <!-- 2. Search Intent — LOCKED -->
@@ -213,6 +223,8 @@
   const techItems = document.getElementById('demo-tech-items');
   const aiStatus = document.getElementById('demo-ai-status');
   const aiItems = document.getElementById('demo-ai-items');
+  const techCta = document.getElementById('demo-tech-cta');
+  const techSignup = document.getElementById('demo-tech-signup') as HTMLAnchorElement | null;
   const signupLink = document.getElementById('demo-signup-link') as HTMLAnchorElement | null;
   const ctaBox = document.getElementById('demo-cta');
 
@@ -240,29 +252,6 @@
     if (score >= 40) return 'Needs Fixes';
     return 'Critical';
   }
-
-  const issueLabels: Record<string, string> = {
-    MISSING_HTTPS: 'Website not served over HTTPS',
-    MISSING_ROBOTS_TXT: 'Missing robots.txt',
-    MISSING_SITEMAP: 'Missing XML sitemap',
-    MISSING_TITLE: 'Missing title tags',
-    DUPLICATE_TITLE: 'Duplicate title tags',
-    TITLE_TOO_SHORT: 'Titles below recommended length',
-    TITLE_TOO_LONG: 'Titles above recommended length',
-    MISSING_META_DESCRIPTION: 'Missing meta descriptions',
-    DUPLICATE_META_DESCRIPTION: 'Duplicate meta descriptions',
-    MISSING_CANONICAL: 'Missing canonical tags',
-    NOINDEX_PAGE: 'Pages set to noindex',
-    BROKEN_INTERNAL_LINK: 'Broken internal links',
-    NON_200_PAGE: 'Pages returning non-200 responses',
-  };
-
-  const issueOrder = [
-    'MISSING_HTTPS', 'MISSING_ROBOTS_TXT', 'MISSING_SITEMAP',
-    'MISSING_TITLE', 'DUPLICATE_TITLE', 'TITLE_TOO_SHORT', 'TITLE_TOO_LONG',
-    'MISSING_META_DESCRIPTION', 'DUPLICATE_META_DESCRIPTION',
-    'MISSING_CANONICAL', 'NOINDEX_PAGE', 'BROKEN_INTERNAL_LINK', 'NON_200_PAGE',
-  ];
 
   function showProgress(title: string, subtitle: string, width = 15) {
     if (!progressBox || !resultsBox || !progressBar) return;
@@ -299,21 +288,91 @@
     issueCount: number;
     issueCounts: Record<string, number>;
     issues: Array<{ issueType: string; severity: string; message: string }>;
+    pageStats: {
+      total: number;
+      http200: number;
+      withTitle: number;
+      withMetaDescription: number;
+      withCanonical: number;
+    };
   }) {
     const healthScore = tech.healthScore ?? 0;
+    const ps = tech.pageStats;
     if (resDomain) resDomain.textContent = domain;
     if (resScore) resScore.innerHTML = `${healthScore} <span class="text-sm font-normal text-slate-400">/ 100</span>`;
     if (techStatus) techStatus.textContent = `${healthScore}% (${scoreLabel(healthScore)})`;
 
     const lines: string[] = [];
-    for (const type of issueOrder) {
-      const n = tech.issueCounts[type] ?? 0;
-      if (n > 0) lines.push(`\u26A0 ${n} ${issueLabels[type]}`);
+
+    // 1. Pages crawled
+    if (ps.total > 0) lines.push(`\u2713 ${ps.total} page${ps.total === 1 ? '' : 's'} crawled`);
+
+    // 2. HTTP 200 status
+    if (ps.total > 0 && ps.http200 === ps.total) {
+      lines.push(`\u2713 ${ps.http200}/${ps.total} pages return 200`);
+    } else if (ps.total > 0 && ps.http200 > 0) {
+      lines.push(`\u26A0 ${ps.http200}/${ps.total} pages return 200`);
     }
-    if (tech.issueCount === 0) lines.push('\u2713 No technical issues found');
-    if (tech.robotsFound) lines.push('\u2713 robots.txt found');
-    if (tech.sitemapFound) lines.push('\u2713 XML sitemap found');
-    if (tech.pagesCrawled > 0) lines.push(`\u2713 Crawled ${tech.pagesCrawled} pages`);
+
+    // 3. Title tag health
+    if (ps.total > 0) {
+      const titleIssues = (tech.issueCounts['TITLE_TOO_SHORT'] ?? 0) + (tech.issueCounts['TITLE_TOO_LONG'] ?? 0) + (tech.issueCounts['MISSING_TITLE'] ?? 0);
+      if (titleIssues === 0) {
+        lines.push(`\u2713 ${ps.withTitle}/${ps.total} pages have titles`);
+      } else {
+        const short = tech.issueCounts['TITLE_TOO_SHORT'] ?? 0;
+        const long = tech.issueCounts['TITLE_TOO_LONG'] ?? 0;
+        const missing = tech.issueCounts['MISSING_TITLE'] ?? 0;
+        const parts: string[] = [];
+        if (short > 0) parts.push(`${short} too short`);
+        if (long > 0) parts.push(`${long} too long`);
+        if (missing > 0) parts.push(`${missing} missing`);
+        lines.push(`\u26A0 ${parts.join(', ')} — ${ps.withTitle}/${ps.total} have titles`);
+      }
+    }
+
+    // 4. Meta description health
+    if (ps.total > 0) {
+      const metaIssues = (tech.issueCounts['MISSING_META_DESCRIPTION'] ?? 0) + (tech.issueCounts['DUPLICATE_META_DESCRIPTION'] ?? 0);
+      if (metaIssues === 0) {
+        lines.push(`\u2713 ${ps.withMetaDescription}/${ps.total} meta descriptions present`);
+      } else {
+        const missing = tech.issueCounts['MISSING_META_DESCRIPTION'] ?? 0;
+        const dupes = tech.issueCounts['DUPLICATE_META_DESCRIPTION'] ?? 0;
+        const parts: string[] = [];
+        if (missing > 0) parts.push(`${missing} missing`);
+        if (dupes > 0) parts.push(`${dupes} duplicated`);
+        lines.push(`\u26A0 ${parts.join(', ')} — ${ps.withMetaDescription}/${ps.total} present`);
+      }
+    }
+
+    // 5. Canonical coverage
+    if (ps.total > 0 && ps.withCanonical === ps.total) {
+      lines.push(`\u2713 ${ps.withCanonical}/${ps.total} canonical tags set`);
+    } else if (ps.withCanonical > 0) {
+      lines.push(`\u26A0 ${ps.withCanonical}/${ps.total} canonical tags set`);
+    }
+
+    // 6. robots.txt
+    if (tech.robotsFound) {
+      lines.push('\u2713 robots.txt found');
+    } else {
+      lines.push('\u26A0 Missing robots.txt');
+    }
+
+    // 7. sitemap.xml
+    if (tech.sitemapFound) {
+      lines.push('\u2713 sitemap.xml found');
+    } else {
+      lines.push('\u26A0 Missing sitemap.xml');
+    }
+
+    // 8. Broken links (if any)
+    const brokenLinks = tech.issueCounts['BROKEN_INTERNAL_LINK'] ?? 0;
+    if (brokenLinks > 0) {
+      lines.push(`\u26A0 ${brokenLinks} broken internal link${brokenLinks === 1 ? '' : 's'}`);
+    }
+
     if (lines.length === 0) lines.push('\u2713 No technical issues found');
 
     if (techItems) {
@@ -322,16 +381,21 @@
         return `<div class="flex items-center gap-1.5 ${isGood ? 'text-emerald-700' : 'text-amber-700'}">${escapeHtml(line)}</div>`;
       }).join('');
     }
+
+    // Show conversion CTA
+    if (techCta) techCta.classList.remove('hidden');
+    if (techSignup) techSignup.href = `/register?next=/app&website=${encodeURIComponent(domain)}`;
   }
 
   function renderAiPanel(ai: {
     status: string;
     message?: string | null;
-    provider?: string | null;
-    model?: string | null;
     overallVisibilityScore?: number;
+    displayScore?: number;
     mentionedCount?: number;
     citedCount?: number;
+    queryCount?: number;
+    topCompetitors?: string[];
     results?: Array<{
       topic: string;
       mentioned: boolean;
@@ -354,41 +418,75 @@
       return;
     }
 
+    const score = ai.displayScore ?? ai.overallVisibilityScore ?? 0;
     const mentioned = ai.mentionedCount ?? 0;
     const cited = ai.citedCount ?? 0;
+    const queryCount = ai.queryCount ?? results.length;
+    const topCompetitors = ai.topCompetitors ?? [];
+
     if (aiStatus) {
       aiStatus.classList.remove('text-slate-500', 'text-amber-700');
       aiStatus.classList.add('text-violet-700');
-      aiStatus.textContent = `${mentioned} mentioned \u00B7 ${cited} cited`;
+      aiStatus.textContent = `${queryCount} quer${queryCount === 1 ? 'y' : 'ies'} analyzed`;
     }
-    if (aiItems) {
-      const modelLabel = [ai.provider, ai.model].filter(Boolean).join(' \u00B7 ');
-      aiItems.innerHTML = `
-        <div class="flex justify-between items-center">
-          <span class="text-slate-500">${escapeHtml(modelLabel || 'AI provider')}</span>
-          <span class="text-violet-700 font-bold">Score ${ai.overallVisibilityScore ?? 0}/100</span>
+
+    let scoreInterpretation: string;
+    if (score >= 81) scoreInterpretation = 'Excellent AI Visibility';
+    else if (score >= 61) scoreInterpretation = 'Strong AI Visibility';
+    else if (score >= 41) scoreInterpretation = 'Moderate AI Visibility';
+    else if (score >= 21) scoreInterpretation = 'Low AI Visibility';
+    else scoreInterpretation = 'Very Low AI Visibility';
+
+    let explanation: string;
+    if (mentioned === 0) {
+      explanation = "Your site wasn\u2019t mentioned in the AI responses we analyzed.";
+    } else if (cited > 0) {
+      explanation = `Your site was linked in ${cited} of ${queryCount} AI responses.`;
+    } else {
+      explanation = `Your site was mentioned in ${mentioned} of ${queryCount} AI responses, but not linked.`;
+    }
+
+    let html = `
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-2xl font-black text-violet-700">${score}<span class="text-sm font-normal text-slate-400"> / 100</span></span>
+      </div>
+      <div class="text-xs font-bold uppercase tracking-wide text-violet-700 mb-2">${scoreInterpretation}</div>
+      <p class="text-xs text-slate-600 mb-2">${escapeHtml(explanation)}</p>
+    `;
+
+    if (mentioned === 0 && topCompetitors.length > 0) {
+      html += `<p class="text-xs text-slate-500 mb-2">Competitors were mentioned more often in AI answers for your category.</p>`;
+    }
+
+    html += `<div class="space-y-1.5">`;
+    for (const r of results.slice(0, 5)) {
+      const icon = r.mentioned ? '\u2713' : '\u2715';
+      const iconClass = r.mentioned ? 'text-emerald-600' : 'text-rose-500';
+      const label = r.cited ? 'Mentioned & linked' : r.mentioned ? 'Mentioned' : 'Not mentioned';
+      const labelClass = r.mentioned ? 'text-emerald-700 font-semibold' : 'text-rose-600 font-semibold';
+      html += `
+        <div class="flex items-center gap-2 text-xs">
+          <span class="${iconClass} font-bold shrink-0">${icon}</span>
+          <span class="font-semibold text-slate-800 truncate">"${escapeHtml(r.topic)}"</span>
+          <span class="${labelClass} ml-auto shrink-0">${label}</span>
         </div>
-      ` + results.slice(0, 5).map(r => {
-        const stanceClass = r.stance === 'recommendation' ? 'text-emerald-700 font-bold'
-          : r.stance === 'negative' ? 'text-rose-600 font-bold' : 'text-slate-600';
-        const mentionLabel = r.cited ? '\u2713 Mentioned & linked'
-          : r.mentioned ? '\u2713 Mentioned' : '\u2715 Not mentioned';
-        const mentionClass = r.mentioned ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold';
-        return `
-          <div class="bg-white p-2 rounded border border-slate-200/80 space-y-0.5">
-            <div class="flex justify-between items-center gap-2">
-              <span class="font-semibold truncate">"${escapeHtml(r.topic)}"</span>
-              <span class="text-violet-700 font-bold font-mono ml-2 shrink-0">${r.visibilityScore}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="${mentionClass}">${mentionLabel}</span>
-              <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border border-violet-200 text-violet-700">${escapeHtml(r.stance)}</span>
-            </div>
-            <div class="text-[11px] text-slate-600">${escapeHtml(r.reason)}</div>
-          </div>
-        `;
-      }).join('');
+      `;
     }
+    html += `</div>`;
+
+    html += `
+      <div class="pt-3 mt-3 border-t border-violet-100 text-center space-y-2">
+        <p class="text-[11px] font-semibold text-slate-700">Want the full AI visibility analysis?</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed">See which competitors are being recommended, where your site is missing, and which queries represent opportunities.</p>
+        <a id="demo-ai-signup" href="/register" class="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all">
+          Create your free account
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+        </a>
+        <p class="text-[10px] text-slate-400">No credit card required.</p>
+      </div>
+    `;
+
+    if (aiItems) aiItems.innerHTML = html;
   }
 
   async function runDemoScan() {
@@ -433,6 +531,9 @@
 
       if (data.tech) renderTechPanel(domain, data.tech);
       if (data.ai) renderAiPanel(data.ai);
+
+      const aiSignup = document.getElementById('demo-ai-signup') as HTMLAnchorElement | null;
+      if (aiSignup) aiSignup.href = `/register?next=/app&website=${encodeURIComponent(domain)}`;
 
       showResults();
       if (ctaBox) ctaBox.classList.remove('hidden');

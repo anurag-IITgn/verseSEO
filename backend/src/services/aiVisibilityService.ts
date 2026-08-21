@@ -16,6 +16,7 @@ import {
 } from '../repositories/aiVisibilityRepo.js';
 import { extractTopics } from '../search/extract.js';
 import { AppError } from '../utils/errors.js';
+import { toAnalyzablePage } from '../utils/pageAdapter.js';
 import { requireCrawlOwned } from './ownership.js';
 
 export interface AiVisibilityResultView {
@@ -41,32 +42,25 @@ export interface AiVisibilityResponse {
   topicsAnalyzed: number;
   promptsRun: number;
   overallVisibilityScore: number;
+  displayScore: number;
   mentionedCount: number;
   citedCount: number;
   recommendationCount: number;
   results: AiVisibilityResultView[];
 }
 
-function toAnalyzablePage(page: CrawledPageRow): AnalyzablePage {
-  return {
-    id: page.id,
-    url: page.url,
-    statusCode: page.statusCode,
-    contentType: page.contentType,
-    title: page.title,
-    metaDescription: page.metaDescription,
-    canonicalUrl: page.canonicalUrl,
-    robotsDirective: page.robotsDirective,
-    isIndexable: page.isIndexable,
-    wordCount: page.wordCount,
-    responseTimeMs: page.responseTimeMs,
-    internalLinks: page.internalLinks ?? [],
-  };
+function extractTopicFromPrompt(prompt: string): string {
+  const match = prompt.match(/"([^"]+)"\??\s*$/);
+  return match ? match[1] : prompt;
+}
+
+function displayFromRaw(raw: number): number {
+  return Math.min(75, Math.max(15, Math.round(raw / 5) * 5));
 }
 
 function toView(row: AiVisibilityRow): AiVisibilityResultView {
   return {
-    topic: row.prompt,
+    topic: extractTopicFromPrompt(row.prompt),
     prompt: row.prompt,
     provider: row.provider,
     model: row.model,
@@ -131,6 +125,7 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
       topicsAnalyzed,
       promptsRun: 0,
       overallVisibilityScore: 0,
+      displayScore: 15,
       mentionedCount: 0,
       citedCount: 0,
       recommendationCount: 0,
@@ -150,6 +145,7 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
       topicsAnalyzed,
       promptsRun: 0,
       overallVisibilityScore: 0,
+      displayScore: 15,
       mentionedCount: 0,
       citedCount: 0,
       recommendationCount: 0,
@@ -197,6 +193,7 @@ export async function getAiVisibility(userId: string, crawlId: string): Promise<
       topicsAnalyzed,
       promptsRun: 0,
       overallVisibilityScore: 0,
+      displayScore: 15,
       mentionedCount: 0,
       citedCount: 0,
       recommendationCount: 0,
@@ -241,6 +238,7 @@ function buildResponse(
     topicsAnalyzed,
     promptsRun: results.length,
     overallVisibilityScore,
+    displayScore: displayFromRaw(overallVisibilityScore),
     mentionedCount,
     citedCount,
     recommendationCount,

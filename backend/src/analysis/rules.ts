@@ -35,6 +35,17 @@ export const DEFAULT_SEVERITY: Record<IssueType, IssueSeverity> = {
   MISSING_ROBOTS_TXT: 'warning',
   MISSING_SITEMAP: 'warning',
   MISSING_HTTPS: 'error',
+  MISSING_H1: 'error',
+  DUPLICATE_H1: 'warning',
+  IMAGES_MISSING_ALT: 'warning',
+  MISSING_OG_TAGS: 'warning',
+  MISSING_TWITTER_TAGS: 'info',
+  MISSING_VIEWPORT: 'warning',
+  MISSING_CHARSET: 'info',
+  MISSING_FAVICON: 'info',
+  MISSING_HTML_LANG: 'info',
+  THIN_CONTENT: 'warning',
+  SLOW_RESPONSE: 'warning',
 };
 
 export function calculateHealthScore(issues: { severity: IssueSeverity }[]): number {

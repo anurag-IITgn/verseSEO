@@ -21,6 +21,7 @@ import {
 } from '../repositories/contentRepo.js';
 import { extractTopics } from '../search/extract.js';
 import { AppError } from '../utils/errors.js';
+import { toAnalyzablePage } from '../utils/pageAdapter.js';
 import { requireCrawlOwned } from './ownership.js';
 
 export interface ContentRecommendationView {
@@ -44,23 +45,6 @@ export interface ContentRecommendationsResponse {
   topicsAnalyzed: number;
   total: number;
   recommendations: ContentRecommendationView[];
-}
-
-function toAnalyzablePage(page: CrawledPageRow): AnalyzablePage {
-  return {
-    id: page.id,
-    url: page.url,
-    statusCode: page.statusCode,
-    contentType: page.contentType,
-    title: page.title,
-    metaDescription: page.metaDescription,
-    canonicalUrl: page.canonicalUrl,
-    robotsDirective: page.robotsDirective,
-    isIndexable: page.isIndexable,
-    wordCount: page.wordCount,
-    responseTimeMs: page.responseTimeMs,
-    internalLinks: page.internalLinks ?? [],
-  };
 }
 
 function toView(row: ContentRecommendationRow): ContentRecommendationView {

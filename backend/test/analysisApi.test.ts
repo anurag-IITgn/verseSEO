@@ -139,7 +139,7 @@ test('completes the full flow: project -> crawl -> analysis -> issues and health
     const non200 = results.issues.find((issue: { issueType: string }) => issue.issueType === 'NON_200_PAGE');
     assert.equal(non200.severity, 'warning', 'a 404 page is a warning');
 
-    assert.equal(results.healthScore, 54, 'health score must be deterministic and match the documented weights');
+    assert.equal(results.healthScore, 18, 'health score must be deterministic and match the documented weights');
 
     const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM seo_issues WHERE crawl_run_id = $1', [crawlId]);
     assert.equal(rows[0].total, results.issueCount, 'issues must be persisted');
@@ -155,15 +155,15 @@ test('re-running analysis is idempotent and never duplicates issues', async () =
     await pollCrawl(crawlId);
 
     const first = (await authedInject({ method: 'POST', url: `/api/crawls/${crawlId}/analyze` })).json();
-    assert.equal(first.issueCount, 18);
+    assert.equal(first.issueCount, 30);
 
     const second = (await authedInject({ method: 'POST', url: `/api/crawls/${crawlId}/analyze` })).json();
-    assert.equal(second.issueCount, 18);
+    assert.equal(second.issueCount, 30);
     assert.equal(second.healthScore, first.healthScore);
     assert.deepEqual(second.issueCounts, first.issueCounts);
 
     const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM seo_issues WHERE crawl_run_id = $1', [crawlId]);
-    assert.equal(rows[0].total, 18, 'issues must not be duplicated after a second analysis');
+    assert.equal(rows[0].total, 30, 'issues must not be duplicated after a second analysis');
   } finally {
     await deleteProject(projectId);
   }

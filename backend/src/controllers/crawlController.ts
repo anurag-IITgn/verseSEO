@@ -1,5 +1,11 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { createCrawl, getCrawl } from '../services/crawlService.js';
+import { createCrawl, getCrawl, getUserScanStatus } from '../services/crawlService.js';
+
+export async function getScanStatusHandler(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+  const userId = request.userId!;
+  const status = await getUserScanStatus(userId);
+  return reply.send(status);
+}
 
 export async function createCrawlHandler(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
   const userId = request.userId!;

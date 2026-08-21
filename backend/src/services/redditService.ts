@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { AnalyzablePage } from '../analysis/types.js';
 import { db } from '../db/client.js';
-import { redditDiscussions } from '../db/schema.js';
+import { redditDiscussions, users } from '../db/schema.js';
 import { RedditUnavailableError } from '../reddit/errors.js';
 import { selectRedditQueries } from '../reddit/queries.js';
 import { getRedditProvider } from '../reddit/registry.js';
@@ -15,6 +15,7 @@ import {
   type RedditDiscussionRow,
 } from '../repositories/redditRepo.js';
 import { AppError } from '../utils/errors.js';
+import { toAnalyzablePage } from '../utils/pageAdapter.js';
 import { requireCrawlOwned } from './ownership.js';
 
 export interface RedditOpportunitiesResponse {
@@ -27,8 +28,83 @@ export interface RedditOpportunitiesResponse {
   discussions: RedditDiscussionRow[];
 }
 
-const MAX_DISCUSSIONS = 12;
-const RESULTS_PER_QUERY = 5;
+const MAX_DISCUSSIONS = 10;
+const RESULTS_PER_QUERY = 10;
+
+// --- Pro plan enforcement and usage tracking ---
+const WEEKLY_LIMIT = 1;
+const MONTHLY_LIMIT = 4;
+const MAX_CONVERSATIONS_PER_MONTH = 40;
+
+// In-memory usage tracking (userId → scan timestamps)
+const redditUsage = new Map<string, number[]>();
+
+function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getUTCDay();
+  const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1);
+  d.setUTCDate(diff);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
+function getMonthStart(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+}
+
+function countScansInWeek(userId: string, now: Date): number {
+  const scans = redditUsage.get(userId) ?? [];
+  const weekStart = getWeekStart(now).getTime();
+  return scans.filter((t) => t >= weekStart).length;
+}
+
+function countScansInMonth(userId: string, now: Date): number {
+  const scans = redditUsage.get(userId) ?? [];
+  const monthStart = getMonthStart(now).getTime();
+  return scans.filter((t) => t >= monthStart).length;
+}
+
+function countConversationsInMonth(userId: string, now: Date): number {
+  // Approximate: each scan produces up to MAX_DISCUSSIONS conversations
+  // This is a rough count; in production, track actual conversations per scan
+  const scans = redditUsage.get(userId) ?? [];
+  const monthStart = getMonthStart(now).getTime();
+  const monthScans = scans.filter((t) => t >= monthStart).length;
+  return monthScans * MAX_DISCUSSIONS;
+}
+
+function recordScan(userId: string): void {
+  const scans = redditUsage.get(userId) ?? [];
+  scans.push(Date.now());
+  redditUsage.set(userId, scans);
+}
+
+export function resetRedditUsageForTesting(): void {
+  redditUsage.clear();
+}
+
+export interface RedditUsageInfo {
+  weeklyScansUsed: number;
+  weeklyScansLimit: number;
+  monthlyScansUsed: number;
+  monthlyScansLimit: number;
+  monthlyConversationsUsed: number;
+  monthlyConversationsLimit: number;
+}
+
+export function getRedditUsage(userId: string): RedditUsageInfo {
+  const now = new Date();
+  const weeklyScansUsed = countScansInWeek(userId, now);
+  const monthlyScansUsed = countScansInMonth(userId, now);
+  return {
+    weeklyScansUsed,
+    weeklyScansLimit: WEEKLY_LIMIT,
+    monthlyScansUsed,
+    monthlyScansLimit: MONTHLY_LIMIT,
+    monthlyConversationsUsed: Math.min(monthlyScansUsed * MAX_DISCUSSIONS, MAX_CONVERSATIONS_PER_MONTH),
+    monthlyConversationsLimit: MAX_CONVERSATIONS_PER_MONTH,
+  };
+}
 
 // One shared discovery promise per crawl so concurrent requests (for example
 // the dashboard polling the endpoint while a scan is still running) reuse the
@@ -41,23 +117,6 @@ const inFlightDiscoveries = new Map<string, Promise<RedditOpportunitiesResponse>
 // polling clients receive the final result instead of restarting the pipeline.
 const discoveryResults = new Map<string, RedditOpportunitiesResponse>();
 const DISCOVERY_RESULT_CACHE_LIMIT = 200;
-
-function toAnalyzablePage(page: CrawledPageRow): AnalyzablePage {
-  return {
-    id: page.id,
-    url: page.url,
-    statusCode: page.statusCode,
-    contentType: page.contentType,
-    title: page.title,
-    metaDescription: page.metaDescription,
-    canonicalUrl: page.canonicalUrl,
-    robotsDirective: page.robotsDirective,
-    isIndexable: page.isIndexable,
-    wordCount: page.wordCount,
-    responseTimeMs: page.responseTimeMs,
-    internalLinks: page.internalLinks ?? [],
-  };
-}
 
 /**
  * Reddit opportunity discovery for a completed crawl. Real discussions are
@@ -73,6 +132,21 @@ export async function getRedditOpportunities(userId: string, crawlId: string): P
     throw new AppError(409, 'Crawl run is not completed', 'CRAWL_NOT_COMPLETED');
   }
 
+  // --- Pro plan enforcement ---
+  const [userRow] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const userPlan = userRow?.plan ?? 'free';
+  if (userPlan !== 'pro') {
+    return {
+      crawlId,
+      status: 'unavailable',
+      reason: 'PRO_REQUIRED',
+      message: 'Reddit Intelligence is a Pro feature. Upgrade to Pro to unlock Reddit discussions.',
+      total: 0,
+      topicsAnalyzed: 0,
+      discussions: [],
+    };
+  }
+
   const pages = await findPagesByCrawl(crawlId);
   const analyzablePages = pages.map(toAnalyzablePage);
   const topicsAnalyzed = extractTopics(analyzablePages).topics.size;
@@ -85,6 +159,46 @@ export async function getRedditOpportunities(userId: string, crawlId: string): P
   const cached = discoveryResults.get(crawlId);
   if (cached) {
     return cached;
+  }
+
+  const inFlight = inFlightDiscoveries.get(crawlId);
+  if (inFlight) {
+    return {
+      crawlId,
+      status: 'pending',
+      reason: null,
+      message: 'Reddit discovery is already in progress.',
+      total: 0,
+      topicsAnalyzed,
+      discussions: [],
+    };
+  }
+
+  // --- Usage limits (only checked when starting a NEW discovery) ---
+  const now = new Date();
+  const weeklyUsed = countScansInWeek(userId, now);
+  if (weeklyUsed >= WEEKLY_LIMIT) {
+    return {
+      crawlId,
+      status: 'unavailable',
+      reason: 'WEEKLY_LIMIT',
+      message: `You've reached the weekly Reddit scan limit (${WEEKLY_LIMIT} scan per week). Try again next week.`,
+      total: 0,
+      topicsAnalyzed: 0,
+      discussions: [],
+    };
+  }
+  const monthlyUsed = countScansInMonth(userId, now);
+  if (monthlyUsed >= MONTHLY_LIMIT) {
+    return {
+      crawlId,
+      status: 'unavailable',
+      reason: 'MONTHLY_LIMIT',
+      message: `You've reached the monthly Reddit scan limit (${MONTHLY_LIMIT} scans per month). Try again next month.`,
+      total: 0,
+      topicsAnalyzed: 0,
+      discussions: [],
+    };
   }
 
   const provider = getRedditProvider();
@@ -106,19 +220,6 @@ export async function getRedditOpportunities(userId: string, crawlId: string): P
     return { crawlId, status: 'ok', reason: null, message: null, total: 0, topicsAnalyzed, discussions: [] };
   }
 
-  const inFlight = inFlightDiscoveries.get(crawlId);
-  if (inFlight) {
-    return {
-      crawlId,
-      status: 'pending',
-      reason: null,
-      message: 'Reddit discovery is already in progress.',
-      total: 0,
-      topicsAnalyzed,
-      discussions: [],
-    };
-  }
-
   // Start discovery in the background and return `pending` immediately so no
   // HTTP request ever blocks for the full provider pipeline. Polling clients
   // see `pending` while it runs and `ok`/`unavailable` once it settles.
@@ -128,6 +229,7 @@ export async function getRedditOpportunities(userId: string, crawlId: string): P
   inFlightDiscoveries.set(crawlId, promise);
   promise
     .then((result) => {
+      recordScan(userId);
       discoveryResults.set(crawlId, result);
       if (discoveryResults.size > DISCOVERY_RESULT_CACHE_LIMIT) {
         const oldestKey = discoveryResults.keys().next().value;

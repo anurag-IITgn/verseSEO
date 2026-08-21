@@ -1,5 +1,8 @@
 import type { InjectOptions } from 'light-my-request';
 import { SESSION_COOKIE_NAME } from '../../src/auth/session.js';
+import { db } from '../../src/db/client.js';
+import { users } from '../../src/db/schema.js';
+import { eq } from 'drizzle-orm';
 
 export interface TestUser {
   userId: string;
@@ -33,6 +36,10 @@ export async function registerUser(app: any, email: string, password = 'password
     email: body.user.email,
     sessionToken: extractSessionToken(res.headers['set-cookie']),
   };
+}
+
+export async function setUserPlan(userId: string, plan: string): Promise<void> {
+  await db.update(users).set({ plan }).where(eq(users.id, userId));
 }
 
 export function injectAs(sessionToken: string, options: InjectOptions): InjectOptions {

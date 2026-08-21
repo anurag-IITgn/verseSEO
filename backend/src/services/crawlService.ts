@@ -1,10 +1,13 @@
+import { eq } from 'drizzle-orm';
 import { env } from '../config/env.js';
 import { crawlSite } from '../crawler/crawler.js';
 import { FetchError } from '../crawler/http.js';
 import type { CrawlSiteConfig, CrawlerSink } from '../crawler/types.js';
-import { createCrawlRun, findActiveCrawlRunByProject, findCrawlRunById, setCrawlRunCounters, setCrawlRunSignals, updateCrawlRunStatus, type CrawlRun } from '../repositories/crawlRepo.js';
+import { db } from '../db/client.js';
+import { users } from '../db/schema.js';
+import { createCrawlRun, countCrawlsByUserId, findActiveCrawlRunByProject, findCrawlRunById, setCrawlRunCounters, setCrawlRunSignals, updateCrawlRunStatus, type CrawlRun } from '../repositories/crawlRepo.js';
 import { insertCrawledPage } from '../repositories/pageRepo.js';
-import { findProjectById } from '../repositories/projectRepo.js';
+import { findProjectById, listProjectsByOwner } from '../repositories/projectRepo.js';
 import { AppError } from '../utils/errors.js';
 import { assertPublicTargetUrl } from '../utils/ssrfGuard.js';
 import { requireCrawlOwned, requireProjectOwned } from './ownership.js';
@@ -111,4 +114,36 @@ async function executeCrawl(crawlId: string): Promise<void> {
       errorMessage: message,
     });
   }
+}
+
+const FREE_PROJECT_LIMIT = 1;
+const FREE_SCAN_LIMIT = 1;
+
+export interface UserScanStatus {
+  plan: string;
+  projectCount: number;
+  scanCount: number;
+  canScan: boolean;
+  reason?: string;
+}
+
+export async function getUserScanStatus(userId: string): Promise<UserScanStatus> {
+  const [user] = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
+  const plan = user?.plan ?? 'free';
+
+  if (plan === 'pro') {
+    return { plan, projectCount: 0, scanCount: 0, canScan: true };
+  }
+
+  const projects = await listProjectsByOwner(userId);
+  const projectCount = projects.length;
+
+  if (projectCount >= FREE_PROJECT_LIMIT) {
+    const scanCount = await countCrawlsByUserId(userId);
+    if (scanCount >= FREE_SCAN_LIMIT) {
+      return { plan, projectCount, scanCount, canScan: false, reason: 'FREE_SCAN_LIMIT' };
+    }
+  }
+
+  return { plan, projectCount, scanCount: await countCrawlsByUserId(userId), canScan: true };
 }

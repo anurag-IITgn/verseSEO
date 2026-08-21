@@ -2,13 +2,17 @@ import http from 'node:http';
 
 function page(meta: { title?: string; description?: string; canonical?: string; robots?: string }, links: string[] = []): string {
   const head = [
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<meta charset="utf-8">',
+    '<link rel="icon" href="/favicon.ico">',
     meta.title ? `<title>${meta.title}</title>` : '',
     meta.description ? `<meta name="description" content="${meta.description}">` : '',
     meta.canonical ? `<link rel="canonical" href="${meta.canonical}">` : '',
     meta.robots ? `<meta name="robots" content="${meta.robots}">` : '',
   ].join('');
+  const filler = 'word '.repeat(350);
   const body = links.map((link) => `<a href="${link}">${link}</a>`).join('');
-  return `<!doctype html><html><head>${head}</head><body><p>fixture body text for word count</p>${body}</body></html>`;
+  return `<!doctype html><html lang="en"><head>${head}</head><body><p>${filler}</p>${body}</body></html>`;
 }
 
 export interface FixtureSite {
