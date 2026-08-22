@@ -1,5 +1,5 @@
 import { analyzeSite } from '../analysis/analyze.js';
-import { calculateHealthScore, DEFAULT_SEVERITY } from '../analysis/rules.js';
+import { DEFAULT_SEVERITY, computeTechnicalHealthScore } from '../analysis/rules.js';
 import type { IssueType, IssueSeverity } from '../analysis/types.js';
 import { db } from '../db/client.js';
 import { crawledPages, seoIssues, users } from '../db/schema.js';
@@ -16,6 +16,15 @@ import { requireCrawlOwned } from './ownership.js';
 export interface AnalysisResultResponse {
   crawlId: string;
   healthScore: number;
+  crawlState: string;
+  crawlStateReason: string | null;
+  dimensions: {
+    technicalCorrectness: number;
+    metadataQuality: number;
+    crawlCoverage: number;
+    architecture: number;
+    contentPerformance: number;
+  };
   issueCount: number;
   issueCounts: Record<IssueType, number>;
 }
@@ -418,6 +427,7 @@ export async function performAnalysis(crawlId: string): Promise<AnalysisResultRe
       sitemapFound: run.sitemapFound ?? false,
     },
     pages.map(toAnalyzablePage),
+    { pagesDiscovered: run.pagesDiscovered ?? 0, pagesCrawled: run.pagesCrawled ?? 0 },
   );
 
   const rows = result.issues.map((i) => ({
@@ -435,7 +445,15 @@ export async function performAnalysis(crawlId: string): Promise<AnalysisResultRe
     }
   });
 
-  return { crawlId, healthScore: result.healthScore, issueCount: result.issueCount, issueCounts: result.issueCounts };
+  return {
+    crawlId,
+    healthScore: result.healthScore,
+    crawlState: result.crawlState,
+    crawlStateReason: result.crawlStateReason,
+    dimensions: result.dimensions,
+    issueCount: result.issueCount,
+    issueCounts: result.issueCounts,
+  };
 }
 
 export async function analyzeCrawl(userId: string, crawlId: string): Promise<AnalysisResultResponse> {
@@ -483,7 +501,17 @@ export async function getCrawlResults(userId: string, crawlId: string): Promise<
     issues = await findIssuesByCrawl(crawlId);
   }
 
-  const healthScore = run.healthScore ?? calculateHealthScore(issues.map((i) => ({ severity: i.severity as IssueSeverity })));
+  let healthScore = run.healthScore;
+  if (healthScore === null) {
+    const project = await findProjectById(run.projectId);
+    const pages = await findPagesByCrawl(crawlId);
+    const { healthScore: computed } = computeTechnicalHealthScore(
+      { websiteUrl: project?.websiteUrl ?? 'https://unknown.com', robotsFound: run.robotsFound ?? false, sitemapFound: run.sitemapFound ?? false },
+      pages.map(toAnalyzablePage),
+      { pagesDiscovered: run.pagesDiscovered ?? 0, pagesCrawled: run.pagesCrawled ?? 0 },
+    );
+    healthScore = computed;
+  }
   const issueCounts = Object.fromEntries(
     Object.keys(DEFAULT_SEVERITY).map((type) => [type, 0]),
   ) as Record<IssueType, number>;

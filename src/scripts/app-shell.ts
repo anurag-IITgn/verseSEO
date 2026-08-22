@@ -108,7 +108,7 @@ function coveragePill(label: string, covered: number, total: number): string {
 }
 
 // --- State ---
-type View = 'projects' | 'dashboard' | 'settings' | 'report' | 'search-report' | 'ai-report' | 'content-report' | 'reddit-report';
+type View = 'projects' | 'dashboard' | 'settings' | 'report' | 'search-report' | 'ai-report' | 'content-report' | 'reddit-report' | 'history';
 interface Project {
   id: string; name: string | null; websiteUrl: string; domain: string; scanCount: number;
   latestScan: { id: string; status: string; startedAt: string | null; completedAt: string | null;
@@ -191,9 +191,9 @@ function showView(v: View) {
     if (sep) sep.style.display = '';
     if (page) page.textContent = 'Reddit Intelligence Report';
   } else if (v === 'history') {
-    if (ctx) ctx.textContent = 'Scan History';
+    if (ctx) ctx.textContent = currentProject?.domain ?? 'Project';
     if (sep) sep.style.display = '';
-    if (page) page.textContent = 'Scan History';
+    if (page) page.textContent = 'Usage & Scans';
   } else {
     if (ctx) ctx.textContent = 'Settings';
     if (sep) sep.style.display = 'none';
@@ -245,6 +245,7 @@ sidebarNav.forEach(a => a.addEventListener('click', e => {
 }));
 $('sidebar-logout-btn')?.addEventListener('click', () => void logout());
 $('btn-settings-logout')?.addEventListener('click', () => void logout());
+$('#view-settings .btn-back-dashboard')?.addEventListener('click', () => { showView('dashboard'); });
 
 // --- Helpers ---
 function showBanner(el: HTMLElement | null, msg: string) { if (!el) return; el.textContent = msg; el.classList.remove('hidden'); }
@@ -662,9 +663,7 @@ function renderFreeTechnicalReport(data: Record<string, any>) {
   el.classList.remove('hidden');
   $('report-loading')?.classList.add('hidden');
 
-  if (!currentProject) {
-    $('btn-report-back')?.addEventListener('click', goBackToDashboard);
-  }
+  el.querySelector('.btn-back-dashboard')?.addEventListener('click', () => { showView('dashboard'); window.history.replaceState({}, '', '/app'); });
 }
 
 function renderTechnicalReport(data: Record<string, any>) {
@@ -1292,13 +1291,7 @@ function renderTechnicalReport(data: Record<string, any>) {
   el.classList.remove('hidden');
   $('report-loading')?.classList.add('hidden');
 
-  if (!currentProject) {
-    $('btn-report-back')?.addEventListener('click', goBackToDashboard);
-    $('btn-report-back')?.addEventListener('click', () => {
-    showView('dashboard');
-    window.history.replaceState({}, '', '/app');
-  });
-  }
+  el.querySelector('.btn-back-dashboard')?.addEventListener('click', () => { showView('dashboard'); window.history.replaceState({}, '', '/app'); });
 }
 
 async function loadTechnicalReport(crawlId: string) {
@@ -3621,7 +3614,9 @@ function resetModules() {
   const defaults: Record<string, [string, string, string]> = {
     technical: ['Awaiting scan', 'slate', 'Run a scan to check technical health.'],
     search: ['Awaiting scan', 'slate', 'Run a scan to discover search opportunities.'],
-    reddit: ['Awaiting scan', 'slate', 'Run a scan to find Reddit discussions.'],
+    reddit: currentUser && currentUser.plan !== 'pro'
+      ? ['Pro only', 'slate', '<span class="text-xs text-slate-500">Reddit Intelligence is a Pro feature.</span> <a href="/pricing" class="text-[11px] font-semibold text-violet-600 hover:text-violet-700 underline">Upgrade to Pro</a>']
+      : ['Awaiting scan', 'slate', 'Run a scan to find Reddit discussions.'],
     ai: ['Awaiting scan', 'slate', 'Run a scan to check AI visibility.'],
     content: ['Awaiting scan', 'slate', 'Run a scan to generate content ideas.'],
   };
@@ -3672,7 +3667,9 @@ const modProcessingMsgs: Record<string, string> = {
 
 async function loadModules(crawlId: string) {
   renderProcessing('technical', modProcessingMsgs.technical);
-  for (const m of ['search', 'reddit', 'ai', 'content']) renderProcessing(m, modProcessingMsgs[m]);
+  const isPro = currentUser?.plan === 'pro';
+  const mods = isPro ? ['search', 'reddit', 'ai', 'content'] : ['search', 'ai', 'content'];
+  for (const m of mods) renderProcessing(m, modProcessingMsgs[m]);
 
   // Load technical from crawl results
   try {
@@ -3682,7 +3679,7 @@ async function loadModules(crawlId: string) {
   } catch (e) { renderTechError(e instanceof Error ? e.message : 'Failed to load results.'); }
 
   // Load other modules in parallel
-  const fetches = ['search', 'reddit', 'ai', 'content'].map(async (m) => {
+  const fetches = mods.map(async (m) => {
     try {
       const r = await apiFetch(`/api/crawls/${crawlId}${modEndpoints[m]}`);
       if (!r.ok) throw await beErr(r);
@@ -3721,7 +3718,6 @@ async function openDashboard(project: Project, action?: string) {
   if (btn) {
     btn.className = 'inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-600/20 transition-colors cursor-pointer';
     btn.disabled = false;
-    btn.onclick = () => { if (currentProject) void runScan(currentProject); };
   }
   if (btnText) btnText.textContent = 'Run New Scan';
 
@@ -3920,6 +3916,23 @@ $('btn-delete-submit')?.addEventListener('click', async () => {
     renderProjects();
     if (currentProject?.id === deletedId) { currentProject = null; showView('projects'); void loadProjects(); }
   } catch { showBanner($('delete-error'), 'Could not reach the backend.'); }
+});
+
+// --- Delete account ---
+function openDeleteAccountModal() { hideBanner($('delete-account-error')); $('modal-delete-account')?.classList.remove('hidden'); }
+function closeDeleteAccountModal() { $('modal-delete-account')?.classList.add('hidden'); }
+$('btn-delete-account')?.addEventListener('click', openDeleteAccountModal);
+$('btn-delete-account-cancel')?.addEventListener('click', closeDeleteAccountModal);
+$('modal-delete-account')?.addEventListener('click', e => { if ((e.target as HTMLElement).closest('[data-modal-panel]')) return; closeDeleteAccountModal(); });
+$('btn-delete-account-submit')?.addEventListener('click', async () => {
+  hideBanner($('delete-account-error'));
+  const btn = $('btn-delete-account-submit') as HTMLButtonElement | null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Deleting…'; }
+  try {
+    const r = await apiFetch('/api/account', { method: 'DELETE' });
+    if (!r.ok) { if (r.status === 401) { window.location.replace('/login?next=/app'); return; } showBanner($('delete-account-error'), (await beErr(r)).message); if (btn) { btn.disabled = false; btn.textContent = 'Delete account'; } return; }
+    window.location.href = '/';
+  } catch { showBanner($('delete-account-error'), 'Could not reach the backend.'); if (btn) { btn.disabled = false; btn.textContent = 'Delete account'; } }
 });
 
 // --- Project card actions ---
@@ -4205,35 +4218,130 @@ async function loadHistoryReport(projectId: string) {
   if (content) content.classList.add('hidden');
 
   try {
-    const r = await apiFetch(`/api/projects/${projectId}/scans`);
-    if (!r.ok) throw await beErr(r);
-    const data = await r.json();
-    const scans: ScanSnapshot[] = data.scans ?? [];
+    const [scansRes, accountRes] = await Promise.all([
+      apiFetch(`/api/projects/${projectId}/scans`),
+      apiFetch('/api/account'),
+    ]);
+    if (!scansRes.ok) throw await beErr(scansRes);
+    const scansData = await scansRes.json();
+    const scans: ScanSnapshot[] = (scansData.scans ?? []).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    let accountData: any = null;
+    if (accountRes.ok) accountData = await accountRes.json();
+
+    const isPro = accountData?.plan === 'pro';
+    const totalScans = accountData?.totalScans ?? 0;
+    const ru = accountData?.redditUsage ?? null;
 
     if (content) {
       content.classList.remove('hidden');
       content.innerHTML = `
         <div class="mb-6 flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Scan History</h1>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Usage & Scans</h1>
+            <p class="text-sm text-slate-500 mt-1">Track your scan usage and website scan activity across your projects.</p>
           </div>
           <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
         </div>
-        ${scans.length === 0
-            ? '<p class="text-sm text-slate-500">No scans found. Run your first scan to get started.</p>'
-            : `<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                ${scans.map((s: any) => `
-                  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-sm text-slate-500">${esc(s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'Unknown date')}</span>
-                      <span class="text-xs text-slate-400">${s.pagesCrawled} pages</span>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-8">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <h2 class="text-sm font-bold text-slate-900 mb-4">Website Scan Usage</h2>
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs text-slate-600">Scans</span>
+                <span class="text-xs font-semibold text-slate-900">${isPro ? 'Unlimited' : esc(String(totalScans) + ' / 1 lifetime')}</span>
+              </div>
+              ${!isPro ? `<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full rounded-full ${totalScans >= 1 ? 'bg-rose-400' : 'bg-blue-400'} transition-all" style="width: ${Math.min(100, (totalScans / 1) * 100)}%"></div>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Free plan: 1 scan lifetime limit.</p>` : '<p class="text-[11px] text-slate-400 mt-1">Pro plan: unlimited scans.</p>'}
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <h2 class="text-sm font-bold text-slate-900 mb-4">Reddit Intelligence</h2>
+            ${!isPro
+              ? `<div class="flex flex-col items-center justify-center py-6 text-center">
+                  <div class="w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center mb-3">
+                    <svg class="w-5 h-5 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <p class="text-sm font-semibold text-slate-700 mb-1">Pro only</p>
+                  <p class="text-xs text-slate-500 mb-3">Upgrade to Pro to access Reddit Intelligence.</p>
+                  <a href="/pricing" class="inline-flex items-center gap-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg transition-colors">Upgrade to Pro</a>
+                </div>`
+              : `<div class="space-y-4">
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-xs text-slate-600">This Week</span>
+                      <span class="text-xs font-semibold text-slate-900">${ru ? esc(String(ru.weeklyScansUsed)) : '0'} / ${ru ? esc(String(ru.weeklyScansLimit)) : '2'}</span>
                     </div>
-                    <h2 class="text-sm font-bold text-slate-900 mb-1">${esc(s.healthScore !== null ? `${s.healthScore}/100 Health Score` : 'No health score')}</h2>
-                    <p class="text-xs text-slate-500">${s.status === 'COMPLETED' ? 'Completed' : s.status}</p>
-                    <a href="#" class="text-blue-600 text-sm hover:text-blue-800 transition view-project-btn" data-crawl-id="${s.id}">View Report</a>
-                  </div>`).join('')}
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full bg-orange-400 transition-all" style="width: ${ru ? Math.min(100, (ru.weeklyScansUsed / ru.weeklyScansLimit) * 100) + '%' : '0%'}"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-xs text-slate-600">This Month</span>
+                      <span class="text-xs font-semibold text-slate-900">${ru ? esc(String(ru.monthlyScansUsed)) : '0'} / ${ru ? esc(String(ru.monthlyScansLimit)) : '8'}</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full bg-orange-400 transition-all" style="width: ${ru ? Math.min(100, (ru.monthlyScansUsed / ru.monthlyScansLimit) * 100) + '%' : '0%'}"></div>
+                    </div>
+                  </div>
+                </div>`
+            }
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Scan History</h2>
+          ${scans.length === 0
+            ? `<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+                <p class="text-sm font-semibold text-slate-700 mb-1">No scans yet.</p>
+                <p class="text-xs text-slate-500">Run a website scan to see your scan history here.</p>
               </div>`
-        }
+            : `<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="border-b border-slate-100 bg-slate-50/60">
+                      <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Project</th>
+                      <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                      <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                      <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Pages Crawled</th>
+                      <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    ${scans.map((s: any) => {
+                      const domain = esc(currentProject?.domain ?? '');
+                      const date = s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'Unknown date';
+                      const pages = s.pagesCrawled != null ? esc(String(s.pagesCrawled)) : '—';
+                      let statusHtml = '';
+                      let actionHtml = '';
+                      if (s.status === 'COMPLETED') {
+                        statusHtml = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">Completed</span>';
+                        actionHtml = `<a href="#" class="text-blue-600 text-xs font-semibold hover:text-blue-800 transition view-project-btn" data-crawl-id="${s.id}">View Report →</a>`;
+                      } else if (s.status === 'FAILED') {
+                        statusHtml = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-100">Failed</span>';
+                        actionHtml = `<span class="text-slate-400 text-xs">—</span>`;
+                      } else {
+                        statusHtml = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-100">Running</span>';
+                        actionHtml = `<span class="text-slate-400 text-xs italic">In progress</span>`;
+                      }
+                      return `<tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-4 py-3 text-sm font-medium text-slate-900">${domain}</td>
+                        <td class="px-4 py-3">${statusHtml}</td>
+                        <td class="px-4 py-3 text-xs text-slate-500">${esc(date)}</td>
+                        <td class="px-4 py-3 text-xs text-slate-500">${pages}</td>
+                        <td class="px-4 py-3">${actionHtml}</td>
+                      </tr>`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>`
+          }
+        </div>
       `;
       content.querySelectorAll('.view-project-btn').forEach(b => {
         b.addEventListener('click', (e) => {
@@ -4252,8 +4360,8 @@ async function loadHistoryReport(projectId: string) {
       });
     }
   } catch (err) {
-    console.error('Failed to load scan history', err);
-    if (error) error.innerHTML = '<p class="text-sm text-rose-600">Failed to load scan history.</p>';
+    console.error('Failed to load usage & scans', err);
+    if (error) error.innerHTML = '<p class="text-sm text-rose-600">Failed to load usage data.</p>';
   } finally {
     if (loading) loading.classList.add('hidden');
   }

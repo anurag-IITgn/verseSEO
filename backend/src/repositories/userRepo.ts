@@ -22,3 +22,7 @@ export async function insertUser(input: NewUser): Promise<User> {
   }
   return row;
 }
+
+export async function deleteUserById(id: string): Promise<void> {
+  await db.delete(users).where(eq(users.id, id));
+}

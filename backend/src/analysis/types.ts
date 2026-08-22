@@ -16,6 +16,7 @@ export type IssueType =
   | 'MISSING_HTTPS'
   | 'MISSING_H1'
   | 'DUPLICATE_H1'
+  | 'MULTIPLE_H1'
   | 'IMAGES_MISSING_ALT'
   | 'MISSING_OG_TAGS'
   | 'MISSING_TWITTER_TAGS'
@@ -26,10 +27,22 @@ export type IssueType =
   | 'THIN_CONTENT'
   | 'SLOW_RESPONSE';
 
+export type CrawlState =
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'RESTRICTED'
+  | 'PARTIAL'
+  | 'LIMITED_RENDERING';
+
 export interface SiteSignals {
   websiteUrl: string;
   robotsFound: boolean;
   sitemapFound: boolean;
+}
+
+export interface CrawlMeta {
+  pagesDiscovered: number;
+  pagesCrawled: number;
 }
 
 export interface AnalyzablePage {
@@ -80,8 +93,19 @@ export interface SeoIssueData {
   pageId: string | null;
 }
 
+export interface DimensionScores {
+  technicalCorrectness: number;
+  metadataQuality: number;
+  crawlCoverage: number;
+  architecture: number;
+  contentPerformance: number;
+}
+
 export interface SeoAnalysisResult {
   healthScore: number;
+  crawlState: CrawlState;
+  crawlStateReason: string | null;
+  dimensions: DimensionScores;
   issueCount: number;
   issueCounts: Record<IssueType, number>;
   issues: SeoIssueData[];

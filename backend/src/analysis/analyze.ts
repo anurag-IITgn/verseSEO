@@ -1,5 +1,5 @@
-import { calculateHealthScore, DEFAULT_SEVERITY, TITLE_MAX_LENGTH, TITLE_MIN_LENGTH } from './rules.js';
-import type { AnalyzablePage, IssueType, SeoAnalysisResult, SeoIssueData, SiteSignals } from './types.js';
+import { DEFAULT_SEVERITY, TITLE_MAX_LENGTH, TITLE_MIN_LENGTH, computeTechnicalHealthScore } from './rules.js';
+import type { AnalyzablePage, CrawlMeta, IssueType, SeoAnalysisResult, SeoIssueData, SiteSignals } from './types.js';
 
 function isHtmlPage(page: AnalyzablePage): boolean {
   if (page.contentType === null) return false;
@@ -32,7 +32,7 @@ function detectDuplicateValues(pages: AnalyzablePage[], pick: (page: AnalyzableP
     .map(([value, list]) => ({ value, pages: list }));
 }
 
-function analyzeSite(site: SiteSignals, pages: AnalyzablePage[]): SeoAnalysisResult {
+function analyzeSite(site: SiteSignals, pages: AnalyzablePage[], crawlMeta: CrawlMeta): SeoAnalysisResult {
   const issues: SeoIssueData[] = [];
 
   if (new URL(site.websiteUrl).protocol !== 'https:') {
@@ -114,27 +114,16 @@ function analyzeSite(site: SiteSignals, pages: AnalyzablePage[]): SeoAnalysisRes
   }
 
   for (const group of detectDuplicateValues(contentPages, (page) => text(page.title))) {
-    for (const page of group.pages) {
-      issues.push(issue('DUPLICATE_TITLE', page.id, `Duplicate title: "${group.value}"`));
-    }
+    issues.push(issue('DUPLICATE_TITLE', null, `Duplicate title "${group.value}" on ${group.pages.length} pages`));
   }
 
   for (const group of detectDuplicateValues(contentPages, (page) => text(page.metaDescription))) {
-    for (const page of group.pages) {
-      issues.push(issue('DUPLICATE_META_DESCRIPTION', page.id, `Duplicate meta description: "${group.value}"`));
-    }
+    issues.push(issue('DUPLICATE_META_DESCRIPTION', null, `Duplicate meta description on ${group.pages.length} pages`));
   }
 
-  const h1Pages = contentPages.filter((p) => p.h1Count > 0);
-  for (const group of detectDuplicateValues(h1Pages, (page) => page.url)) {
-    // Only flag duplicate H1 if multiple pages have the same H1 text
-  }
-  const h1TextGroups = new Map<string, AnalyzablePage[]>();
   for (const page of contentPages) {
-    if (page.h1Count === 0) continue;
-    // We don't store H1 text, but we can detect pages with multiple H1s
     if (page.h1Count > 1) {
-      issues.push(issue('DUPLICATE_H1', page.id, `Page has ${page.h1Count} H1 headings (should have exactly 1)`));
+      issues.push(issue('MULTIPLE_H1', page.id, `Page has ${page.h1Count} H1 headings (should have exactly 1)`));
     }
   }
 
@@ -167,8 +156,13 @@ function analyzeSite(site: SiteSignals, pages: AnalyzablePage[]): SeoAnalysisRes
     Object.keys(DEFAULT_SEVERITY).map((key) => [key, issues.filter((i) => i.issueType === key).length]),
   ) as Record<IssueType, number>;
 
+  const { healthScore, crawlState, crawlStateReason, dimensions } = computeTechnicalHealthScore(site, pages, crawlMeta);
+
   return {
-    healthScore: calculateHealthScore(issues),
+    healthScore,
+    crawlState,
+    crawlStateReason,
+    dimensions,
     issueCount: issues.length,
     issueCounts,
     issues,
