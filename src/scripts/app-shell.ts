@@ -245,7 +245,15 @@ sidebarNav.forEach(a => a.addEventListener('click', e => {
 }));
 $('sidebar-logout-btn')?.addEventListener('click', () => void logout());
 $('btn-settings-logout')?.addEventListener('click', () => void logout());
-$('#view-settings .btn-back-dashboard')?.addEventListener('click', () => { showView('dashboard'); });
+document.addEventListener('click', (e) => {
+  const target = e.target as HTMLElement;
+  const button = target.closest('#view-settings .btn-back-dashboard');
+
+  if (button) {
+    showView('dashboard');
+    window.history.replaceState({}, '', '/app');
+  }
+});
 
 // --- Helpers ---
 function showBanner(el: HTMLElement | null, msg: string) { if (!el) return; el.textContent = msg; el.classList.remove('hidden'); }
@@ -4073,9 +4081,34 @@ async function loadSettings() {
     if (redditUsage && isPro) {
       redditUsage.classList.remove('hidden');
       const ru = data.redditUsage;
+
+      const renewal = $('settings-reddit-weekly-renewal');
+      if (renewal) {
+        const now = new Date();
+        const day = now.getUTCDay();
+        const daysUntilNextMonday = day === 0 ? 1 : 8 - day;
+        const nextMonday = new Date(now);
+        nextMonday.setUTCDate(now.getUTCDate() + daysUntilNextMonday);
+        nextMonday.setUTCHours(0, 0, 0, 0);
+
+        renewal.textContent = `Renews ${nextMonday.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          timeZone: 'UTC'
+        })}`;
+      }
+
       const rWeekUsed = $('settings-reddit-weekly-used');
       const rWeekLimit = $('settings-reddit-weekly-limit');
       const rWeekBar = $('settings-reddit-weekly-bar');
+      const rWeekRenewal = $('settings-reddit-weekly-renewal');
+      if (rWeekRenewal) {
+        const now = new Date();
+        const daysUntilMonday = now.getUTCDay() === 0 ? 1 : 8 - now.getUTCDay();
+        const nextMonday = new Date(now);
+        nextMonday.setUTCDate(now.getUTCDate() + daysUntilMonday);
+        rWeekRenewal.textContent = `Renews ${nextMonday.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+      }
       const rMonthUsed = $('settings-reddit-monthly-used');
       const rMonthLimit = $('settings-reddit-monthly-limit');
       const rMonthBar = $('settings-reddit-monthly-bar');

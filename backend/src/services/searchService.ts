@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import type { AnalyzablePage } from '../analysis/types.js';
+
 import { db } from '../db/client.js';
 import { searchOpportunities, users } from '../db/schema.js';
 import type { GscSummary } from '../gsc/types.js';
@@ -10,6 +10,7 @@ import { analyzeSearchOpportunities } from '../search/opportunities.js';
 import { AppError } from '../utils/errors.js';
 import { enrichSearchOpportunities } from './gscService.js';
 import { requireCrawlOwned } from './ownership.js';
+import { toAnalyzablePage } from '../utils/pageAdapter.js';
 
 export interface SearchOpportunityAggregate {
   high: number;
@@ -30,22 +31,6 @@ export interface SearchOpportunitiesResponse {
   aggregate: SearchOpportunityAggregate;
 }
 
-function toAnalyzablePage(page: CrawledPageRow): AnalyzablePage {
-  return {
-    id: page.id,
-    url: page.url,
-    statusCode: page.statusCode,
-    contentType: page.contentType,
-    title: page.title,
-    metaDescription: page.metaDescription,
-    canonicalUrl: page.canonicalUrl,
-    robotsDirective: page.robotsDirective,
-    isIndexable: page.isIndexable,
-    wordCount: page.wordCount,
-    responseTimeMs: page.responseTimeMs,
-    internalLinks: page.internalLinks ?? [],
-  };
-}
 
 function topicsAnalyzedFor(pages: CrawledPageRow[]): number {
   return extractTopics(pages.map(toAnalyzablePage)).topics.size;

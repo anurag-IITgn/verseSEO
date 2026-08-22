@@ -32,8 +32,8 @@ const MAX_DISCUSSIONS = 10;
 const RESULTS_PER_QUERY = 10;
 
 // --- Pro plan enforcement and usage tracking ---
-const WEEKLY_LIMIT = 1;
-const MONTHLY_LIMIT = 4;
+const WEEKLY_LIMIT = 2;
+const MONTHLY_LIMIT = 8;
 const MAX_CONVERSATIONS_PER_MONTH = 40;
 
 // In-memory usage tracking (userId → scan timestamps)
