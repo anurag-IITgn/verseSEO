@@ -75,6 +75,7 @@ before(async () => {
   site = await startFixtureAnalysisSite();
   userEmail = `search-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
   blockedServer = http.createServer((req, res) => {
     if (req.url === '/robots.txt') {
@@ -372,7 +373,7 @@ test('existing search tests still pass with plan field', async () => {
     const body = res.json();
 
     // Response now includes plan and aggregate
-    assert.equal(body.plan, 'free');
+    assert.equal(body.plan, 'pro');
     assert.ok(body.aggregate);
     assert.ok(body.total > 0);
     assert.ok(body.opportunities.length > 0);

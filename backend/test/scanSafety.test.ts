@@ -9,7 +9,7 @@ process.env.CRAWL_ALLOW_PRIVATE_NETWORKS = 'true';
 const { buildApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/client.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 
@@ -39,6 +39,7 @@ before(async () => {
   app = buildApp();
   await app.ready();
   const user = await registerUser(app, `safety-${Date.now()}@test.com`);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
   site = await startFixtureAnalysisSite();
 });

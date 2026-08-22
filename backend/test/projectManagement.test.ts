@@ -6,7 +6,7 @@ process.env.NODE_ENV = 'test';
 
 const { buildApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/client.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 
 type App = ReturnType<typeof buildApp>;
 
@@ -37,11 +37,20 @@ async function createProject(token: string, websiteUrl: string): Promise<{ id: s
   return { id: body.id, name: body.name };
 }
 
+async function deleteProject(token: string, id: string): Promise<void> {
+  const res = await authedInject(token, { method: 'DELETE', url: `/api/projects/${id}` });
+  assert.equal(res.statusCode, 200);
+  const idx = projectIds.indexOf(id);
+  if (idx !== -1) projectIds.splice(idx, 1);
+}
+
 before(async () => {
   app = buildApp();
   await app.ready();
   userA = await registerUser(app, `mgmt-a-${Date.now()}@test.com`);
   userB = await registerUser(app, `mgmt-b-${Date.now()}@test.com`);
+  await setUserPlan(userA.userId, 'pro');
+  await setUserPlan(userB.userId, 'pro');
   cleanupEmails.push(userA.email, userB.email);
 });
 
@@ -71,6 +80,8 @@ test('PATCH /api/projects/:projectId renames an owned project', async () => {
   const fetched = await authedInject(userA.sessionToken, { method: 'GET', url: `/api/projects/${id}` });
   assert.equal(fetched.statusCode, 200);
   assert.equal(fetched.json().name, 'Renamed Site');
+
+  await deleteProject(userA.sessionToken, id);
 });
 
 test('PATCH /api/projects/:projectId trims whitespace from the new name', async () => {
@@ -83,6 +94,8 @@ test('PATCH /api/projects/:projectId trims whitespace from the new name', async 
   });
   assert.equal(res.statusCode, 200);
   assert.equal(res.json().name, 'Trimmed Rename');
+
+  await deleteProject(userA.sessionToken, id);
 });
 
 test('PATCH /api/projects/:projectId rejects an empty name', async () => {
@@ -95,6 +108,8 @@ test('PATCH /api/projects/:projectId rejects an empty name', async () => {
   });
   assert.equal(res.statusCode, 400);
   assert.equal(res.json().error.code, 'INVALID_PROJECT_NAME');
+
+  await deleteProject(userA.sessionToken, id);
 });
 
 test('PATCH /api/projects/:projectId rejects renaming another user\'s project', async () => {
@@ -110,6 +125,8 @@ test('PATCH /api/projects/:projectId rejects renaming another user\'s project', 
 
   const fetched = await authedInject(userA.sessionToken, { method: 'GET', url: `/api/projects/${id}` });
   assert.equal(fetched.json().name, 'Initial Name');
+
+  await deleteProject(userA.sessionToken, id);
 });
 
 test('DELETE /api/projects/:projectId deletes an owned project', async () => {
@@ -138,6 +155,8 @@ test('DELETE /api/projects/:projectId rejects deleting another user\'s project',
 
   const fetched = await authedInject(userA.sessionToken, { method: 'GET', url: `/api/projects/${id}` });
   assert.equal(fetched.statusCode, 200);
+
+  await deleteProject(userA.sessionToken, id);
 });
 
 test('GET /api/projects/:projectId rejects reading another user\'s project', async () => {
@@ -146,6 +165,8 @@ test('GET /api/projects/:projectId rejects reading another user\'s project', asy
   const res = await authedInject(userB.sessionToken, { method: 'GET', url: `/api/projects/${id}` });
   assert.equal(res.statusCode, 404);
   assert.equal(res.json().error.code, 'PROJECT_NOT_FOUND');
+
+  await deleteProject(userA.sessionToken, id);
 });
 
 test('GET /api/projects lists only the current user\'s projects', async () => {
@@ -164,6 +185,9 @@ test('GET /api/projects lists only the current user\'s projects', async () => {
   const idsB = resB.json().projects.map((p) => p.id);
   assert.ok(idsB.includes(bProj.id));
   assert.ok(!idsB.includes(aProj.id));
+
+  await deleteProject(userA.sessionToken, aProj.id);
+  await deleteProject(userB.sessionToken, bProj.id);
 });
 
 test('DELETE /api/projects/:projectId cascades crawl runs, pages, issues and history', async () => {
@@ -226,6 +250,9 @@ test('DELETE /api/projects/:projectId cascades crawl runs, pages, issues and his
   assert.equal(aiCount.rows[0].c, 0);
   const contentCount = await pool.query('SELECT COUNT(*)::int AS c FROM content_recommendations WHERE crawl_run_id = $1', [crawlId]);
   assert.equal(contentCount.rows[0].c, 0);
+
+  const idx = projectIds.indexOf(projectId);
+  if (idx !== -1) projectIds.splice(idx, 1);
 });
 
 test('PATCH /api/projects/:projectId returns 401 without a session', async () => {
@@ -258,4 +285,6 @@ test('POST /api/projects/:projectId/crawls rejects another user\'s project', asy
     url: `/api/projects/${id}/crawls`,
   });
   assert.equal(res.statusCode, 404);
+
+  await deleteProject(userA.sessionToken, id);
 });

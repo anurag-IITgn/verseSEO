@@ -9,7 +9,7 @@ process.env.CRAWL_ALLOW_PRIVATE_NETWORKS = 'true';
 const { buildApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/client.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 
 type App = ReturnType<typeof buildApp>;
@@ -61,6 +61,7 @@ before(async () => {
   site = await startFixtureAnalysisSite();
   userEmail = `analysis-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
   blockedServer = http.createServer((req, res) => {
     if (req.url === '/robots.txt') {

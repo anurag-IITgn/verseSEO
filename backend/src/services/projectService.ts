@@ -1,4 +1,5 @@
 import {
+  countProjectsByOwner,
   deleteProjectById,
   findProjectById,
   findProjectByOwnerAndWebsite,
@@ -8,9 +9,13 @@ import {
   type Project,
   type ProjectWithLatestScan,
 } from '../repositories/projectRepo.js';
+import { findUserById } from '../repositories/userRepo.js';
 import { AppError } from '../utils/errors.js';
 import { isValidUuid } from '../utils/uuid.js';
 import { validateAndNormalizeUrl } from './urlService.js';
+
+const FREE_PROJECT_LIMIT = 1;
+const PRO_PROJECT_LIMIT = 3;
 
 export interface CreateProjectInput {
   name?: string;
@@ -20,6 +25,15 @@ export interface CreateProjectInput {
 export async function createProject(userId: string, input: CreateProjectInput): Promise<Project> {
   const { websiteUrl, domain } = validateAndNormalizeUrl(input.websiteUrl);
   const name = input.name?.trim() ? input.name.trim() : null;
+
+  // Enforce project limits based on plan.
+  const user = await findUserById(userId);
+  const plan = user?.plan ?? 'free';
+  const projectLimit = plan === 'pro' ? PRO_PROJECT_LIMIT : FREE_PROJECT_LIMIT;
+  const projectCount = await countProjectsByOwner(userId);
+  if (projectCount >= projectLimit) {
+    throw new AppError(403, `Project limit reached. Your ${plan} plan allows ${projectLimit} project${projectLimit > 1 ? 's' : ''}.`, 'PROJECT_LIMIT_REACHED');
+  }
 
   const existing = await findProjectByOwnerAndWebsite(userId, websiteUrl);
   if (existing) {

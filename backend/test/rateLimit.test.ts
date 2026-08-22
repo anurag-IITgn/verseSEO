@@ -10,7 +10,7 @@ process.env.RATE_LIMIT_CRAWL_MAX = '2';
 const { buildApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/client.js');
 const { resetRateLimiters } = await import('../src/middleware/rateLimit.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 
 let app: ReturnType<typeof buildApp>;
 let sessionToken = '';
@@ -27,6 +27,7 @@ before(async () => {
   app = buildApp();
   await app.ready();
   const user = await registerUser(app, await uniqueEmail('rl-user'));
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
 });
 

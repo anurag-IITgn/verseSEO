@@ -115,7 +115,7 @@ interface Project {
     createdAt: string; healthScore: number | null; pagesCrawled: number; pagesDiscovered: number; } | null;
 }
 
-let currentUser: { id: string; email: string; plan: string } | null = null;
+let currentUser: { id: string; email: string; plan: string; createdAt?: string } | null = null;
 let projects: Project[] = [];
 let currentProject: Project | null = null;
 let currentView: View = 'projects';
@@ -141,12 +141,20 @@ function showView(v: View) {
   if (viewProjects) viewProjects.classList.toggle('hidden', v !== 'projects');
   if (viewDashboard) viewDashboard.classList.toggle('hidden', v !== 'dashboard');
   if (viewSettings) viewSettings.classList.toggle('hidden', v !== 'settings');
-  if (viewReport) viewReport.classList.toggle('hidden', v !== 'report' && v !== 'search-report' && v !== 'ai-report' && v !== 'content-report' && v !== 'reddit-report');
+  if (viewReport) viewReport.classList.toggle('hidden', v !== 'report' && v !== 'search-report' && v !== 'ai-report' && v !== 'content-report' && v !== 'reddit-report' && v !== 'history');
+  if (v === 'settings') void loadSettings();
+  if (v === 'history' && currentProject) void loadHistoryReport(currentProject.id);
   sidebarNav.forEach(a => {
     const key = a.dataset.sidebarNav!;
     const active = (v === 'projects' && key === 'projects') ||
       (v === 'dashboard' && key === 'overview') ||
-      (v === 'settings' && key === 'settings');
+      (v === 'settings' && key === 'settings') ||
+      (v === 'history' && key === 'history') ||
+      (v === 'report' && key === 'technical') ||
+      (v === 'search-report' && key === 'search') ||
+      (v === 'ai-report' && key === 'ai') ||
+      (v === 'content-report' && key === 'content') ||
+      (v === 'reddit-report' && key === 'reddit');
     a.classList.toggle('text-white', active);
     a.classList.toggle('bg-white/[0.08]', active);
     a.classList.toggle('font-semibold', active);
@@ -182,6 +190,10 @@ function showView(v: View) {
     if (ctx) ctx.textContent = currentProject?.domain ?? 'Project';
     if (sep) sep.style.display = '';
     if (page) page.textContent = 'Reddit Intelligence Report';
+  } else if (v === 'history') {
+    if (ctx) ctx.textContent = 'Scan History';
+    if (sep) sep.style.display = '';
+    if (page) page.textContent = 'Scan History';
   } else {
     if (ctx) ctx.textContent = 'Settings';
     if (sep) sep.style.display = 'none';
@@ -189,8 +201,8 @@ function showView(v: View) {
   }
   const divider = $('sidebar-project-divider');
   const pnav = $('sidebar-project-nav');
-  if (divider) divider.style.display = (v === 'dashboard' || v === 'report' || v === 'search-report' || v === 'ai-report') ? '' : 'none';
-  if (pnav) pnav.style.display = (v === 'dashboard' || v === 'report' || v === 'search-report' || v === 'ai-report') ? '' : 'none';
+  if (divider) divider.style.display = (v === 'dashboard' || v === 'report' || v === 'search-report' || v === 'ai-report' || v === 'content-report' || v === 'reddit-report' || v === 'history') ? '' : 'none';
+  if (pnav) pnav.style.display = (v === 'dashboard' || v === 'report' || v === 'search-report' || v === 'ai-report' || v === 'content-report' || v === 'reddit-report' || v === 'history') ? '' : 'none';
 }
 
 // --- Sidebar ---
@@ -207,6 +219,28 @@ sidebarNav.forEach(a => a.addEventListener('click', e => {
   if (k === 'projects') { currentProject = null; showView('projects'); void loadProjects(); }
   else if (k === 'overview' && currentProject) showView('dashboard');
   else if (k === 'settings') showView('settings');
+  else if (k === 'history' && currentProject) showView('history');
+  else if (k === 'technical' && currentProject && currentCrawlId) {
+    showView('report');
+    window.history.replaceState({}, '', `/app?view=technical&crawlId=${currentCrawlId}`);
+    void loadTechnicalReport(currentCrawlId);
+  } else if (k === 'search' && currentProject && currentCrawlId) {
+    showView('search-report');
+    window.history.replaceState({}, '', `/app?view=search&crawlId=${currentCrawlId}`);
+    void loadSearchReport(currentCrawlId);
+  } else if (k === 'reddit' && currentProject && currentCrawlId) {
+    showView('reddit-report');
+    window.history.replaceState({}, '', `/app?view=reddit&crawlId=${currentCrawlId}`);
+    void loadRedditReport(currentCrawlId);
+  } else if (k === 'ai' && currentProject && currentCrawlId) {
+    showView('ai-report');
+    window.history.replaceState({}, '', `/app?view=ai&crawlId=${currentCrawlId}`);
+    void loadAiReport(currentCrawlId);
+  } else if (k === 'content' && currentProject && currentCrawlId) {
+    showView('content-report');
+    window.history.replaceState({}, '', `/app?view=content&crawlId=${currentCrawlId}`);
+    void loadContentReport(currentCrawlId);
+  }
   if (window.innerWidth < 1024) toggleSidebar();
 }));
 $('sidebar-logout-btn')?.addEventListener('click', () => void logout());
@@ -414,12 +448,12 @@ function renderFreeTechnicalReport(data: Record<string, any>) {
   let html = '';
 
   // Header
-  html += `<div class="flex items-center gap-3 mb-6">
-    <button type="button" id="btn-report-back" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
+  html += `<div class="mb-6 flex items-center justify-between">
     <div>
       <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Technical Health Report</h1>
       <p class="text-xs text-slate-400 mt-0.5">${esc(crawl.url ?? currentProject?.websiteUrl ?? '')}</p>
     </div>
+    <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
   </div>`;
 
   // Section 1: Score Overview with Pipeline Funnel — VISIBLE
@@ -628,7 +662,9 @@ function renderFreeTechnicalReport(data: Record<string, any>) {
   el.classList.remove('hidden');
   $('report-loading')?.classList.add('hidden');
 
-  $('btn-report-back')?.addEventListener('click', goBackToDashboard);
+  if (!currentProject) {
+    $('btn-report-back')?.addEventListener('click', goBackToDashboard);
+  }
 }
 
 function renderTechnicalReport(data: Record<string, any>) {
@@ -668,7 +704,7 @@ function renderTechnicalReport(data: Record<string, any>) {
 
   // Header
   html += `<div class="flex items-center gap-3 mb-6">
-    <button type="button" id="btn-report-back" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
+    <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
     <div>
       <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Technical Health Report</h1>
       <p class="text-xs text-slate-400 mt-0.5">${esc(crawl.url ?? currentProject?.websiteUrl ?? '')}</p>
@@ -1256,8 +1292,13 @@ function renderTechnicalReport(data: Record<string, any>) {
   el.classList.remove('hidden');
   $('report-loading')?.classList.add('hidden');
 
-  $('btn-report-back')?.addEventListener('click', goBackToDashboard);
-  $('btn-report-back-error')?.addEventListener('click', goBackToDashboard);
+  if (!currentProject) {
+    $('btn-report-back')?.addEventListener('click', goBackToDashboard);
+    $('btn-report-back')?.addEventListener('click', () => {
+    showView('dashboard');
+    window.history.replaceState({}, '', '/app');
+  });
+  }
 }
 
 async function loadTechnicalReport(crawlId: string) {
@@ -1932,14 +1973,10 @@ function renderAiReport(data: Record<string, any>) {
 
   if (data.status === 'unavailable') {
     content.innerHTML = `
-      <div class="mb-6 flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">AI Visibility Report</h1>
-          <p class="text-sm text-slate-500 mt-1">${esc(data.message ?? 'AI visibility is not configured.')}</p>
-        </div>
-        <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
+      <div class="mb-6 flex flex-col items-center gap-4">
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">AI Visibility Report</h1>
+        <p class="text-sm text-slate-500 mt-1">${esc(data.message ?? 'AI visibility is not configured.')}</p>
       </div>`;
-    content.querySelector('.btn-back-dashboard')?.addEventListener('click', () => { showView('dashboard'); window.history.replaceState({}, '', '/app'); });
     return;
   }
 
@@ -2523,32 +2560,29 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
   if (loading) loading.classList.add('hidden');
   if (error) error.classList.add('hidden');
 
+  const plan: string = data?.plan ?? 'free';
+  const FREE_RECOMMENDATION_LIMIT = 1;
   const recs: any[] = data?.recommendations ?? [];
+  const visibleRecs = plan === 'pro' ? recs : recs.slice(0, FREE_RECOMMENDATION_LIMIT);
   const topicsAnalyzed = data?.topicsAnalyzed ?? 0;
   const provider = data?.provider ?? null;
 
   if (data.status === 'unavailable') {
-    if (content) {
-      content.classList.remove('hidden');
-      content.innerHTML = `
-        <div class="max-w-4xl mx-auto">
-          <button data-action="back" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-6 transition"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>Back to dashboard</button>
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
-            <div class="text-sm text-slate-500">${esc(data.message ?? 'Content generation is unavailable.')}</div>
-          </div>
-        </div>`;
-      content.querySelectorAll('[data-action="back"]').forEach(b => b.addEventListener('click', () => { showView('dashboard'); void loadDashboard(currentProject!); }));
-    }
+    content.innerHTML = `
+      <div class="flex flex-col items-center gap-4">
+        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Content Opportunities Report</h1>
+        <p class="text-sm text-slate-500 mt-1">${esc(data.message ?? 'Content generation is unavailable.')}</p>
+      </div>`;
     return;
   }
 
-  const high = recs.filter(r => r.priority === 'high');
-  const medium = recs.filter(r => r.priority === 'medium');
-  const low = recs.filter(r => r.priority === 'low');
-  const newContent = recs.filter(r => ['CONTENT_GAP', 'CORE_TOPIC', 'AI_VISIBILITY_GAP', 'SEARCH_INTENT_GAP'].includes(r.sourceType));
-  const improveExisting = recs.filter(r => ['SEO_FIX', 'WEAK_TOPIC_COVERAGE'].includes(r.sourceType));
+  const high = visibleRecs.filter(r => r.priority === 'high');
+  const medium = visibleRecs.filter(r => r.priority === 'medium');
+  const low = visibleRecs.filter(r => r.priority === 'low');
+  const newContent = visibleRecs.filter(r => ['CONTENT_GAP', 'CORE_TOPIC', 'AI_VISIBILITY_GAP', 'SEARCH_INTENT_GAP'].includes(r.sourceType));
+  const improveExisting = visibleRecs.filter(r => ['SEO_FIX', 'WEAK_TOPIC_COVERAGE'].includes(r.sourceType));
   const actionCounts: Record<string, number> = {};
-  for (const r of recs) {
+  for (const r of visibleRecs) {
     const action = sourceTypeToAction(r.sourceType);
     actionCounts[action] = (actionCounts[action] ?? 0) + 1;
   }
@@ -2681,8 +2715,8 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
   }
 
   // --- SECTION 3: Top Content Opportunities ---
-  if (recs.length > 0) {
-    const topCards = recs.map((r: any, i: number) => {
+  if (visibleRecs.length > 0) {
+    const topCards = visibleRecs.map((r: any, i: number) => {
       const priorityColor = r.priority === 'high' ? 'bg-rose-100 text-rose-700 border-rose-200' : r.priority === 'medium' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200';
       const sourceLabel = sourceTypeToLabel(r.sourceType);
       const sourceColor = sourceTypeColor(r.sourceType);
@@ -2714,11 +2748,14 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Top Content Opportunities</h2>
         <div class="space-y-3">${topCards}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock all content opportunities', `See all ${recs.length} content opportunities and the complete content strategy.`, 'Content'));
+    }
   }
 
   // --- SECTION 4: Content Opportunity Cards (expandable) ---
-  if (recs.length > 0) {
-    const oppCards = recs.map((r: any, i: number) => {
+  if (visibleRecs.length > 0) {
+    const oppCards = visibleRecs.map((r: any, i: number) => {
       const priorityColor = r.priority === 'high' ? 'bg-rose-100 text-rose-700 border-rose-200' : r.priority === 'medium' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200';
       const action = sourceTypeToAction(r.sourceType);
       const structureHtml = (r.structure ?? []).map((s: string) => `<li class="text-xs text-slate-600">${esc(s)}</li>`).join('');
@@ -2758,6 +2795,9 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Content Opportunity Cards</h2>
         <div class="space-y-2">${oppCards}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock detailed content briefs', `Each opportunity includes a full brief with structure, rationale, and recommended actions. Pro unlocks all ${recs.length}.`, 'Content'));
+    }
   }
 
   // --- SECTION 5: Existing Page Optimization ---
@@ -2785,6 +2825,9 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <p class="text-xs text-slate-500 mb-4">These opportunities can be addressed by improving pages that already exist.</p>
         <div class="space-y-3">${optimizeCards}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock all optimization targets', `See the complete list of existing pages that can be improved.`, 'Content'));
+    }
   }
 
   // --- SECTION 6: New Content to Create ---
@@ -2820,11 +2863,14 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <p class="text-xs text-slate-500 mb-4">Dedicated content assets recommended by the analysis.</p>
         <div class="space-y-3">${newCards}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock all new content ideas', `See every recommended new content asset based on your site's gaps and opportunities.`, 'Content'));
+    }
   }
 
   // --- SECTION 7: Content Gap Analysis ---
-  if (recs.length > 0) {
-    const gapRows = recs.map((r: any) => {
+  if (visibleRecs.length > 0) {
+    const gapRows = visibleRecs.map((r: any) => {
       const coverage = r.sourceType === 'CONTENT_GAP' ? 'Not covered' : r.sourceType === 'WEAK_TOPIC_COVERAGE' ? 'Thin / weak' : r.sourceType === 'SEO_FIX' ? 'Has SEO issues' : 'Referenced but not targeted';
       return `
         <div class="flex items-stretch gap-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -2852,11 +2898,14 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Content Gap Analysis</h2>
         <div class="space-y-2">${gapRows}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock full gap analysis', `See how all ${recs.length} topics compare in coverage, gaps, and recommended actions.`, 'Content'));
+    }
   }
 
   // --- SECTION 8: Search Intent → Content Format ---
   const intentGroups: Record<string, any[]> = {};
-  for (const r of recs) {
+  for (const r of visibleRecs) {
     const intent = r.intent ?? 'informational';
     if (!intentGroups[intent]) intentGroups[intent] = [];
     intentGroups[intent].push(r);
@@ -2888,10 +2937,13 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-4">Search Intent → Content Format</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${intentCards}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock intent mapping for all opportunities', `See how all ${recs.length} opportunities map to search intent and content format.`, 'Content'));
+    }
   }
 
   // --- SECTION 9: Content Cluster / Topic Structure ---
-  const clusters = buildContentClusters(recs);
+  const clusters = buildContentClusters(visibleRecs);
   if (clusters.length > 0) {
     const clusterHtml = clusters.map(c => {
       const items = c.items.map((r: any) => `<li class="text-xs text-slate-700 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full ${r.priority === 'high' ? 'bg-rose-400' : r.priority === 'medium' ? 'bg-amber-400' : 'bg-slate-300'} shrink-0"></span>${esc(r.title)}</li>`).join('');
@@ -2914,6 +2966,9 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <p class="text-xs text-slate-500 mb-4">Related content opportunities grouped by topic. Pillar + supporting articles that work together.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${clusterHtml}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock full topic clusters', `See how all ${recs.length} opportunities group into content clusters and pillar strategies.`, 'Content'));
+    }
   }
 
   // --- SECTION 10: Content Brief (high priority only) ---
@@ -2943,11 +2998,14 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <p class="text-xs text-slate-500 mb-4">Compact briefs for high-priority opportunities. Start here.</p>
         <div class="space-y-3">${briefs}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock all content briefs', `Get AI-enhanced briefs for every high-priority opportunity across all ${recs.length} recommendations.`, 'Content'));
+    }
   }
 
   // --- Internal Linking Opportunities ---
-  if (recs.length > 0 && htmlPages.length > 1) {
-    const linkOpps = findInternalLinkOpportunities(recs, htmlPages, internalLinkGraph);
+  if (visibleRecs.length > 0 && htmlPages.length > 1) {
+    const linkOpps = findInternalLinkOpportunities(visibleRecs, htmlPages, internalLinkGraph);
     if (linkOpps.length > 0) {
       const linkHtml = linkOpps.slice(0, 6).map(opp => `
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
@@ -2965,6 +3023,9 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
           <p class="text-xs text-slate-500 mb-4">Pages that should link to each other to strengthen topical connections and help visitors discover related content.</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${linkHtml}</div>
         </div>`);
+      if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+        sections.push(proBoundary('Unlock all internal linking suggestions', `Discover more linking opportunities across all ${recs.length} content recommendations.`, 'Content'));
+      }
     }
   }
 
@@ -2997,6 +3058,9 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
         <p class="text-xs text-slate-500 mb-4">If I can only work on three content improvements this month, what should I do?</p>
         <div class="space-y-2">${actions}</div>
       </div>`);
+    if (plan !== 'pro' && recs.length > FREE_RECOMMENDATION_LIMIT) {
+      sections.push(proBoundary('Unlock the complete action plan', `Get prioritized actions for all ${recs.length} content opportunities, ranked by impact.`, 'Content'));
+    }
   }
 
   // --- Learn: Why authoritative content matters ---
@@ -3020,35 +3084,29 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
     </div>`);
 
   // --- Empty state ---
-  if (recs.length === 0) {
+  if (visibleRecs.length === 0) {
     sections.push(`
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center mb-8">
         <div class="text-sm text-slate-500">No content opportunities found. Run a deeper scan to get recommendations.</div>
       </div>`);
   }
 
-  // --- Back button ---
-  const backHtml = `
-    <div class="mt-8 pt-6 border-t border-slate-200">
-      <button data-action="back" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
-        Back to dashboard
-      </button>
-    </div>`;
-
   if (content) {
     content.classList.remove('hidden');
     content.innerHTML = `
-      <div class="max-w-4xl mx-auto">
-        <button data-action="back" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-6 transition"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>Back to dashboard</button>
-        <div class="mb-6">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
           <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Content Opportunities Report</h1>
           <p class="text-xs text-slate-500 mt-1">Analyzed ${topicsAnalyzed} topics${provider ? ` via ${provider}` : ''} · ${recs.length} opportunit${recs.length === 1 ? 'y' : 'ies'} found</p>
         </div>
-        ${sections.join('')}
-        ${backHtml}
-      </div>`;
-    content.querySelectorAll('[data-action="back"]').forEach(b => b.addEventListener('click', () => { showView('dashboard'); void loadDashboard(currentProject!); }));
+        <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
+      </div>
+      ${sections.join('')}
+    `;
+    content.querySelector('.btn-back-dashboard')?.addEventListener('click', () => {
+      showView('dashboard');
+      window.history.replaceState({}, '', '/app');
+    });
   }
 }
 
@@ -3254,13 +3312,13 @@ function renderRedditReport(data: Record<string, any>) {
     if (content) {
       content.classList.remove('hidden');
       content.innerHTML = `
-        <div class="max-w-4xl mx-auto">
-          <button data-action="back" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-6 transition"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>Back to dashboard</button>
+        <div class="flex flex-col items-center gap-4">
+          <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
             <div class="text-sm text-slate-500">${esc(data.message ?? 'Reddit Intelligence is unavailable.')}</div>
           </div>
         </div>`;
-      content.querySelectorAll('[data-action="back"]').forEach(b => b.addEventListener('click', () => { showView('dashboard'); void loadDashboard(currentProject!); }));
+      content.querySelector('.btn-back-dashboard')?.addEventListener('click', () => { showView('dashboard'); void loadDashboard(currentProject!); });
     }
     return;
   }
@@ -3476,28 +3534,24 @@ function renderRedditReport(data: Record<string, any>) {
       </div>`);
   }
 
-  // --- Back button ---
-  const backHtml = `
-    <div class="mt-8 pt-6 border-t border-slate-200">
-      <button data-action="back" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
-        Back to dashboard
-      </button>
-    </div>`;
+  // --- Back button support removed: consolidated to top btn-back-dashboard ---
 
   if (content) {
     content.classList.remove('hidden');
     content.innerHTML = `
-      <div class="max-w-4xl mx-auto">
-        <button data-action="back" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-6 transition"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>Back to dashboard</button>
-        <div class="mb-6">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
           <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Reddit Intelligence Report</h1>
           <p class="text-xs text-slate-500 mt-1">${disc.length} conversations across ${subredditCounts.size} communities · ${topicsAnalyzed} topics analyzed</p>
         </div>
-        ${sections.join('')}
-        ${backHtml}
-      </div>`;
-    content.querySelectorAll('[data-action="back"]').forEach(b => b.addEventListener('click', () => { showView('dashboard'); void loadDashboard(currentProject!); }));
+        <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
+      </div>
+      ${sections.join('')}
+    `;
+    content.querySelector('.btn-back-dashboard')?.addEventListener('click', () => {
+      showView('dashboard');
+      window.history.replaceState({}, '', '/app');
+    });
   }
 }
 
@@ -3795,18 +3849,22 @@ $('form-create')?.addEventListener('submit', async (e) => {
   const name = (($('input-create-name') as HTMLInputElement | null)?.value ?? '').trim();
   const submitBtn = $('btn-create-submit') as HTMLButtonElement | null;
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating…'; }
-  try {
+try {
     const r = await apiFetch('/api/projects', { method: 'POST', body: JSON.stringify({ ...(name ? { name } : {}), websiteUrl }) });
     if (!r.ok) {
       if (r.status === 401) { window.location.replace('/login?next=/app'); return; }
-      showBanner($('create-error'), (await beErr(r)).message); return;
+      const err = await beErr(r);
+      if (err.code === 'PROJECT_LIMIT_REACHED') {
+        showBanner($('create-error'), `You've reached your Free plan project limit. Free accounts can have 1 project. <a href="/pricing" class="underline text-blue-600 hover:text-blue-800">Upgrade to Pro</a> to create another project.`); return;
+      }
+      showBanner($('create-error'), err.message); return;
     }
     const project: Project = await r.json();
     closeCreateModal();
     ($('form-create') as HTMLFormElement | null)?.reset();
     await loadProjects();
     void openDashboard(project);
-  } catch { showBanner($('create-error'), 'Could not reach the backend.'); }
+} catch { showBanner($('create-error'), 'Could not reach the backend.'); }
   finally { if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create project'; } }
 });
 
@@ -3930,6 +3988,129 @@ async function logout() {
   window.location.href = '/';
 }
 
+// --- Settings ---
+async function loadSettings() {
+  const loading = $('settings-loading');
+  const content = $('settings-content');
+  if (loading) loading.classList.remove('hidden');
+  if (content) content.classList.add('hidden');
+
+  try {
+    const r = await apiFetch('/api/account');
+    if (!r.ok) throw new Error('Failed to load account');
+    const data = await r.json();
+
+    // Account
+    const emailEl = $('settings-email');
+    if (emailEl) emailEl.textContent = data.user.email;
+    const joinEl = $('settings-join-date');
+    if (joinEl) joinEl.textContent = new Date(data.user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Plan
+    const planLabel = $('settings-plan-label');
+    const planBadge = $('settings-plan-badge');
+    const planDesc = $('settings-plan-desc');
+    const upgradeBtn = $('settings-upgrade-btn');
+    const isPro = data.plan === 'pro';
+    if (planLabel) planLabel.textContent = isPro ? 'Pro' : 'Free';
+    if (planBadge) {
+      planBadge.textContent = isPro ? 'Active' : 'Free';
+      planBadge.className = isPro
+        ? 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-indigo-50 text-indigo-700 border-indigo-100'
+        : 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-200';
+    }
+    if (planDesc) planDesc.textContent = isPro
+      ? 'Unlimited projects, all modules, Reddit Intelligence.'
+      : '1 project, 1 scan, limited modules, no Reddit Intelligence.';
+    if (upgradeBtn) {
+      if (isPro) {
+        upgradeBtn.textContent = 'Current plan';
+        upgradeBtn.classList.add('bg-slate-100', 'text-slate-500', 'pointer-events-none');
+        upgradeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+      }
+    }
+
+    // Usage
+    const isFree = !isPro;
+    const projectLimit = isPro ? '∞' : '1';
+    const scanLimit = isPro ? '∞' : '1';
+    const projectsUsed = $('settings-projects-used');
+    const projectsLimit = $('settings-projects-limit');
+    const projectsBar = $('settings-projects-bar');
+    const scansUsed = $('settings-scans-used');
+    const scansLimit = $('settings-scans-limit');
+    const scansBar = $('settings-scans-bar');
+    if (projectsUsed) projectsUsed.textContent = String(data.projectCount);
+    if (projectsLimit) projectsLimit.textContent = projectLimit;
+    if (projectsBar) {
+      const pct = isPro ? 0 : Math.min(100, (data.projectCount / 1) * 100);
+      projectsBar.style.width = `${pct}%`;
+      if (!isPro && data.projectCount >= 1) projectsBar.classList.replace('bg-blue-400', 'bg-rose-400');
+    }
+    if (scansUsed) scansUsed.textContent = String(data.totalScans);
+    if (scansLimit) scansLimit.textContent = scanLimit;
+    if (scansBar) {
+      const pct = isPro ? 0 : Math.min(100, (data.totalScans / 1) * 100);
+      scansBar.style.width = `${pct}%`;
+      if (!isPro && data.totalScans >= 1) scansBar.classList.replace('bg-blue-400', 'bg-rose-400');
+    }
+
+    // Reddit usage (Pro only)
+    const redditUsage = $('settings-reddit-usage');
+    if (redditUsage && isPro) {
+      redditUsage.classList.remove('hidden');
+      const ru = data.redditUsage;
+      const rWeekUsed = $('settings-reddit-weekly-used');
+      const rWeekLimit = $('settings-reddit-weekly-limit');
+      const rWeekBar = $('settings-reddit-weekly-bar');
+      const rMonthUsed = $('settings-reddit-monthly-used');
+      const rMonthLimit = $('settings-reddit-monthly-limit');
+      const rMonthBar = $('settings-reddit-monthly-bar');
+      if (rWeekUsed) rWeekUsed.textContent = String(ru.weeklyScansUsed);
+      if (rWeekLimit) rWeekLimit.textContent = String(ru.weeklyScansLimit);
+      if (rWeekBar) rWeekBar.style.width = `${Math.min(100, (ru.weeklyScansUsed / ru.weeklyScansLimit) * 100)}%`;
+      if (rMonthUsed) rMonthUsed.textContent = String(ru.monthlyScansUsed);
+      if (rMonthLimit) rMonthLimit.textContent = String(ru.monthlyScansLimit);
+      if (rMonthBar) rMonthBar.style.width = `${Math.min(100, (ru.monthlyScansUsed / ru.monthlyScansLimit) * 100)}%`;
+    }
+
+    // Projects list
+    const projectsList = $('settings-projects-list');
+    if (projectsList) {
+      if (projects.length === 0) {
+        projectsList.innerHTML = '<div class="p-5 text-sm text-slate-400">No projects yet.</div>';
+      } else {
+        projectsList.innerHTML = projects.map(p => `
+          <div class="p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-slate-900 truncate">${esc(p.name || p.domain)}</div>
+              <div class="text-xs text-slate-500 font-mono truncate">${esc(p.domain)} · ${p.scanCount} scan${p.scanCount !== 1 ? 's' : ''}</div>
+            </div>
+            <button type="button" data-settings-project="${esc(p.id)}" class="shrink-0 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">Open →</button>
+          </div>
+        `).join('');
+        projectsList.querySelectorAll('[data-settings-project]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const pid = (btn as HTMLElement).dataset.settingsProject;
+            const proj = projects.find(p => p.id === pid);
+            if (proj) {
+              currentProject = proj;
+              currentCrawlId = proj.latestScan?.id ?? null;
+              showView('dashboard');
+            }
+          });
+        });
+      }
+    }
+
+    if (loading) loading.classList.add('hidden');
+    if (content) content.classList.remove('hidden');
+  } catch (err) {
+    console.error('Failed to load settings', err);
+    if (loading) loading.innerHTML = '<p class="text-sm text-rose-600">Failed to load account data.</p>';
+  }
+}
+
 // --- Init ---
 async function init() {
   const r = await apiFetch('/api/auth/me');
@@ -3974,28 +4155,109 @@ async function init() {
     }
     if (matchedProject) {
       currentProject = matchedProject;
-      currentCrawlId = crawlIdParam;
-      if (viewParam === 'search') {
-        showView('search-report');
-        void loadSearchReport(crawlIdParam);
-      } else if (viewParam === 'ai') {
-        showView('ai-report');
-        void loadAiReport(crawlIdParam);
-      } else if (viewParam === 'content') {
-        showView('content-report');
-        void loadContentReport(crawlIdParam);
-      } else if (viewParam === 'reddit') {
-        showView('reddit-report');
-        void loadRedditReport(crawlIdParam);
-      } else {
-        showView('report');
-        void loadTechnicalReport(crawlIdParam);
-      }
+    }
+    currentCrawlId = crawlIdParam;
+    if (viewParam === 'search') {
+      showView('search-report');
+      void loadSearchReport(crawlIdParam);
+    } else if (viewParam === 'ai') {
+      showView('ai-report');
+      void loadAiReport(crawlIdParam);
+    } else if (viewParam === 'content') {
+      showView('content-report');
+      void loadContentReport(crawlIdParam);
+    } else if (viewParam === 'reddit') {
+      showView('reddit-report');
+      void loadRedditReport(crawlIdParam);
+    } else {
+      showView('report');
+      void loadTechnicalReport(crawlIdParam);
     }
   }
 }
 
 window.addEventListener('foundable:scan-complete', () => void loadProjects());
+
+// --- Browser back/forward ---
+window.addEventListener('popstate', () => {
+  const params = new URLSearchParams(window.location.search);
+  const viewParam = params.get('view');
+  const crawlIdParam = params.get('crawlId');
+  if (viewParam && crawlIdParam) {
+    currentCrawlId = crawlIdParam;
+    if (viewParam === 'technical') { showView('report'); void loadTechnicalReport(crawlIdParam); }
+    else if (viewParam === 'search') { showView('search-report'); void loadSearchReport(crawlIdParam); }
+    else if (viewParam === 'ai') { showView('ai-report'); void loadAiReport(crawlIdParam); }
+    else if (viewParam === 'content') { showView('content-report'); void loadContentReport(crawlIdParam); }
+    else if (viewParam === 'reddit') { showView('reddit-report'); void loadRedditReport(crawlIdParam); }
+  } else if (!viewParam) {
+    if (currentProject) showView('dashboard');
+    else { showView('projects'); void loadProjects(); }
+  }
+});
+
+async function loadHistoryReport(projectId: string) {
+  const loading = $('report-loading');
+  const error = $('report-error');
+  const content = $('report-content');
+  if (loading) loading.classList.remove('hidden');
+  if (error) error.classList.add('hidden');
+  if (content) content.classList.add('hidden');
+
+  try {
+    const r = await apiFetch(`/api/projects/${projectId}/scans`);
+    if (!r.ok) throw await beErr(r);
+    const data = await r.json();
+    const scans: ScanSnapshot[] = data.scans ?? [];
+
+    if (content) {
+      content.classList.remove('hidden');
+      content.innerHTML = `
+        <div class="mb-6 flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Scan History</h1>
+          </div>
+          <button type="button" class="btn-back-dashboard px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">← Back to Dashboard</button>
+        </div>
+        ${scans.length === 0
+            ? '<p class="text-sm text-slate-500">No scans found. Run your first scan to get started.</p>'
+            : `<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                ${scans.map((s: any) => `
+                  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-sm text-slate-500">${esc(s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'Unknown date')}</span>
+                      <span class="text-xs text-slate-400">${s.pagesCrawled} pages</span>
+                    </div>
+                    <h2 class="text-sm font-bold text-slate-900 mb-1">${esc(s.healthScore !== null ? `${s.healthScore}/100 Health Score` : 'No health score')}</h2>
+                    <p class="text-xs text-slate-500">${s.status === 'COMPLETED' ? 'Completed' : s.status}</p>
+                    <a href="#" class="text-blue-600 text-sm hover:text-blue-800 transition view-project-btn" data-crawl-id="${s.id}">View Report</a>
+                  </div>`).join('')}
+              </div>`
+        }
+      `;
+      content.querySelectorAll('.view-project-btn').forEach(b => {
+        b.addEventListener('click', (e) => {
+          e.preventDefault();
+          const crawlId = (e.target as HTMLElement).dataset.crawlId;
+          showView('report');
+          window.history.replaceState({}, '', `/app?view=technical&crawlId=${crawlId}`);
+          void loadTechnicalReport(crawlId);
+        });
+      });
+      content.querySelectorAll('.btn-back-dashboard').forEach(b => {
+        b.addEventListener('click', () => {
+          showView('dashboard');
+          window.history.replaceState({}, '', '/app');
+        });
+      });
+    }
+  } catch (err) {
+    console.error('Failed to load scan history', err);
+    if (error) error.innerHTML = '<p class="text-sm text-rose-600">Failed to load scan history.</p>';
+  } finally {
+    if (loading) loading.classList.add('hidden');
+  }
+}
 
 showView('projects');
 void init();

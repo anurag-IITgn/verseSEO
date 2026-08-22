@@ -4,6 +4,7 @@ import { pool } from './db/client.js';
 import { authenticateRequest } from './controllers/authController.js';
 import { corsHandler } from './middleware/cors.js';
 import { registerErrorHandler } from './middleware/errorHandler.js';
+import { accountRoutes } from './routes/account.js';
 import { analysisRoutes } from './routes/analysis.js';
 import { aiVisibilityRoutes } from './routes/aiVisibility.js';
 import { authRoutes } from './routes/auth.js';
@@ -56,6 +57,7 @@ export function buildApp() {
     };
   });
 
+  app.register(accountRoutes);
   app.register(authRoutes);
   app.register(projectRoutes);
   app.register(crawlRoutes);

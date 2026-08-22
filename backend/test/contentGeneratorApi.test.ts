@@ -10,7 +10,7 @@ const { pool } = await import('../src/db/client.js');
 const { setAiProviderForTesting } = await import('../src/ai/registry.js');
 const { AiUnavailableError } = await import('../src/ai/errors.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 type AiProvider = import('../src/ai/types.js').AiProvider;
 
@@ -108,6 +108,7 @@ before(async () => {
   site = await startFixtureAnalysisSite();
   userEmail = `content-gen-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
 });
 

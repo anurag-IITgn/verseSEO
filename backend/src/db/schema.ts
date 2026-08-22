@@ -276,6 +276,21 @@ export const contentRecommendations = pgTable(
   (table) => [index('content_recommendations_crawl_run_id_idx').on(table.crawlRunId)],
 );
 
+export const redditScanUsage = pgTable(
+  'reddit_scan_usage',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    crawlRunId: uuid('crawl_run_id')
+      .notNull()
+      .references(() => crawlRuns.id, { onDelete: 'cascade' }),
+    scannedAt: timestamp('scanned_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('reddit_scan_usage_user_idx').on(table.userId, table.scannedAt)],
+);
+
 export const contentGenerations = pgTable(
   'content_generations',
   {

@@ -13,7 +13,6 @@ const { RedditUnavailableError } = await import('../src/reddit/errors.js');
 const { mapRedditSearchResponse } = await import('../src/reddit/mapping.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
 const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
-const { resetRedditUsageForTesting } = await import('../src/services/redditService.js');
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 type RedditProvider = import('../src/reddit/types.js').RedditProvider;
 type RedditPost = import('../src/reddit/types.js').RedditPost;
@@ -65,8 +64,11 @@ function fakeProvider(overrides: Partial<RedditProvider> = {}): RedditProvider {
   };
 }
 
-async function deleteProject(projectId: string): Promise<void> {
-  await pool.query('DELETE FROM projects WHERE id = $1', [projectId]);
+async function deleteProject(token: string, projectId: string): Promise<void> {
+  const res = await app.inject(injectAs(token, { method: 'DELETE', url: `/api/projects/${projectId}` }));
+  if (res.statusCode !== 200) {
+    throw new Error(`Failed to delete project ${projectId}: ${res.statusCode} ${res.body}`);
+  }
 }
 
 async function pollCrawl(crawlId: string, timeoutMs = 15000): Promise<Record<string, unknown>> {
@@ -133,8 +135,8 @@ before(async () => {
   await new Promise<void>((resolve) => blockedServer.listen(0, '127.0.0.1', resolve));
 });
 
-beforeEach(() => {
-  resetRedditUsageForTesting();
+beforeEach(async () => {
+  await pool.query('DELETE FROM reddit_scan_usage');
 });
 
 after(async () => {
@@ -184,7 +186,7 @@ const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/red
     const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM reddit_discussions WHERE crawl_run_id = $1', [crawlId]);
     assert.equal(rows[0].total, result.total, 'discussions must be persisted');
   } finally {
-    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+    await deleteProject(sessionToken, (await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });
 
@@ -201,7 +203,7 @@ test('repeated requests are idempotent and never duplicate discussions', async (
 const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM reddit_discussions WHERE crawl_run_id = $1', [crawlId]);
     assert.equal(rows[0].total, first.total, 'discussions must never be duplicated');
   } finally {
-    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+    await deleteProject(sessionToken, (await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });
 
@@ -233,7 +235,7 @@ test('concurrent requests share one discovery pipeline instead of duplicating it
     assert.ok(result.total > 0);
     assert.ok(searches <= 8, `only one pipeline may run (8 queries max); saw ${searches} searches`);
   } finally {
-    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+    await deleteProject(sessionToken, (await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });
 
@@ -250,7 +252,7 @@ test('returns an honest unavailable state when Reddit is not configured', async 
     assert.deepEqual(body.discussions, []);
     assert.match(body.message, /REDDIT_CLIENT_ID/);
   } finally {
-    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+    await deleteProject(sessionToken, (await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });
 
@@ -264,7 +266,7 @@ test('returns an honest unavailable state when the provider fails', async () => 
     assert.match(body.message, /429/);
     assert.equal(body.total, 0);
   } finally {
-    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+    await deleteProject(sessionToken, (await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });
 
@@ -277,7 +279,7 @@ test('returns an empty result when the provider finds no relevant discussions', 
     assert.equal(body.total, 0);
     assert.deepEqual(body.discussions, []);
   } finally {
-    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+    await deleteProject(sessionToken, (await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });
 
@@ -305,7 +307,7 @@ const crawlId = await crawlFixtureSite();
     assert.equal(body.discussions[0].postTitle, 'Tip math question');
     assert.equal(body.discussions[0].subreddit, 'personalfinance');
   } finally {
-    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+    await deleteProject(sessionToken, (await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });
 
@@ -338,6 +340,6 @@ test('reddit opportunities endpoint rejects crawls that did not complete', async
     assert.equal(res.statusCode, 409);
     assert.equal(res.json().error.code, 'CRAWL_NOT_COMPLETED');
   } finally {
-    await deleteProject(projectId);
+    await deleteProject(sessionToken, projectId);
   }
 });

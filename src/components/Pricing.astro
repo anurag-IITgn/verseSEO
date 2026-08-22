@@ -1,5 +1,5 @@
 ---
-// Pricing.astro
+// Pricing.astro — Final two-plan pricing (Free + Pro)
 ---
 
 <section class="py-16 sm:py-24 bg-[#f5f4f0] border-b border-slate-200/80 relative" id="pricing">
@@ -16,35 +16,16 @@
       <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
         Start free to uncover your website's baseline visibility. Upgrade as you scale your search rankings and AI citations.
       </p>
-
-      <!-- Monthly / Annual Billing Toggle -->
-      <div class="mt-8 inline-flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs">
-        <button 
-          type="button" 
-          id="billing-monthly-btn"
-          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] text-white transition-all cursor-pointer"
-        >
-          Monthly Billing
-        </button>
-        <button 
-          type="button" 
-          id="billing-annual-btn"
-          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer"
-        >
-          <span>Annual Billing</span>
-          <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase">Save 20%</span>
-        </button>
-      </div>
     </div>
 
     <!-- Pricing Cards Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch max-w-5xl mx-auto">
       
-      <!-- Tier 1: Free Tier -->
+      <!-- Tier 1: Free -->
       <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
         <div>
           <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Free Starter</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Free</span>
             <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">Free Forever</span>
           </div>
 
@@ -54,30 +35,38 @@
           </div>
 
           <p class="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
-            Essential technical health audit and sample search queries for solo builders testing their site.
+            Essential website intelligence for testing and improving your site's visibility.
           </p>
 
           <!-- Feature List -->
           <div class="space-y-3 pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-700">
             <div class="flex items-center gap-2.5">
               <span class="text-emerald-600 font-bold">✓</span>
-              <span>1 Website technical audit (50 pages)</span>
+              <span>1 project</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-emerald-600 font-bold">✓</span>
-              <span>5 Search keyword opportunities/mo</span>
+              <span>1 website scan — lifetime</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-emerald-600 font-bold">✓</span>
-              <span>1 Reddit community monitor</span>
+              <span>Technical Health</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-emerald-600 font-bold">✓</span>
-              <span>1 AI search visibility check</span>
+              <span>Search Opportunities</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-emerald-600 font-bold">✓</span>
+              <span>AI Engine Footprint — limited</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-emerald-600 font-bold">✓</span>
+              <span>Content Opportunities — limited</span>
             </div>
             <div class="flex items-center gap-2.5 text-slate-400">
               <span>✕</span>
-              <span>Automated content briefs</span>
+              <span>Reddit Intelligence</span>
             </div>
           </div>
         </div>
@@ -85,32 +74,32 @@
         <div class="mt-8 pt-6 border-t border-slate-100">
           <button 
             type="button" 
-            class="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors cursor-pointer"
-            onclick="alert('Free tier signups will open with the V1 launch!')"
+            class="pricing-cta w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors cursor-pointer"
+            data-plan="free"
           >
-            Start Free Scan
+            Start Free
           </button>
         </div>
       </div>
 
-      <!-- Tier 2: Starter Plan (Featured) -->
+      <!-- Tier 2: Pro (Featured) -->
       <div class="bg-white rounded-3xl border-2 border-blue-600 p-6 sm:p-8 shadow-xl shadow-blue-600/10 flex flex-col justify-between relative">
         <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[11px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-sm">
-          Most Popular for Founders
+          Most Popular
         </div>
 
         <div>
           <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold uppercase tracking-wider text-blue-600 font-mono">Starter Tier</span>
-            <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">For Small Businesses</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600 font-mono">Pro</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">Most Popular</span>
           </div>
 
           <div class="mb-4">
             <div class="flex items-baseline gap-1">
-              <span class="text-4xl font-extrabold text-slate-900 plan-price" data-monthly="$29" data-annual="$24">$29</span>
+              <span class="text-4xl font-extrabold text-slate-900">$24</span>
               <span class="text-xs text-slate-500 font-medium">/ month</span>
             </div>
-            <div class="text-xs text-slate-500 mt-1 plan-billing-note" data-monthly="Billed monthly" data-annual="Billed annually ($288/yr)">Billed monthly</div>
+            <div class="text-xs text-slate-500 mt-1">Billed monthly</div>
           </div>
 
           <p class="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
@@ -121,27 +110,43 @@
           <div class="space-y-3 pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-700">
             <div class="flex items-center gap-2.5 font-semibold text-slate-900">
               <span class="text-blue-600 font-bold">✓</span>
-              <span>Full Technical Audit (500 pages)</span>
+              <span>3 projects</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-blue-600 font-bold">✓</span>
-              <span>100 High-Intent Keyword Opportunities</span>
+              <span>Full website intelligence</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-blue-600 font-bold">✓</span>
-              <span>5 Subreddit High-Intent Trackers</span>
+              <span>Full Technical Health</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-blue-600 font-bold">✓</span>
-              <span>ChatGPT, Claude & Perplexity Citations</span>
+              <span>Full Search Opportunities</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-blue-600 font-bold">✓</span>
-              <span>10 Automated SEO Content Briefs / mo</span>
+              <span>Full AI Engine Footprint</span>
             </div>
             <div class="flex items-center gap-2.5">
               <span class="text-blue-600 font-bold">✓</span>
-              <span>Weekly Visibility Action Digest</span>
+              <span>Full Content Opportunities</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-blue-600 font-bold">✓</span>
+              <span>Reddit Intelligence</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-blue-600 font-bold">✓</span>
+              <span>2 Reddit scans per week</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-blue-600 font-bold">✓</span>
+              <span>8 Reddit scans per month</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-blue-600 font-bold">✓</span>
+              <span>Full access to gated report content</span>
             </div>
           </div>
         </div>
@@ -149,119 +154,77 @@
         <div class="mt-8 pt-6 border-t border-slate-100">
           <button 
             type="button" 
-            class="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/25 transition-all cursor-pointer"
-            onclick="alert('Starter tier registration will be available shortly!')"
+            class="pricing-cta w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/25 transition-all cursor-pointer"
+            data-plan="pro"
           >
-            Get Started with Starter
-          </button>
-        </div>
-      </div>
-
-      <!-- Tier 3: Pro Plan -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Pro / Agency</span>
-            <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">Multi-Site</span>
-          </div>
-
-          <div class="mb-4">
-            <div class="flex items-baseline gap-1">
-              <span class="text-4xl font-extrabold text-slate-900 plan-price" data-monthly="$79" data-annual="$64">$79</span>
-              <span class="text-xs text-slate-500 font-medium">/ month</span>
-            </div>
-            <div class="text-xs text-slate-500 mt-1 plan-billing-note" data-monthly="Billed monthly" data-annual="Billed annually ($768/yr)">Billed monthly</div>
-          </div>
-
-          <p class="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
-            For scaling SaaS companies and agencies managing multiple domains and active campaigns.
-          </p>
-
-          <!-- Feature List -->
-          <div class="space-y-3 pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-700">
-            <div class="flex items-center gap-2.5">
-              <span class="text-emerald-600 font-bold">✓</span>
-              <span>5 Websites monitored simultaneously</span>
-            </div>
-            <div class="flex items-center gap-2.5">
-              <span class="text-emerald-600 font-bold">✓</span>
-              <span>500 Search Keyword Opportunities</span>
-            </div>
-            <div class="flex items-center gap-2.5">
-              <span class="text-emerald-600 font-bold">✓</span>
-              <span>Unlimited Reddit Keyword Alerts</span>
-            </div>
-            <div class="flex items-center gap-2.5">
-              <span class="text-emerald-600 font-bold">✓</span>
-              <span>Daily AI Citation & Ranking Alerts</span>
-            </div>
-            <div class="flex items-center gap-2.5">
-              <span class="text-emerald-600 font-bold">✓</span>
-              <span>50 Automated Content Briefs / mo</span>
-            </div>
-            <div class="flex items-center gap-2.5">
-              <span class="text-emerald-600 font-bold">✓</span>
-              <span>Markdown, WordPress & Webhook Export</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-8 pt-6 border-t border-slate-100">
-          <button 
-            type="button" 
-            class="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] hover:bg-blue-600 text-white transition-colors cursor-pointer"
-            onclick="alert('Pro tier registration will be available shortly!')"
-          >
-            Upgrade to Pro
+            Get Started with Pro
           </button>
         </div>
       </div>
 
     </div>
 
-    <!-- Pricing Disclaimer & Guarantee Note -->
+    <!-- Pricing Note -->
     <div class="mt-12 text-center text-xs text-slate-500 max-w-2xl mx-auto">
-      * All plans include a 14-day free trial on initial connection. Cancel anytime with 1-click. Need custom high-volume crawling? <a href="#faq" class="text-blue-600 underline font-medium">Contact our team</a>.
+      * Free plan requires no credit card. Pro pricing is per account, not per project. Need custom high-volume crawling? <a href="#faq" class="text-blue-600 underline font-medium">Contact our team</a>.
     </div>
 
   </div>
 </section>
 
 <script>
-  const monthlyBtn = document.getElementById('billing-monthly-btn');
-  const annualBtn = document.getElementById('billing-annual-btn');
-  const priceElements = document.querySelectorAll<HTMLElement>('.plan-price');
-  const noteElements = document.querySelectorAll<HTMLElement>('.plan-billing-note');
+  const API = (import.meta as any).env?.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
-  if (monthlyBtn && annualBtn) {
-    monthlyBtn.addEventListener('click', () => {
-      monthlyBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] text-white transition-all cursor-pointer';
-      annualBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer';
+  async function getCurrentUser(): Promise<{ id: string; email: string; plan: string } | null> {
+    try {
+      const res = await fetch(`${API}/api/auth/me`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        return data.user ?? null;
+      }
+    } catch {}
+    return null;
+  }
 
-      priceElements.forEach(el => {
-        const monthly = el.getAttribute('data-monthly');
-        if (monthly) el.textContent = monthly;
+  async function initPricingCtas() {
+    const user = await getCurrentUser();
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.pricing-cta');
+
+    buttons.forEach(btn => {
+      const plan = btn.dataset.plan;
+      btn.addEventListener('click', () => {
+        if (plan === 'free') {
+          if (user) {
+            // Already logged in — go to dashboard
+            window.location.href = '/app';
+          } else {
+            // Not logged in — go to signup
+            window.location.href = '/register?next=/app';
+          }
+        } else if (plan === 'pro') {
+          if (!user) {
+            // Not logged in — go to signup
+            window.location.href = '/register?next=/app';
+          } else if (user.plan === 'pro') {
+            // Already Pro — go to settings
+            window.location.href = '/app';
+          } else {
+            // Free user — go to app (upgrade flow will be implemented later)
+            window.location.href = '/app';
+          }
+        }
       });
 
-      noteElements.forEach(el => {
-        const monthly = el.getAttribute('data-monthly');
-        if (monthly) el.textContent = monthly;
-      });
-    });
-
-    annualBtn.addEventListener('click', () => {
-      annualBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#0c1021] text-white transition-all flex items-center gap-1.5 cursor-pointer';
-      monthlyBtn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer';
-
-      priceElements.forEach(el => {
-        const annual = el.getAttribute('data-annual');
-        if (annual) el.textContent = annual;
-      });
-
-      noteElements.forEach(el => {
-        const annual = el.getAttribute('data-annual');
-        if (annual) el.textContent = annual;
-      });
+      // Update Pro button text if user is already Pro
+      if (plan === 'pro' && user?.plan === 'pro') {
+        btn.textContent = 'You\'re on Pro';
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+      }
     });
   }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initPricingCtas();
+  });
 </script>

@@ -10,7 +10,7 @@ const { buildApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/client.js');
 const { setAiProviderForTesting } = await import('../src/ai/registry.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 type AiProvider = import('../src/ai/types.js').AiProvider;
 
@@ -69,7 +69,7 @@ function briefProvider(): AiProvider {
 }
 
 async function deleteProject(projectId: string): Promise<void> {
-  await pool.query('DELETE FROM projects WHERE id = $1', [projectId]);
+  await authedInject({ method: 'DELETE', url: `/api/projects/${projectId}` });
 }
 
 async function pollCrawl(crawlId: string, timeoutMs = 15000): Promise<Record<string, unknown>> {
@@ -117,6 +117,7 @@ before(async () => {
   site = await startFixtureAnalysisSite();
   userEmail = `scan-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
   blockedServer = http.createServer((req, res) => {
     if (req.url === '/robots.txt') {

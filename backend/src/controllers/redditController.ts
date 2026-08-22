@@ -10,6 +10,6 @@ export async function getRedditOpportunitiesHandler(request: FastifyRequest, rep
 
 export async function getRedditUsageHandler(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
   const userId = request.userId!;
-  const usage = getRedditUsage(userId);
+  const usage = await getRedditUsage(userId);
   return reply.send(usage);
 }

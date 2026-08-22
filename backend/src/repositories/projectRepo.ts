@@ -71,6 +71,14 @@ export async function listProjectsByOwner(userId: string): Promise<Project[]> {
   return db.select().from(projects).where(eq(projects.userId, userId)).orderBy(desc(projects.createdAt));
 }
 
+export async function countProjectsByOwner(userId: string): Promise<number> {
+  const { rows } = await pool.query(
+    'SELECT COUNT(*)::int AS count FROM projects WHERE user_id = $1',
+    [userId],
+  );
+  return rows[0]?.count ?? 0;
+}
+
 export async function listProjectsByOwnerWithLatestScan(userId: string): Promise<ProjectWithLatestScan[]> {
   const { rows } = await pool.query(
     `SELECT

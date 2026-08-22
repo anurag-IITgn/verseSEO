@@ -92,6 +92,20 @@
       "when": 1787240804829,
       "tag": "0012_0013_crawler_enhancements",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1787300000000,
+      "tag": "0014_add_user_plan",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1787300100000,
+      "tag": "0015_add_reddit_scan_usage",
+      "breakpoints": true
     }
   ]
 }

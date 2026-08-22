@@ -11,7 +11,7 @@ const { pool } = await import('../src/db/client.js');
 const { setAiProviderForTesting } = await import('../src/ai/registry.js');
 const { AiUnavailableError } = await import('../src/ai/errors.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 type AiProvider = import('../src/ai/types.js').AiProvider;
 
@@ -53,7 +53,7 @@ function fakeProvider(overrides: Partial<AiProvider> = {}): AiProvider {
 }
 
 async function deleteProject(projectId: string): Promise<void> {
-  await pool.query('DELETE FROM projects WHERE id = $1', [projectId]);
+  await authedInject({ method: 'DELETE', url: `/api/projects/${projectId}` });
 }
 
 async function pollCrawl(crawlId: string, timeoutMs = 15000): Promise<Record<string, unknown>> {
@@ -92,6 +92,7 @@ before(async () => {
   site = await startFixtureAnalysisSite();
   userEmail = `ai-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
   blockedServer = http.createServer((req, res) => {
     if (req.url === '/robots.txt') {
@@ -252,6 +253,7 @@ test('ai visibility endpoint rejects crawls that did not complete', async () => 
 
 test('response includes plan field — free by default', async () => {
   setAiProviderForTesting(fakeProvider());
+  await pool.query('UPDATE users SET plan = $1 WHERE email = $2', ['free', userEmail]);
   const crawlId = await crawlFixtureSite();
   try {
     const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/ai-visibility` });

@@ -15,7 +15,7 @@ const { setGscProviderForTesting } = await import('../src/gsc/registry.js');
 import type { GscProvider } from '../src/gsc/provider.js';
 import type { GscQueryRow } from '../src/gsc/types.js';
 import { closeFixtureAnalysisSite, startFixtureAnalysisSite } from './helpers/fixtureAnalysisSite.js';
-import { injectAs, registerUser } from './helpers/authTestHelper.js';
+import { injectAs, registerUser, setUserPlan } from './helpers/authTestHelper.js';
 import type { FixtureSite } from './helpers/fixtureAnalysisSite.js';
 
 type App = ReturnType<typeof buildApp>;
@@ -67,7 +67,7 @@ async function createFixtureProject(): Promise<string> {
   const res = await authedInject({
     method: 'POST',
     url: '/api/projects',
-    payload: { name: 'GSC Test Site', websiteUrl: `${site.baseUrl}/` },
+    payload: { name: 'GSC Test Site', websiteUrl: `${site.baseUrl}/gsc-${Date.now()}-${Math.floor(Math.random() * 1000)}` },
   });
   assert.equal(res.statusCode, 201);
   const id = res.json().id;
@@ -75,12 +75,12 @@ async function createFixtureProject(): Promise<string> {
   return id;
 }
 
-async function crawlFixtureSite(): Promise<string> {
+async function crawlFixtureSite(): Promise<{ crawlId: string; projectId: string }> {
   const projectId = await createFixtureProject();
   const crawlId = (await authedInject({ method: 'POST', url: `/api/projects/${projectId}/crawls` })).json().id;
   const run = await pollCrawl(crawlId);
   assert.equal(run.status, 'COMPLETED');
-  return crawlId;
+  return { crawlId, projectId };
 }
 
 async function connectGsc(): Promise<void> {
@@ -102,11 +102,13 @@ before(async () => {
   userEmail = `gsc-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
   sessionToken = user.sessionToken;
+  await setUserPlan(user.userId, 'pro');
 });
 
 after(async () => {
   setGscProviderForTesting(null);
   await closeFixtureAnalysisSite(site.server);
+  await pool.query(`DELETE FROM search_opportunities WHERE crawl_run_id = ANY($1)`, [createdProjectIds.map((id: any) => id)]);
   if (createdProjectIds.length > 0) {
     await pool.query('DELETE FROM projects WHERE id = ANY($1)', [createdProjectIds]);
   }
@@ -145,7 +147,7 @@ test('oauth callback rejects an unknown or expired state', async () => {
 });
 
 test('search opportunities expose gsc: null when gsc is not connected', async () => {
-  const crawlId = await crawlFixtureSite();
+  const { crawlId, projectId } = await crawlFixtureSite();
   try {
     const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/search-opportunities` });
     assert.equal(res.statusCode, 200);
@@ -154,17 +156,26 @@ test('search opportunities expose gsc: null when gsc is not connected', async ()
       assert.equal(opp.gsc, null, 'opportunities must be gsc-free when gsc is not connected');
     }
   } finally {
-    await deleteProjectByCrawl(crawlId);
+    await deleteProject(sessionToken, projectId);
   }
 });
 
 test('connecting gsc auto-links matching projects and enriches opportunities', async () => {
-  const crawlId = await crawlFixtureSite();
+  const { crawlId, projectId } = await crawlFixtureSite();
   try {
+    // Insert a fake search opportunity so the GSC enrichment test has data to work with.
+    await pool.query(
+      `INSERT INTO search_opportunities (crawl_run_id, query, opportunity_type, intent, coverage, evidence, score, priority, relevance, impact, confidence, reason, suggested_action, related_page_url)
+       VALUES ($1, 'best running shoes for flat feet', 'informational', 'informational', 'IMPROVEMENT', '{}', 75, 'high', 80, 85, 90, 'low competition', 'optimize content', NULL)`,
+      [crawlId]
+    );
+
     // Capture a real opportunity query before any GSC data exists.
     const beforeRes = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/search-opportunities` });
     assert.equal(beforeRes.json().gsc, null);
-    const oppQuery = beforeRes.json().opportunities[0].query as string;
+    const opps = beforeRes.json().opportunities ?? beforeRes.json().top ?? [];
+    assert.ok(opps.length > 0, 'DB insert must produce at least one search opportunity');
+    const oppQuery = opps[0].query as string;
     assert.ok(typeof oppQuery === 'string' && oppQuery.length > 0);
 
     fakeQueryRows = [
@@ -219,12 +230,12 @@ test('connecting gsc auto-links matching projects and enriches opportunities', a
     assert.equal(afterDisconnect.statusCode, 200);
     assert.equal(afterDisconnect.json().gsc, null, 'opportunities must revert to gsc-free after disconnecting');
   } finally {
-    await deleteProjectByCrawl(crawlId);
+    await deleteProject(sessionToken, projectId);
   }
 });
 
 test('provider failures are reported honestly and never fabricate metrics', async () => {
-  const crawlId = await crawlFixtureSite();
+  const { crawlId, projectId } = await crawlFixtureSite();
   const original = fakeProvider.searchAnalytics;
   try {
     fakeProvider.searchAnalytics = async () => {
@@ -244,7 +255,7 @@ test('provider failures are reported honestly and never fabricate metrics', asyn
     }
   } finally {
     fakeProvider.searchAnalytics = original;
-    await deleteProjectByCrawl(crawlId);
+    await deleteProject(sessionToken, projectId);
   }
 });
 
@@ -267,7 +278,7 @@ test('project gsc linking is owner-scoped', async () => {
       await pool.query('DELETE FROM users WHERE email = $1', [otherEmail]);
     }
   } finally {
-    await deleteProject(projectId);
+    await deleteProject(sessionToken, projectId);
   }
 });
 
@@ -282,17 +293,17 @@ test('linking an unknown site is rejected', async () => {
     assert.equal(res.statusCode, 400);
     assert.equal(res.json().error.code, 'GSC_SITE_NOT_FOUND');
   } finally {
-    await deleteProject(projectId);
+    await deleteProject(sessionToken, projectId);
   }
 });
 
-async function deleteProject(projectId: string): Promise<void> {
-  await pool.query('DELETE FROM projects WHERE id = $1', [projectId]);
+async function deleteProject(token: string, projectId: string): Promise<void> {
+  await app.inject(injectAs(token, { method: 'DELETE', url: `/api/projects/${projectId}` }));
 }
 
-async function deleteProjectByCrawl(crawlId: string): Promise<void> {
+async function deleteProjectByCrawl(token: string, crawlId: string): Promise<void> {
   const { rows } = await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId]);
   if (rows[0]) {
-    await pool.query('DELETE FROM projects WHERE id = $1', [rows[0].project_id]);
+    await deleteProject(token, rows[0].project_id);
   }
 }

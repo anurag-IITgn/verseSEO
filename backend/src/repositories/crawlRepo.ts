@@ -61,3 +61,13 @@ export async function countCrawlsByUserId(userId: string): Promise<number> {
   );
   return rows[0]?.count ?? 0;
 }
+
+export async function countCompletedCrawlsByUserId(userId: string): Promise<number> {
+  const { rows } = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM crawl_runs cr
+     JOIN projects p ON p.id = cr.project_id
+     WHERE p.user_id = $1 AND cr.status = 'COMPLETED'`,
+    [userId],
+  );
+  return rows[0]?.count ?? 0;
+}

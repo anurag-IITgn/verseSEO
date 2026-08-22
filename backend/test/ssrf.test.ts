@@ -7,7 +7,7 @@ process.env.NODE_ENV = 'test';
 const { buildApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/client.js');
 const { isLocalHostname, isPrivateIp, assertPublicTargetHostname } = await import('../src/utils/ssrfGuard.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 
 let app: ReturnType<typeof buildApp>;
 let sessionToken = '';
@@ -20,10 +20,15 @@ async function createProject(websiteUrl: string) {
   return authedInject({ method: 'POST', url: '/api/projects', payload: { name: 'SSRF target', websiteUrl } });
 }
 
+async function deleteProject(projectId: string) {
+  await authedInject({ method: 'DELETE', url: `/api/projects/${projectId}` });
+}
+
 before(async () => {
   app = buildApp();
   await app.ready();
   const user = await registerUser(app, `ssrf-${Date.now()}@test.com`);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
 });
 
@@ -91,6 +96,7 @@ test('POST /crawls blocks localhost targets with SSRF_BLOCKED', async () => {
   const crawl = await authedInject({ method: 'POST', url: `/api/projects/${project.json().id}/crawls` });
   assert.equal(crawl.statusCode, 400);
   assert.equal(crawl.json().error.code, 'SSRF_BLOCKED');
+  await deleteProject(project.json().id);
 });
 
 test('POST /crawls blocks private IP targets with SSRF_BLOCKED', async () => {
@@ -101,6 +107,7 @@ test('POST /crawls blocks private IP targets with SSRF_BLOCKED', async () => {
     const crawl = await authedInject({ method: 'POST', url: `/api/projects/${project.json().id}/crawls` });
     assert.equal(crawl.statusCode, 400, url);
     assert.equal(crawl.json().error.code, 'SSRF_BLOCKED', url);
+    await deleteProject(project.json().id);
   }
 });
 
@@ -118,4 +125,5 @@ test('unresolvable public hosts are allowed through the guard', async () => {
     body = (await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}` })).json();
   }
   assert.ok(body.status === 'COMPLETED' || body.status === 'FAILED');
+  await deleteProject(project.json().id);
 });

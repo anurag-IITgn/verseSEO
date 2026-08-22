@@ -8,7 +8,7 @@ import { parseGeneratedBrief } from '../content/parsing.js';
 import { fallbackStructure } from '../content/structure.js';
 import type { ContentSeed } from '../content/types.js';
 import { db } from '../db/client.js';
-import { contentRecommendations } from '../db/schema.js';
+import { contentRecommendations, users } from '../db/schema.js';
 import { findPagesByCrawl, type CrawledPageRow } from '../repositories/pageRepo.js';
 import { findProjectById } from '../repositories/projectRepo.js';
 import { findIssuesByCrawl } from '../repositories/seoRepo.js';
@@ -37,6 +37,7 @@ export interface ContentRecommendationView {
 
 export interface ContentRecommendationsResponse {
   crawlId: string;
+  plan: 'free' | 'pro';
   status: 'ok' | 'unavailable';
   reason: string | null;
   message: string | null;
@@ -60,9 +61,10 @@ function toView(row: ContentRecommendationRow): ContentRecommendationView {
   };
 }
 
-function unavailable(crawlId: string, reason: string, message: string, provider: string | null, model: string | null, topicsAnalyzed: number): ContentRecommendationsResponse {
+function unavailable(crawlId: string, plan: 'free' | 'pro', reason: string, message: string, provider: string | null, model: string | null, topicsAnalyzed: number): ContentRecommendationsResponse {
   return {
     crawlId,
+    plan,
     status: 'unavailable',
     reason,
     message,
@@ -95,6 +97,9 @@ export async function getContentRecommendations(userId: string, crawlId: string)
     throw new AppError(409, 'Crawl run is not completed', 'CRAWL_NOT_COMPLETED');
   }
 
+  const [userRow] = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
+  const plan: 'free' | 'pro' = (userRow?.plan as 'free' | 'pro') ?? 'free';
+
   const project = await findProjectById(crawl.projectId);
   const domain = project?.domain ?? '';
 
@@ -104,7 +109,7 @@ export async function getContentRecommendations(userId: string, crawlId: string)
 
   const stored = await findRecommendationsByCrawl(crawlId);
   if (stored.length > 0) {
-    return buildResponse(crawlId, stored[0].provider ?? null, stored[0].model ?? null, stored, topicsAnalyzed);
+    return buildResponse(crawlId, plan, stored[0].provider ?? null, stored[0].model ?? null, stored, topicsAnalyzed);
   }
 
   const seeds = planContentSeeds({
@@ -114,13 +119,14 @@ export async function getContentRecommendations(userId: string, crawlId: string)
     aiResults: await findAiVisibilityResultsByCrawl(crawlId),
   });
   if (seeds.length === 0) {
-    return buildResponse(crawlId, null, null, [], topicsAnalyzed);
+    return buildResponse(crawlId, plan, null, null, [], topicsAnalyzed);
   }
 
   const provider = getAiProvider();
   if (!provider) {
     return unavailable(
       crawlId,
+      plan,
       'NOT_CONFIGURED',
       'Content generation is not connected. Add GEMINI_API_KEY (official Google Gemini API) to enable it.',
       null,
@@ -151,7 +157,7 @@ export async function getContentRecommendations(userId: string, crawlId: string)
     }
   } catch (error) {
     const message = error instanceof AiUnavailableError ? error.message : 'Content generation is temporarily unavailable.';
-    return unavailable(crawlId, 'PROVIDER_ERROR', message, provider.name, provider.model, topicsAnalyzed);
+    return unavailable(crawlId, plan, 'PROVIDER_ERROR', message, provider.name, provider.model, topicsAnalyzed);
   }
 
   if (rows.length > 0) {
@@ -162,11 +168,12 @@ export async function getContentRecommendations(userId: string, crawlId: string)
   }
 
   const storedRows = await findRecommendationsByCrawl(crawlId);
-  return buildResponse(crawlId, provider.name, provider.model, storedRows, topicsAnalyzed);
+  return buildResponse(crawlId, plan, provider.name, provider.model, storedRows, topicsAnalyzed);
 }
 
 function buildResponse(
   crawlId: string,
+  plan: 'free' | 'pro',
   providerName: string | null,
   providerModel: string | null,
   rows: ContentRecommendationRow[],
@@ -174,6 +181,7 @@ function buildResponse(
 ): ContentRecommendationsResponse {
   return {
     crawlId,
+    plan,
     status: 'ok',
     reason: null,
     message: null,

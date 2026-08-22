@@ -11,7 +11,7 @@ const { pool } = await import('../src/db/client.js');
 const { setAiProviderForTesting } = await import('../src/ai/registry.js');
 const { AiUnavailableError } = await import('../src/ai/errors.js');
 const { closeFixtureAnalysisSite, startFixtureAnalysisSite } = await import('./helpers/fixtureAnalysisSite.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 type FixtureSite = import('./helpers/fixtureAnalysisSite.js').FixtureSite;
 type AiProvider = import('../src/ai/types.js').AiProvider;
 
@@ -73,7 +73,8 @@ function briefProvider(): AiProvider {
 }
 
 async function deleteProject(projectId: string): Promise<void> {
-  await pool.query('DELETE FROM projects WHERE id = $1', [projectId]);
+  const res = await authedInject({ method: 'DELETE', url: `/api/projects/${projectId}` });
+  assert.ok(res.statusCode === 200 || res.statusCode === 204, `deleteProject failed: ${res.statusCode}`);
 }
 
 async function pollCrawl(crawlId: string, timeoutMs = 15000): Promise<Record<string, unknown>> {
@@ -118,6 +119,7 @@ before(async () => {
   site = await startFixtureAnalysisSite();
   userEmail = `content-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
   blockedServer = http.createServer((req, res) => {
     if (req.url === '/robots.txt') {
@@ -281,5 +283,38 @@ test('content recommendations endpoint rejects crawls that did not complete', as
     assert.equal(res.json().error.code, 'CRAWL_NOT_COMPLETED');
   } finally {
     await deleteProject(projectId);
+  }
+});
+
+test('response includes plan field — free by default', async () => {
+  setAiProviderForTesting(answerProvider());
+  await pool.query('UPDATE users SET plan = $1 WHERE email = $2', ['free', userEmail]);
+  const crawlId = await crawlFixtureSite();
+  try {
+    await seedAiVisibility(crawlId);
+    setAiProviderForTesting(briefProvider());
+    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/content-recommendations` });
+    assert.equal(res.statusCode, 200);
+    const body = res.json();
+    assert.equal(body.plan, 'free', 'new user must be on the free plan');
+  } finally {
+    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
+  }
+});
+
+test('response includes plan field — pro after upgrade', async () => {
+  setAiProviderForTesting(answerProvider());
+  await pool.query('UPDATE users SET plan = $1 WHERE email = $2', ['pro', userEmail]);
+  const crawlId = await crawlFixtureSite();
+  try {
+    await seedAiVisibility(crawlId);
+    setAiProviderForTesting(briefProvider());
+    const res = await authedInject({ method: 'GET', url: `/api/crawls/${crawlId}/content-recommendations` });
+    assert.equal(res.statusCode, 200);
+    const body = res.json();
+    assert.equal(body.plan, 'pro', 'upgraded user must be on the pro plan');
+  } finally {
+    await pool.query('UPDATE users SET plan = $1 WHERE email = $2', ['free', userEmail]);
+    await deleteProject((await pool.query('SELECT project_id::text FROM crawl_runs WHERE id = $1', [crawlId])).rows[0].project_id);
   }
 });

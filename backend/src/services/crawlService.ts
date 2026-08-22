@@ -5,9 +5,10 @@ import { FetchError } from '../crawler/http.js';
 import type { CrawlSiteConfig, CrawlerSink } from '../crawler/types.js';
 import { db } from '../db/client.js';
 import { users } from '../db/schema.js';
-import { createCrawlRun, countCrawlsByUserId, findActiveCrawlRunByProject, findCrawlRunById, setCrawlRunCounters, setCrawlRunSignals, updateCrawlRunStatus, type CrawlRun } from '../repositories/crawlRepo.js';
+import { createCrawlRun, countCompletedCrawlsByUserId, findActiveCrawlRunByProject, findCrawlRunById, setCrawlRunCounters, setCrawlRunSignals, updateCrawlRunStatus, type CrawlRun } from '../repositories/crawlRepo.js';
 import { insertCrawledPage } from '../repositories/pageRepo.js';
-import { findProjectById, listProjectsByOwner } from '../repositories/projectRepo.js';
+import { findProjectById, countProjectsByOwner } from '../repositories/projectRepo.js';
+import { findUserById } from '../repositories/userRepo.js';
 import { AppError } from '../utils/errors.js';
 import { assertPublicTargetUrl } from '../utils/ssrfGuard.js';
 import { requireCrawlOwned, requireProjectOwned } from './ownership.js';
@@ -25,6 +26,16 @@ export async function createCrawl(userId: string, projectId: string): Promise<Cr
   const project = await findProjectById(projectId);
   if (!project) {
     throw new AppError(404, 'Project not found', 'PROJECT_NOT_FOUND');
+  }
+
+  // Enforce free plan lifetime scan limit. Pro users are unlimited.
+  const user = await findUserById(userId);
+  const plan = user?.plan ?? 'free';
+  if (plan !== 'pro') {
+    const completedScans = await countCompletedCrawlsByUserId(userId);
+    if (completedScans >= FREE_SCAN_LIMIT) {
+      throw new AppError(403, 'Free plan scan limit reached. You have used your 1 lifetime website scan. Upgrade to Pro for unlimited scans.', 'WEBSITE_SCAN_LIMIT_REACHED');
+    }
   }
 
   if (!env.CRAWL_ALLOW_PRIVATE_NETWORKS) {
@@ -135,15 +146,12 @@ export async function getUserScanStatus(userId: string): Promise<UserScanStatus>
     return { plan, projectCount: 0, scanCount: 0, canScan: true };
   }
 
-  const projects = await listProjectsByOwner(userId);
-  const projectCount = projects.length;
+  const projectCount = await countProjectsByOwner(userId);
+  const scanCount = await countCompletedCrawlsByUserId(userId);
 
-  if (projectCount >= FREE_PROJECT_LIMIT) {
-    const scanCount = await countCrawlsByUserId(userId);
-    if (scanCount >= FREE_SCAN_LIMIT) {
-      return { plan, projectCount, scanCount, canScan: false, reason: 'FREE_SCAN_LIMIT' };
-    }
+  if (projectCount >= FREE_PROJECT_LIMIT && scanCount >= FREE_SCAN_LIMIT) {
+    return { plan, projectCount, scanCount, canScan: false, reason: 'FREE_SCAN_LIMIT' };
   }
 
-  return { plan, projectCount, scanCount: await countCrawlsByUserId(userId), canScan: true };
+  return { plan, projectCount, scanCount, canScan: true };
 }

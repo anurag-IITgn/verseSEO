@@ -6,7 +6,7 @@ process.env.NODE_ENV = 'test';
 
 const { buildApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/client.js');
-const { injectAs, registerUser } = await import('./helpers/authTestHelper.js');
+const { injectAs, registerUser, setUserPlan } = await import('./helpers/authTestHelper.js');
 
 type App = ReturnType<typeof buildApp>;
 
@@ -23,11 +23,18 @@ function authedInject(options: Parameters<typeof app.inject>[0]) {
   return app.inject(injectAs(sessionToken, options));
 }
 
+async function deleteProject(projectId: string) {
+  await authedInject({ method: 'DELETE', url: `/api/projects/${projectId}` });
+  const idx = createdIds.indexOf(projectId);
+  if (idx !== -1) createdIds.splice(idx, 1);
+}
+
 before(async () => {
   app = buildApp();
   await app.ready();
   userEmail = `projects-${Date.now()}@test.com`;
   const user = await registerUser(app, userEmail);
+  await setUserPlan(user.userId, 'pro');
   sessionToken = user.sessionToken;
 });
 
@@ -59,7 +66,7 @@ test('POST /api/projects creates a project with a valid URL', async () => {
   assert.equal(body.domain, domain);
   assert.ok(body.createdAt);
   assert.ok(body.updatedAt);
-  createdIds.push(body.id);
+  await deleteProject(body.id);
 });
 
 test('POST /api/projects trims whitespace from the name', async () => {
@@ -71,7 +78,7 @@ test('POST /api/projects trims whitespace from the name', async () => {
 
   assert.equal(res.statusCode, 201);
   assert.equal(res.json().name, 'Trimmed Site');
-  createdIds.push(res.json().id);
+  await deleteProject(res.json().id);
 });
 
 test('POST /api/projects rejects a malformed URL', async () => {
@@ -122,11 +129,12 @@ test('POST /api/projects returns 409 for a duplicate website URL', async () => {
 
   const first = await authedInject({ method: 'POST', url: '/api/projects', payload: { websiteUrl: url } });
   assert.equal(first.statusCode, 201);
-  createdIds.push(first.json().id);
+  const firstId = first.json().id;
 
   const second = await authedInject({ method: 'POST', url: '/api/projects', payload: { websiteUrl: url } });
   assert.equal(second.statusCode, 409);
   assert.equal(second.json().error.code, 'PROJECT_EXISTS');
+  await deleteProject(firstId);
 });
 
 test('GET /api/projects/:projectId returns an existing project', async () => {
@@ -136,13 +144,13 @@ test('GET /api/projects/:projectId returns an existing project', async () => {
     payload: { websiteUrl: `https://${uniqueDomain('get')}` },
   });
   const id = created.json().id;
-  createdIds.push(id);
 
   const res = await authedInject({ method: 'GET', url: `/api/projects/${id}` });
   assert.equal(res.statusCode, 200);
   assert.equal(res.json().id, id);
   assert.ok(res.json().domain);
   assert.ok(res.json().createdAt);
+  await deleteProject(id);
 });
 
 test('GET /api/projects/:projectId returns 404 for an unknown id', async () => {
@@ -161,12 +169,13 @@ test('GET /api/projects/resolve returns an existing project by website URL', asy
   const url = `https://${uniqueDomain('resolve')}`;
   const created = await authedInject({ method: 'POST', url: '/api/projects', payload: { websiteUrl: url } });
   assert.equal(created.statusCode, 201);
-  createdIds.push(created.json().id);
+  const id = created.json().id;
 
   const res = await authedInject({ method: 'GET', url: `/api/projects/resolve?websiteUrl=${encodeURIComponent(`${url}/`)}` });
   assert.equal(res.statusCode, 200);
-  assert.equal(res.json().id, created.json().id);
+  assert.equal(res.json().id, id);
   assert.equal(res.json().domain, created.json().domain);
+  await deleteProject(id);
 });
 
 test('GET /api/projects/resolve returns 404 for an unknown website URL', async () => {
@@ -192,7 +201,6 @@ test('GET /api/projects includes the latest scan summary per project', async () 
     payload: { websiteUrl: `https://${uniqueDomain('list')}` },
   });
   const projectId = created.json().id;
-  createdIds.push(projectId);
 
   const empty = await authedInject({ method: 'GET', url: '/api/projects' });
   assert.equal(empty.statusCode, 200);
@@ -217,4 +225,5 @@ test('GET /api/projects includes the latest scan summary per project', async () 
   assert.equal(row.latestScan.pagesCrawled, 5);
   assert.equal(row.latestScan.pagesDiscovered, 7);
   assert.ok(row.latestScan.completedAt);
+  await deleteProject(projectId);
 });
