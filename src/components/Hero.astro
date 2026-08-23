@@ -6,7 +6,7 @@ import HeroProductVisual from './HeroProductVisual.astro';
 <section class="relative px-4 pt-6 pb-12 sm:px-6 sm:pt-10 sm:pb-16 lg:px-8 lg:pt-12 lg:pb-20" id="hero-section">
   
   <!-- Dark Hero Surface -->
-  <div class="hero-surface relative max-w-7xl mx-auto rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-[#0a0e1a] shadow-2xl shadow-[#0a0e1a]/50">
+  <div class="hero-surface relative max-w-7xl mx-auto rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-black shadow-2xl shadow-[#0a0e1a]/50">
     
     <!-- Ambient Glow Effects -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
@@ -366,7 +366,7 @@ import HeroProductVisual from './HeroProductVisual.astro';
       const dotSpacing = 28;
       const dotRadius = 1.2;
       const glowRadius = 80;
-      const glowStrength = 0.4;
+      const glowStrength = 2.5;
 
       function resizeCanvas() {
         const rect = canvas.parentElement!.getBoundingClientRect();
