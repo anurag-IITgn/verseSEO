@@ -363,10 +363,10 @@ import HeroProductVisual from './HeroProductVisual.astro';
       let mouse = { x: -1000, y: -1000 };
       let animationId: number;
 
-      const dotSpacing = 28;
-      const dotRadius = 1.2;
-      const glowRadius = 80;
-      const glowStrength = 2.5;
+      const dotSpacing = 26;
+      const baseDotRadius = 1.2;
+      const glowRadius = 130;
+      const glowStrength = 1.2;
 
       function resizeCanvas() {
         const rect = canvas.parentElement!.getBoundingClientRect();
@@ -378,6 +378,7 @@ import HeroProductVisual from './HeroProductVisual.astro';
         if (!ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        const time = Date.now() * 0.004;
         const cols = Math.ceil(canvas.width / dotSpacing) + 1;
         const rows = Math.ceil(canvas.height / dotSpacing) + 1;
 
@@ -390,14 +391,18 @@ import HeroProductVisual from './HeroProductVisual.astro';
             const dy = mouse.y - y;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            let alpha = 0.15;
+            let alpha = 0.22;
+            let currentRadius = baseDotRadius;
+
             if (dist < glowRadius) {
               const factor = 1 - (dist / glowRadius);
-              alpha = 0.15 + (factor * glowStrength);
+              const glisten = Math.sin(time * 3 + (i * 7 + j * 13)) * 0.25 + 0.75;
+              alpha = Math.min(1, 0.25 + factor * glowStrength * glisten);
+              currentRadius = baseDotRadius + factor * 1.4;
             }
 
             ctx.beginPath();
-            ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+            ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
             ctx.fill();
           }
