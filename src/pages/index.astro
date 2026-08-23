@@ -20,9 +20,32 @@ import Footer from '../components/Footer.astro';
 ---
 
 <Layout 
-  title="Foundable — Visibility Intelligence for Modern Search, Reddit & AI"
+  title="VerseSEO — Visibility Intelligence for Modern Search, Reddit & AI"
   description="The all-in-one visibility platform for small businesses, SaaS founders, and creators. Fix technical flaws, capture search intent, discover Reddit opportunities, and track ChatGPT & Perplexity citations."
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "VerseSEO",
+    "url": "https://verseseo.com",
+    "logo": "https://verseseo.com/favicon.svg",
+    "description": "Lightweight SEO, Reddit opportunity discovery, and AI answer engine intelligence for small businesses, SaaS founders, and creators.",
+    "sameAs": []
+  })} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "VerseSEO",
+    "url": "https://verseseo.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://verseseo.com/login?next=/app&website={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  })} />
   <!-- Global Navigation -->
   <Navbar />
 
@@ -64,7 +87,7 @@ import Footer from '../components/Footer.astro';
       eyebrowBadge="Module 01 — Technical SEO"
       badgeTheme="emerald"
       headline="Find what is holding your website back."
-      description="You don't need a 100-page enterprise audit. Foundable scans critical crawling foundations in seconds — SSL, XML sitemaps, canonical tags, missing metadata, and broken links — with plain-English fix steps."
+      description="You don't need a 100-page enterprise audit. VerseSEO scans critical crawling foundations in seconds — SSL, XML sitemaps, canonical tags, missing metadata, and broken links — with plain-English fix steps."
       bullets={[
         {
           title: "Clear 0–100 Health Score",
@@ -148,7 +171,7 @@ import Footer from '../components/Footer.astro';
       eyebrowBadge="Module 04 — AI Visibility"
       badgeTheme="violet"
       headline="Measure your brand's footprint in AI answers."
-      description="Millions of buyers now ask ChatGPT, Perplexity, Claude, and Gemini for direct product recommendations. Foundable tracks whether AI models mention your brand and cites your content as a verified source."
+      description="Millions of buyers now ask ChatGPT, Perplexity, Claude, and Gemini for direct product recommendations. VerseSEO tracks whether AI models mention your brand and cites your content as a verified source."
       bullets={[
         {
           title: "Multi-Model Citation Tracker",

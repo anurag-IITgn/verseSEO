@@ -45,7 +45,7 @@ const envSchema = z
     // Reddit discovery (official Reddit API, free app credentials).
     REDDIT_CLIENT_ID: z.string().optional(),
     REDDIT_CLIENT_SECRET: z.string().optional(),
-    REDDIT_USER_AGENT: z.string().default('FoundableMicrotool/0.1 (SEO research tool)'),
+    REDDIT_USER_AGENT: z.string().default('VerseSEOMicrotool/0.1 (SEO research tool)'),
     // Reddit discovery via Apify (apify.com) when an API token is configured.
     APIFY_API_TOKEN: z.string().optional(),
     // Reddit discovery via Brave Search API (brave.com).

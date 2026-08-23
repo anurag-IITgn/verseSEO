@@ -14,7 +14,7 @@ Node >=22.12.0 required.
 
 ## Architecture
 
-Single-page Astro 7 static marketing site ("Foundable"). No routing — everything is in `src/pages/index.astro`. All components are pure `.astro` (no React/Vue/Svelte).
+Single-page Astro 7 static marketing site ("VerseSEO"). No routing — everything is in `src/pages/index.astro`. All components are pure `.astro` (no React/Vue/Svelte).
 
 - `src/components/` — page sections (Hero, Pricing, FAQ, etc.)
 - `src/components/visuals/` — decorative visuals for the 5 feature modules

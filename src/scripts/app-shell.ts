@@ -1562,7 +1562,7 @@ function renderSearchReport(data: Record<string, any>) {
       </div>
       <div class="mt-4 bg-white rounded-xl border border-slate-200 shadow-sm p-4">
         <div class="text-sm text-slate-700 leading-relaxed">
-          Foundable identified <strong>${total} search opportunit${total === 1 ? 'y' : 'ies'}</strong> across your crawled pages
+          VerseSEO identified <strong>${total} search opportunit${total === 1 ? 'y' : 'ies'}</strong> across your crawled pages
           ${avgScore > 0 ? ` with an average opportunity score of <strong>${avgScore}</strong>` : ''}.
           ${highCount > 0 ? `<span class="font-semibold text-rose-600">${highCount} high-priority</span> opportunit${highCount === 1 ? 'y needs' : 'ies need'} immediate attention.` : 'No high-priority opportunities were detected.'}
         </div>
@@ -1615,7 +1615,7 @@ function renderSearchReport(data: Record<string, any>) {
     sections.push(`
       <div class="mb-8">
         <h2 class="text-lg font-extrabold text-slate-900 tracking-tight mb-1">Top ${topOpps.length} High-Intent Opportunities</h2>
-        <p class="text-xs text-slate-500 mb-4">These are Foundable's recommended search opportunities derived from your site's crawl and opportunity analysis. They are not externally verified keyword data.</p>
+        <p class="text-xs text-slate-500 mb-4">These are VerseSEO's recommended search opportunities derived from your site's crawl and opportunity analysis. They are not externally verified keyword data.</p>
         <div class="space-y-2">${topHtml}</div>
         ${remainingHtml}
       </div>`);
@@ -2038,7 +2038,7 @@ function renderAiReport(data: Record<string, any>) {
       </div>
       <div class="mt-4 bg-white rounded-xl border border-slate-200 shadow-sm p-4">
         <div class="text-sm text-slate-700 leading-relaxed">
-          Foundable analyzes how clearly your site represents its topics and entities for AI-powered search, and checks actual AI responses where engine data is available.
+          VerseSEO analyzes how clearly your site represents its topics and entities for AI-powered search, and checks actual AI responses where engine data is available.
           ${promptsRun > 0 ? ` Tested <strong>${promptsRun} quer${promptsRun === 1 ? 'y' : 'ies'}</strong> against ${provider.charAt(0).toUpperCase() + provider.slice(1)}${model ? ` (${model})` : ''}.` : ''}
           ${displayScore >= 40 ? ' Your site has <strong>moderate-to-strong</strong> AI-search visibility signals.' : displayScore >= 25 ? ' Your site has <strong>limited but present</strong> AI-search visibility signals.' : ' Your site has <strong>limited</strong> AI-search visibility signals in the current analysis.'}
         </div>
@@ -2642,7 +2642,7 @@ function renderContentReport(data: Record<string, any>, pagesData: Record<string
       </div>
       <div class="mt-4 bg-indigo-50 rounded-xl border border-indigo-200/80 p-4">
         <p class="text-sm text-indigo-900 leading-relaxed">
-          Foundable identified <strong>${recs.length} content opportunities</strong> from ${topicsAnalyzed} analyzed topics
+          VerseSEO identified <strong>${recs.length} content opportunities</strong> from ${topicsAnalyzed} analyzed topics
           ${high.length > 0 ? `. <strong>${high.length} high priority</strong> and focus on topics where your current content is missing, thin, or does not fully address the detected intent.` : ''}
           ${improveExisting.length > 0 ? ` ${improveExisting.length} opportunity${improveExisting.length > 1 ? 's' : ''} can be addressed by improving existing pages.` : ''}
         </p>
@@ -3362,7 +3362,7 @@ function renderRedditReport(data: Record<string, any>) {
       </div>
       <div class="mt-4 bg-orange-50 rounded-xl border border-orange-200/80 p-4">
         <p class="text-sm text-orange-900 leading-relaxed">
-          Foundable analyzed <strong>${disc.length} Reddit conversations</strong> across ${subredditCounts.size} communities
+          VerseSEO analyzed <strong>${disc.length} Reddit conversations</strong> across ${subredditCounts.size} communities
           ${high.length > 0 ? `. <strong>${high.length} high-priority</strong> opportunities identified.` : ''}
           These conversations reveal what real users are discussing about topics related to your website.
         </p>

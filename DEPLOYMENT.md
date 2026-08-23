@@ -1,4 +1,4 @@
-# Deploying Foundable (seo-saas-microtool)
+# Deploying VerseSEO (seo-saas-microtool)
 
 Production-style deployment for the backend (Fastify + Postgres + Drizzle) and the
 frontend (Astro static site served by nginx). Everything runs behind a single
@@ -18,9 +18,9 @@ Create a `.env` file next to `docker-compose.prod.yml`:
 FRONTEND_ORIGIN=https://seo.example.com
 
 # Postgres credentials (defaults shown)
-POSTGRES_USER=foundable
+POSTGRES_USER=postgres
 POSTGRES_PASSWORD=replace-with-a-strong-password
-POSTGRES_DB=foundable
+POSTGRES_DB=seo_saas
 
 # Public HTTP port on the host
 PORT=80

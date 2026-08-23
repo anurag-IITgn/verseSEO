@@ -1,0 +1,6 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /app
+
+Sitemap: https://verseseo.com/sitemap-index.xml

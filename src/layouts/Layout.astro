@@ -6,14 +6,19 @@ interface Props {
   description?: string;
   canonical?: string;
   ogImage?: string;
+  robots?: string;
 }
 
 const {
-  title = "Foundable — Visibility Intelligence for Modern Search & AI",
+  title = "VerseSEO — Visibility Intelligence for Modern Search & AI",
   description = "Understand technical website flaws, capture high-intent search traffic, discover Reddit opportunities, and track brand citations across ChatGPT, Claude & Perplexity.",
-  canonical = "https://foundable.io",
-  ogImage = "/og-image.png"
+  canonical = "https://verseseo.com",
+  ogImage = "/og-image.png",
+  robots = "index, follow"
 } = Astro.props;
+
+const siteUrl = "https://verseseo.com";
+const absoluteOgImage = ogImage.startsWith("http") ? ogImage : `${siteUrl}${ogImage}`;
 ---
 
 <!doctype html>
@@ -23,27 +28,31 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/favicon.svg" sizes="any" />
+    <meta name="theme-color" content="#2563eb" />
     <meta name="generator" content={Astro.generator} />
 
     <!-- SEO Meta Tags -->
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={robots} />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:site_name" content="VerseSEO" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonical} />
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={ogImage} />
+    <meta property="twitter:image" content={absoluteOgImage} />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
