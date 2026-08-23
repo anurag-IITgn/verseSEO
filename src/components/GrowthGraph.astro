@@ -163,8 +163,8 @@ const donutArcs = donutSegs.map((s) => {
         <!-- Chart 1 · Projected visitors by source (Semrush 2025) -->
         <div class="src-card relative flex flex-col rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl shadow-black/30 overflow-hidden flex-1 min-h-0">
           <div class="flex items-center justify-between gap-2 px-5 pt-4 pb-1">
-            <div class="text-xs font-bold text-white">Projected visitors by source</div>
-            <span class="text-[10px] font-mono text-slate-500 shrink-0">2025→2029</span>
+            <div class="text-sm sm:text-base font-extrabold text-white tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">Projected visitors by source</div>
+            <span class="text-xs font-mono text-slate-300 shrink-0">2025→2029</span>
           </div>
           <div id="proj-chart-wrap" class="px-2 sm:px-3 pt-2 pb-1 flex-1 min-h-0 flex items-center justify-center relative w-full">
             <svg id="proj-chart" viewBox="0 0 600 240" class="w-full h-full block" role="img" aria-label="Line chart showing LLM and AI search visitors overtaking traditional organic search by 2028">
@@ -178,13 +178,13 @@ const donutArcs = donutSegs.map((s) => {
               </defs>
 
               {pYTicks.map((v) => (
-                <line key={v} x1={pPadL} y1={pY(v)} x2={pW - pPadR} y2={pY(v)} stroke="rgba(255,255,255,0.07)" stroke-width="1" stroke-dasharray={v === 0 ? '0' : '4,4'} />
+                <line key={v} x1={pPadL} y1={pY(v)} x2={pW - pPadR} y2={pY(v)} stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray={v === 0 ? '0' : '4,4'} />
               ))}
               {pYTicks.map((v) => (
-                <text key={v} x={pPadL - 8} y={pY(v) + 4} text-anchor="end" class="fill-slate-500 text-[9px]" style="font-family: 'JetBrains Mono', monospace;">{v}</text>
+                <text key={v} x={pPadL - 8} y={pY(v) + 4} text-anchor="end" class="fill-slate-300 text-xs font-medium" style="font-family: 'JetBrains Mono', monospace;">{v}</text>
               ))}
               {projLabels.map((l, i) => (
-                <text key={l} x={pX(i)} y={pH - 8} text-anchor="middle" class="fill-slate-500 text-[9px]" style="font-family: 'JetBrains Mono', monospace;">{l}</text>
+                <text key={l} x={pX(i)} y={pH - 8} text-anchor="middle" class="fill-slate-300 text-xs font-medium" style="font-family: 'JetBrains Mono', monospace;">{l}</text>
               ))}
 
               {projLines.map((s) => (
@@ -197,8 +197,8 @@ const donutArcs = donutSegs.map((s) => {
                 <circle class="src-last-dot" cx={pX(s.vals.length - 1).toFixed(1)} cy={pY(s.vals[s.vals.length - 1]).toFixed(1)} r="4" fill={s.color} stroke="#0b1020" stroke-width="2" />
               ))}
 
-              <line x1={pX(3)} y1={pPadT} x2={pX(3)} y2={pH - pPadB} stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="4,4" />
-              <text x={pX(3) + 6} y={pPadT + 8} class="fill-slate-300 text-[9px] font-bold" style="font-family:'JetBrains Mono',monospace;">AI overtakes ≈2028</text>
+              <line x1={pX(3)} y1={pPadT} x2={pX(3)} y2={pH - pPadB} stroke="rgba(255,255,255,0.25)" stroke-width="1" stroke-dasharray="4,4" />
+              <text x={pX(3) + 6} y={pPadT + 8} class="fill-slate-200 text-xs font-bold" style="font-family:'JetBrains Mono',monospace;">AI overtakes ≈2028</text>
 
               <circle id="proj-hover-dot-llm" class="proj-hover-dot" r="5" fill="#7c3aed" stroke="#0b1020" stroke-width="2" opacity="0" />
               <circle id="proj-hover-dot-trad" class="proj-hover-dot" r="5" fill="#2563eb" stroke="#0b1020" stroke-width="2" opacity="0" />
@@ -210,22 +210,22 @@ const donutArcs = donutSegs.map((s) => {
           <div class="flex items-center justify-between gap-2 border-t border-white/10 px-5 py-2.5">
             <span class="flex items-center gap-3">
               {projSeries.map((s) => (
-                <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-300">
+                <span class="flex items-center gap-1.5 text-xs font-bold text-slate-100" style="font-family: 'Plus Jakarta Sans', sans-serif;">
                   <span class="w-2 h-2 rounded-full" style={`background:${s.color}`}></span>{s.label}
                 </span>
               ))}
             </span>
           </div>
           <div class="border-t border-white/10 px-5 py-2.5">
-            <span class="text-[10px] font-mono text-slate-500">Source: Semrush · AI Search &amp; SEO Traffic Study, 2025</span>
+            <span class="text-xs font-mono text-slate-400">Source: Semrush · AI Search &amp; SEO Traffic Study, 2025</span>
           </div>
         </div>
 
         <!-- Chart 2 · Time to rank with AI content (Semrush 2024) -->
         <div class="src-card relative flex flex-col rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl shadow-black/30 overflow-hidden flex-1 min-h-0">
           <div class="flex items-center justify-between gap-2 px-5 pt-4 pb-1">
-            <div class="text-xs font-bold text-white">Time to rank with AI content</div>
-            <span class="text-[10px] font-mono text-slate-500 shrink-0">2024</span>
+            <div class="text-sm sm:text-base font-extrabold text-white tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">Time to rank with AI content</div>
+            <span class="text-xs font-mono text-slate-300 shrink-0">2024</span>
           </div>
           <div id="donut-chart-wrap" class="donut-chart-wrap px-2 sm:px-3 pt-2 pb-1 flex-1 min-h-0 flex items-center justify-center relative w-full">
             <svg id="donut-chart" viewBox="0 0 600 240" class="w-full h-full block" role="img" aria-label="Donut chart showing two-thirds of AI-generated content ranks within two months">
@@ -233,15 +233,15 @@ const donutArcs = donutSegs.map((s) => {
                 {donutArcs.map((s, i) => (
                   <circle class="src-seg" data-idx={i} key={s.label} r="74" fill="none" stroke={s.color} stroke-width="16" stroke-linecap="butt" stroke-dasharray={`${s.dash} ${donutC.toFixed(1)}`} style={{ '--off': s.offset }} transform={`rotate(${s.rot})`} />
                 ))}
-                <text y="-8" text-anchor="middle" class="fill-white text-xl font-bold" style="font-family:'JetBrains Mono',monospace;">66%</text>
-                <text y="12" text-anchor="middle" class="fill-slate-400 text-[9px]">rank within 2 months</text>
+                <text y="-6" text-anchor="middle" class="fill-white text-3xl font-black" style="font-family:'JetBrains Mono',monospace;">66%</text>
+                <text y="16" text-anchor="middle" class="fill-slate-200 text-xs font-semibold" style="font-family: 'Plus Jakarta Sans', sans-serif;">rank in ≤2 months</text>
               </g>
               <g transform="translate(360,54)">
                 {donutArcs.map((s, i) => (
                   <g class="donut-legend-row" data-idx={i} key={s.label} transform={`translate(0,${i * 44})`}>
                     <circle cx="4" cy="4" r="4" fill={s.color} />
-                    <text x="16" y="8" class="fill-slate-300 text-[11px] font-semibold">{s.label}</text>
-                    <text x="215" y="8" text-anchor="end" class="fill-white text-[11px] font-bold font-mono">{s.pct}%</text>
+                    <text x="16" y="8" class="fill-slate-100 text-xs sm:text-sm font-bold" style="font-family: 'Plus Jakarta Sans', sans-serif;">{s.label}</text>
+                    <text x="215" y="8" text-anchor="end" class="fill-white text-xs sm:text-sm font-black font-mono">{s.pct}%</text>
                   </g>
                 ))}
               </g>
@@ -250,11 +250,11 @@ const donutArcs = donutSegs.map((s) => {
             <div id="donut-tooltip" class="absolute hidden bg-white text-slate-900 text-xs rounded-lg px-3 py-2 shadow-2xl pointer-events-none z-20 whitespace-nowrap" style="font-family:'JetBrains Mono',monospace;"></div>
           </div>
           <div class="flex items-center justify-between gap-2 border-t border-white/10 px-5 py-2.5">
-            <span class="text-[10px] text-slate-400">Two-thirds rank within two months of publishing</span>
-            <span class="text-[10px] font-mono text-slate-500 shrink-0">Illustrative</span>
+            <span class="text-xs font-medium text-slate-300" style="font-family: 'Plus Jakarta Sans', sans-serif;">Two-thirds rank within two months of publishing</span>
+            <span class="text-xs font-mono text-slate-400 shrink-0">Illustrative</span>
           </div>
           <div class="border-t border-white/10 px-5 py-2.5">
-            <span class="text-[10px] font-mono text-slate-500">Source: Semrush · AI Content Marketing Report, 2024</span>
+            <span class="text-xs font-mono text-slate-400">Source: Semrush · AI Content Marketing Report, 2024</span>
           </div>
         </div>
 
@@ -267,8 +267,8 @@ const donutArcs = donutSegs.map((s) => {
       <!-- Card Header -->
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 px-6 sm:px-8 pt-6 sm:pt-8 pb-1">
         <div>
-          <div class="text-sm font-bold text-white">Visibility Over Time</div>
-          <div class="text-xs text-slate-400 mt-0.5">Illustrative demo data · Not actual customer results</div>
+          <div class="text-base sm:text-lg font-extrabold text-white tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">Visibility Over Time</div>
+          <div class="text-xs text-slate-300 mt-0.5 font-medium" style="font-family: 'Plus Jakarta Sans', sans-serif;">Illustrative demo data · Not actual customer results</div>
         </div>
         <div class="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-xl text-xs font-semibold" id="vis-range-tabs" role="tablist" aria-label="Time range">
           <button type="button" class="vis-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-bold transition-colors cursor-pointer" data-range="6W" role="tab">6 Weeks</button>
@@ -287,14 +287,14 @@ const donutArcs = donutSegs.map((s) => {
             aria-pressed="false"
           >
             <div class="flex items-center justify-between gap-2">
-              <span class="flex items-center gap-2 text-xs font-bold text-slate-200">
+              <span class="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-white">
                 <span class="w-2.5 h-2.5 rounded-full" style={`background:${s.color}`}></span>
                 {s.label}
               </span>
-              <span class="vis-chip-delta text-[10px] font-mono font-bold text-emerald-400">▲ {Math.abs(s.delta)}%</span>
+              <span class="vis-chip-delta text-xs font-mono font-bold text-emerald-400">▲ {Math.abs(s.delta)}%</span>
             </div>
-            <div class="vis-chip-val mt-2 text-2xl font-bold font-mono text-white tabular-nums">
-              {s.vals[s.vals.length - 1]}<span class="text-xs font-semibold text-slate-500 ml-1">/100</span>
+            <div class="vis-chip-val mt-2 text-3xl font-black font-mono text-white tabular-nums">
+              {s.vals[s.vals.length - 1]}<span class="text-xs font-semibold text-slate-400 ml-1">/100</span>
             </div>
           </button>
         ))}

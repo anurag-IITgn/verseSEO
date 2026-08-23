@@ -2,37 +2,75 @@
 // FAQ.astro
 const faqs = [
   {
-    question: "What exactly does VerseSEO do?",
-    answer: "VerseSEO is a lightweight visibility intelligence platform. Instead of giving you overwhelming 100-page SEO reports or fragmented dashboards, we connect four critical visibility signals into a single actionable workflow: technical crawl health, high-intent Google search gaps, relevant Reddit conversations, and AI search engine citations (ChatGPT, Perplexity, Claude, and Gemini)."
+    question: "What is VerseSEO?",
+    answer: "VerseSEO is a lightweight visibility intelligence platform designed for small businesses, founders, and creators. Instead of overwhelming reports, VerseSEO unifies technical website health, high-intent Google search gaps, active Reddit discussions, and AI answer engine citations into a clear, actionable dashboard."
   },
   {
-    question: "Is this a traditional enterprise SEO tool like Semrush or Ahrefs?",
-    answer: "No. Enterprise tools are built for full-time SEO agencies and cost $200–$500/month. They are packed with complex backlink graphs and database filters that overwhelm small business owners and solo founders. VerseSEO focuses only on the high-impact signals that actually drive customer discovery across modern channels: fixing blockers, finding what customers search, discovering active Reddit discussions, and getting cited by AI answer engines."
+    question: "What does VerseSEO analyze?",
+    answer: "VerseSEO scans five core visibility areas: technical crawl health (SSL, sitemaps, canonicals), high-intent Google search opportunities, relevant Reddit community discussions, AI engine citation footprints (ChatGPT, Perplexity, Claude, Gemini), and content structure gaps."
   },
   {
-    question: "Does VerseSEO automatically post comments or spam Reddit?",
-    answer: "Absolutely not. We have a strict zero-spam policy. VerseSEO acts exclusively as a high-intent listening and market research radar. We find authentic, public conversations where real users are actively seeking advice in your niche and highlight the questions they're asking. You can then provide helpful, genuine responses directly on Reddit or use those insights to shape your website content."
+    question: "How can VerseSEO help improve my website's search visibility?",
+    answer: "VerseSEO identifies specific technical roadblocks that prevent search engines from indexing your site, highlights low-competition search queries your target audience uses, and suggests content structures that help your pages rank higher in organic search results."
   },
   {
-    question: "What is AI Visibility and why does it matter?",
-    answer: "Millions of potential customers now bypass Google entirely and ask ChatGPT, Perplexity, Claude, or Google Gemini for direct software and service recommendations (e.g., 'What is the best CRM for a 5-person plumbing business?'). AI Visibility measures whether these models recognize your brand, cite your website, or recommend your competitors instead — and shows you what content to publish to get indexed by AI answer engines."
+    question: "What are Search Opportunities?",
+    answer: "Search Opportunities are high-intent, low-difficulty search queries where potential buyers actively look for solutions like yours. VerseSEO highlights these keyword gaps so you can create targeted content that captures organic traffic."
   },
   {
-    question: "Can I generate full content briefs and articles?",
-    answer: "Yes! VerseSEO includes an AI-assisted Content Generator that bridges the gap between discovered opportunities and published articles. With one click, it transforms keyword intent clusters or Reddit discussion questions into structured SEO briefs (target word counts, semantic entities, H2/H3 outlines) and draft article previews ready for export to Markdown, WordPress, or Ghost."
+    question: "How does VerseSEO help with technical SEO?",
+    answer: "VerseSEO crawls your website to detect technical issues like missing sitemaps, broken internal links, unoptimized metadata, SSL flaws, and canonical errors. It provides simple, step-by-step guidance to fix each issue without complex jargon."
   },
   {
-    question: "Is VerseSEO suitable for solo founders and non-technical business owners?",
-    answer: "Yes, it was designed specifically for founders, creators, and small business operators. Every technical warning comes with a plain-English explanation of why it matters and a simple fix step. You don't need an SEO degree or coding background to grow your organic visibility."
+    question: "How does VerseSEO help with Reddit visibility?",
+    answer: "VerseSEO monitors relevant Reddit threads where users ask questions related to your industry. It alerts you to authentic discussion opportunities so you can participate directly with genuine, helpful advice or create website content addressing those questions."
   },
   {
-    question: "How long does a website audit take?",
-    answer: "Our initial technical scan and keyword intent discovery runs in under 30 seconds. You receive an instant health score and prioritized checklist immediately after typing your domain."
+    question: "How does VerseSEO measure AI visibility?",
+    answer: "VerseSEO tracks whether major AI models cite or recommend your brand when answering user prompts. It calculates an AI Citation Score and highlights which published sources or content structures feed those AI recommendations."
+  },
+  {
+    question: "Why does AI search visibility matter for the future of SEO?",
+    answer: "As more people turn to AI engines like ChatGPT, Gemini, Claude, and Perplexity to research products and get recommendations, being visible in generative answers is becoming an important part of online discovery. VerseSEO helps you understand whether AI engines mention or cite your brand, where competitors are winning visibility, and what you can improve to increase your chances of being included in relevant AI-generated answers."
+  },
+  {
+    question: "Which AI answer engines does VerseSEO track?",
+    answer: "VerseSEO monitors brand citations and product recommendations across top AI search models, including ChatGPT (OpenAI), Perplexity AI, Claude (Anthropic), and Google Gemini."
+  },
+  {
+    question: "Can VerseSEO help me find content opportunities?",
+    answer: "Yes. VerseSEO analyzes user intent and discussion trends across search and social channels, generating structured content briefs with suggested headings, semantic topics, and target questions to help you write high-performing content."
+  },
+  {
+    question: "Who is VerseSEO designed for?",
+    answer: "VerseSEO is built specifically for solo founders, small business operators, creators, and lean marketing teams who need actionable visibility insights without expensive agency retainers or overly complex enterprise software."
+  },
+  {
+    question: "Does VerseSEO automatically post content or Reddit replies for me?",
+    answer: "No. VerseSEO functions strictly as an intelligence and discovery platform. We provide research, alerts, and content recommendations, but you retain full control over posting content or replying to community discussions."
+  },
+  {
+    question: "How does the VerseSEO demo scan work?",
+    answer: "The interactive demo scan runs an instant analysis on sample domain personas (or your website URL) in under 30 seconds, generating an initial health score, sample keyword gaps, and AI citation benchmarks."
   }
 ];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(faq => ({
+    "@type": "Question",
+    "name": faq.question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.answer
+    }
+  }))
+};
 ---
 
 <section class="py-16 sm:py-24 bg-[#FAF9F5] border-b border-slate-200/80 relative" id="faq">
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <!-- Section Header -->
