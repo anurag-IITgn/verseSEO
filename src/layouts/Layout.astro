@@ -64,6 +64,15 @@ const absoluteOgImage = ogImage.startsWith("http") ? ogImage : `${siteUrl}${ogIm
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6Q1ZVX7JSF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6Q1ZVX7JSF');
+    </script>
   </head>
   <body class="bg-[#FAF9F5] text-slate-900 selection:bg-blue-600 selection:text-white antialiased min-h-screen flex flex-col">
     <slot />
