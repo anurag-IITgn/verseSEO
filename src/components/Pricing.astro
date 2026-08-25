@@ -192,7 +192,7 @@
 
     buttons.forEach(btn => {
       const plan = btn.dataset.plan;
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         if (plan === 'free') {
           if (user) {
             // Already logged in — go to dashboard
@@ -209,8 +209,29 @@
             // Already Pro — go to settings
             window.location.href = '/app';
           } else {
-            // Free user — go to app (upgrade flow will be implemented later)
-            window.location.href = '/app';
+            // Free user — create Dodo checkout session
+            try {
+              btn.disabled = true;
+              btn.textContent = 'Opening checkout...';
+
+              const res = await fetch(`${API}/api/billing/checkout`, {
+                method: 'POST',
+                credentials: 'include',
+              });
+
+              const data = await res.json();
+
+              if (!res.ok || !data.checkoutUrl) {
+                throw new Error(data.message || 'Unable to create checkout session');
+              }
+
+              window.location.href = data.checkoutUrl;
+            } catch (error) {
+              console.error('Checkout error:', error);
+              btn.disabled = false;
+              btn.textContent = 'Upgrade to Pro';
+              alert('Unable to start checkout. Please try again.');
+            }
           }
         }
       });

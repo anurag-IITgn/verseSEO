@@ -53,7 +53,12 @@ const envSchema = z
     // AI visibility (official Google Gemini API, free tier).
     GEMINI_API_KEY: z.string().optional(),
     GEMINI_MODEL: z.string().default('gemini-3.1-flash-lite'),
-
+      RAZORPAY_KEY_ID: z.string().optional(),
+      RAZORPAY_KEY_SECRET: z.string().optional(),
+      DODO_PAYMENTS_API_KEY: z.string().optional(),
+      DODO_PAYMENTS_ENVIRONMENT: z.enum(['test_mode', 'live_mode']).default('test_mode'),
+      DODO_PAYMENTS_PRODUCT_ID: z.string().optional(),
+      DODO_PAYMENTS_WEBHOOK_KEY: z.string().optional(),
     // Google Search Console enrichment. All optional; GSC is disabled until a
     // full set (including a token-encryption key) is present.
     GSC_CLIENT_ID: z.string().optional(),

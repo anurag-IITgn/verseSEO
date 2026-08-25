@@ -16,6 +16,13 @@ import { projectRoutes } from './routes/projects.js';
 import { redditRoutes } from './routes/reddit.js';
 import { scanRoutes } from './routes/scans.js';
 import { searchRoutes } from './routes/search.js';
+import { billingRoutes } from './routes/billing.js';
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    rawBody?: string;
+  }
+}
 
 export function buildApp() {
   const app = Fastify({
@@ -32,6 +39,17 @@ export function buildApp() {
             }
           : { level: env.LOG_LEVEL },
     trustProxy: env.TRUST_PROXY,
+  });
+
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body: string, done) => {
+    try {
+      const json = body ? JSON.parse(body) : null;
+      req.rawBody = body;
+      done(null, json);
+    } catch (err: any) {
+      err.statusCode = 400;
+      done(err, undefined);
+    }
   });
 
   // CORS: only respond to explicitly allowed frontend origins so cookie
@@ -58,6 +76,7 @@ export function buildApp() {
   });
 
   app.register(accountRoutes);
+  app.register(billingRoutes);
   app.register(authRoutes);
   app.register(projectRoutes);
   app.register(crawlRoutes);

@@ -11,6 +11,24 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const subscriptions = pgTable(
+    'subscriptions',
+    {
+        id: uuid('id').primaryKey().defaultRandom(),
+        userId: uuid('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        providerSubscriptionId: text('provider_subscription_id').notNull().unique(),
+        plan: text('plan').notNull().default('pro'),
+        status: text('status').notNull(),
+        currentPeriodStart: timestamp('current_period_start', { withTimezone: true }),
+        currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
+        createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [index('subscriptions_user_id_idx').on(table.userId)],
+);
+
 export const sessions = pgTable(
   'sessions',
   {

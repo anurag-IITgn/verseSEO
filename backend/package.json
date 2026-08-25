@@ -14,14 +14,16 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "test": "node --import tsx --test test/urlService.test.ts test/auth.test.ts test/ownership.test.ts test/projects.test.ts test/projectManagement.test.ts test/crawler.test.ts test/crawls.test.ts test/analysis.test.ts test/analysisApi.test.ts test/search.test.ts test/searchApi.test.ts test/gsc.test.ts test/gscApi.test.ts test/reddit.test.ts test/redditApi.test.ts test/ai.test.ts test/aiApi.test.ts test/content.test.ts test/contentApi.test.ts test/contentGenerator.test.ts test/contentGeneratorApi.test.ts test/demo.test.ts test/scanApi.test.ts test/ssrf.test.ts test/rateLimit.test.ts test/security.test.ts test/scanSafety.test.ts"
+    "test": "node --import tsx --test test/urlService.test.ts test/auth.test.ts test/ownership.test.ts test/projects.test.ts test/projectManagement.test.ts test/crawler.test.ts test/crawls.test.ts test/analysis.test.ts test/analysisApi.test.ts test/search.test.ts test/searchApi.test.ts test/gsc.test.ts test/gscApi.test.ts test/reddit.test.ts test/redditApi.test.ts test/ai.test.ts test/aiApi.test.ts test/content.test.ts test/contentApi.test.ts test/contentGenerator.test.ts test/contentGeneratorApi.test.ts test/demo.test.ts test/scanApi.test.ts test/ssrf.test.ts test/rateLimit.test.ts test/security.test.ts test/scanSafety.test.ts test/billingApi.test.ts"
   },
   "dependencies": {
+    "dodopayments": "^2.48.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.12.0",
     "node-html-parser": "^9.0.1",
     "pg": "^8.23.0",
+    "razorpay": "^2.9.8",
     "stripe": "^22.5.0",
     "zod": "^4.4.3"
   },
