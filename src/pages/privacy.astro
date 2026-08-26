@@ -1,0 +1,123 @@
+---
+// src/pages/privacy.astro
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="Privacy Policy — VerseSEO"
+  description="VerseSEO Privacy Policy. Learn how VerseSEO collects, uses, and protects your personal information."
+  canonical="https://verseseo.com/privacy"
+>
+  <Navbar />
+
+  <main class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Privacy Policy</h1>
+      <p class="text-sm text-slate-500 mb-10">Last updated: August 26, 2026</p>
+
+      <div class="prose prose-slate prose-sm max-w-none space-y-8 text-slate-700 leading-relaxed">
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">1. Information We Collect</h2>
+          <p>We collect information to provide and improve the Service. The types of information we collect include:</p>
+
+          <h3 class="text-base font-semibold text-slate-900 mt-5 mb-2">Account Information</h3>
+          <p>When you create an account, we collect your email address and any other information you provide during registration.</p>
+
+          <h3 class="text-base font-semibold text-slate-900 mt-5 mb-2">Authentication Data</h3>
+          <p>We store password hashes (not plaintext passwords) using industry-standard cryptographic techniques to verify your identity. Session tokens are stored securely in the database and communicated via encrypted cookies.</p>
+
+          <h3 class="text-base font-semibold text-slate-900 mt-5 mb-2">Product and Usage Data</h3>
+          <p>We collect information related to your projects, websites, crawl results, analysis outputs, and usage of the Service. This includes URLs you submit for analysis, crawl results, SEO and AI visibility data, content recommendations, and scan history.</p>
+
+          <h3 class="text-base font-semibold text-slate-900 mt-5 mb-2">User-Submitted Content</h3>
+          <p>When you use the Service, you may submit URLs, website content, and other data for analysis. This content is processed to provide you with analysis results and recommendations.</p>
+
+          <h3 class="text-base font-semibold text-slate-900 mt-5 mb-2">Technical and Log Data</h3>
+          <p>We automatically collect certain technical information, including IP addresses, browser type, device information, and interaction logs. This data is used to maintain and improve the Service, ensure security, and diagnose technical issues.</p>
+
+          <h3 class="text-base font-semibold text-slate-900 mt-5 mb-2">Payment Information</h3>
+          <p>Payment processing is handled by our third-party payment provider. We do not store full payment card numbers, CVV codes, or similar sensitive payment credentials on our servers. Our payment provider processes and stores payment information in accordance with applicable security standards.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">2. How We Use Information</h2>
+          <p>We use the information we collect for the following purposes:</p>
+          <ul class="list-disc pl-5 mt-2 space-y-1">
+            <li>To create, maintain, and manage your account.</li>
+            <li>To authenticate users and protect account security.</li>
+            <li>To provide SEO analysis, AI visibility analysis, content recommendations, and other functionality of the Service.</li>
+            <li>To send transactional emails, including email verification and password-reset emails.</li>
+            <li>To process subscriptions and payments.</li>
+            <li>To maintain security, prevent fraud, troubleshoot issues, and improve the Service.</li>
+            <li>To respond to your support requests and communications.</li>
+            <li>To comply with legal obligations and enforce our terms.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">3. Service Providers</h2>
+          <p>VerseSEO uses selected third-party providers to deliver and support the Service. These providers may have access to information as needed to perform their functions on our behalf. Current providers include:</p>
+          <ul class="list-disc pl-5 mt-2 space-y-1">
+            <li><strong>Cloud hosting and infrastructure</strong> — Cloudflare (frontend hosting and delivery).</li>
+            <li><strong>Database hosting</strong> — managed PostgreSQL (Neon).</li>
+            <li><strong>Payment processing</strong> — DodoPayments (handles payment-card data and subscription billing).</li>
+            <li><strong>Email delivery</strong> — Resend (sends transactional emails such as verification and password-reset messages).</li>
+            <li><strong>AI and language models</strong> — Google Gemini API (powers AI visibility analysis and content generation features).</li>
+            <li><strong>Search and data providers</strong> — Google Search Console API, Brave Search API, Apify, and the Reddit API (used for search-opportunity and Reddit-opportunity discovery).</li>
+            <li><strong>Contact form</strong> — Formspree (processes contact-form submissions).</li>
+            <li><strong>Analytics</strong> — Google Analytics 4 (collects anonymized usage data).</li>
+          </ul>
+          <p class="mt-3">These providers are contractually obligated to protect your information and may not use it for purposes other than providing services to VerseSEO.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">4. Analytics and Cookies</h2>
+          <p>VerseSEO uses Google Analytics 4 to collect anonymized information about how visitors interact with the Service. Google Analytics uses cookies and similar technologies to collect and analyze traffic data. You can opt out of Google Analytics by installing the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Google Analytics Opt-Out Browser Add-on</a>.</p>
+          <p class="mt-3">The Service also uses essential cookies necessary for authentication and session management. These cookies are required for the Service to function properly.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">5. Data Retention</h2>
+          <p>We retain your information for as long as reasonably necessary to provide the Service, maintain your account, comply with legal obligations, resolve disputes, and enforce our agreements. When your account is deleted, we will take reasonable steps to remove or anonymize personal information, except where retention is required for legal or legitimate business purposes.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">6. Data Security</h2>
+          <p>We implement reasonable technical and organizational safeguards designed to protect your information, including encrypted data transmission (TLS), hashed password storage, secure session management, and access controls. However, no method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">7. Your Rights</h2>
+          <p>Depending on applicable law, you may have rights regarding your personal information, including the right to access, correct, or delete your data. To exercise these rights, or if you have questions about how your information is handled, please contact us at <a href="mailto:support@verseseo.com" class="text-blue-600 hover:underline">support@verseseo.com</a>.</p>
+          <p class="mt-3">We will respond to requests in accordance with applicable legal requirements.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">8. Children's Privacy</h2>
+          <p>The Service is not directed to individuals under the age of 16. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us at <a href="mailto:support@verseseo.com" class="text-blue-600 hover:underline">support@verseseo.com</a> and we will take steps to remove such information.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">9. International Data Processing</h2>
+          <p>Your information may be processed in countries other than your own. Our service providers, including hosting, AI, and email providers, may operate in different jurisdictions. By using the Service, you acknowledge that your information may be transferred to and processed in these locations, subject to applicable data-protection standards.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">10. Changes to This Policy</h2>
+          <p>We may update this Privacy Policy from time to time. When changes are made, the "Last updated" date at the top of this page will be revised. Material changes may be communicated through the Service or by email. Your continued use of the Service after changes take effect constitutes acceptance of the updated policy.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">11. Contact</h2>
+          <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:support@verseseo.com" class="text-blue-600 hover:underline">support@verseseo.com</a>.</p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
