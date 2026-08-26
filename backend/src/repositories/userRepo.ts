@@ -26,3 +26,11 @@ export async function insertUser(input: NewUser): Promise<User> {
 export async function deleteUserById(id: string): Promise<void> {
   await db.delete(users).where(eq(users.id, id));
 }
+
+export async function markEmailVerified(id: string): Promise<void> {
+  await db.update(users).set({ emailVerified: true, emailVerifiedAt: new Date() }).where(eq(users.id, id));
+}
+
+export async function updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+  await db.update(users).set({ passwordHash }).where(eq(users.id, id));
+}

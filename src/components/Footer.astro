@@ -32,21 +32,62 @@
         <p class="text-xs text-slate-400">
           Join 2,400+ founders learning how to get cited in ChatGPT and rank on Google with zero spam.
         </p>
-        <form class="flex flex-col sm:flex-row gap-2" onsubmit="event.preventDefault(); alert('Thank you for subscribing to the VerseSEO visibility newsletter!');">
+        <form id="newsletter-form" class="flex flex-col sm:flex-row gap-2">
           <input 
             type="email" 
+            id="newsletter-email"
             placeholder="Enter your email address" 
             class="w-full px-3.5 py-2 rounded-xl bg-[#0c1021] border border-white/10 text-white placeholder:text-slate-500 text-xs focus:outline-none focus:border-blue-500"
             required
           />
           <button 
             type="submit" 
+            id="newsletter-submit"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shrink-0 transition-colors cursor-pointer"
           >
             Subscribe
           </button>
         </form>
+        <div id="newsletter-success" class="hidden text-xs text-emerald-400 font-medium pt-1">
+          You're subscribed!
+        </div>
       </div>
+
+      <script>
+        const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+        const form = document.getElementById('newsletter-form') as HTMLFormElement;
+        const emailInput = document.getElementById('newsletter-email') as HTMLInputElement;
+        const submitBtn = document.getElementById('newsletter-submit') as HTMLButtonElement;
+        const successMsg = document.getElementById('newsletter-success');
+
+        form?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = emailInput.value.trim();
+          if (!email) return;
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Subscribing...';
+
+          try {
+            const res = await fetch(`${API_BASE}/api/newsletter/subscribe`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            });
+
+            if (res.ok) {
+              form.classList.add('hidden');
+              successMsg?.classList.remove('hidden');
+            } else {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Subscribe';
+            }
+          } catch {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Subscribe';
+          }
+        });
+      </script>
 
     </div>
 

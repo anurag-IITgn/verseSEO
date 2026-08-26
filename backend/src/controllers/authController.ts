@@ -2,7 +2,17 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { parseCookieHeader, clearSessionCookie, setSessionCookie } from '../auth/cookies.js';
 import { SESSION_COOKIE_NAME } from '../auth/session.js';
 import { cookieSecure, env } from '../config/env.js';
-import { authenticateSessionToken, getCurrentUser, login, logout, register } from '../services/authService.js';
+import {
+  authenticateSessionToken,
+  getCurrentUser,
+  login,
+  logout,
+  register,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
+} from '../services/authService.js';
 import { AppError } from '../utils/errors.js';
 
 function getSessionToken(request: FastifyRequest): string | undefined {
@@ -36,6 +46,44 @@ export async function meHandler(request: FastifyRequest, reply: FastifyReply): P
   }
   const user = await getCurrentUser(request.userId);
   return reply.send({ user });
+}
+
+export async function verifyEmailHandler(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+  const body = request.body as { token?: string };
+  if (!body.token) {
+    throw new AppError(400, 'Token is required', 'INVALID_TOKEN');
+  }
+  await verifyEmail(body.token);
+  return reply.send({ success: true, message: 'Email verified successfully' });
+}
+
+export async function resendVerificationHandler(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+  const body = request.body as { email?: string };
+  const email = body.email?.trim().toLowerCase() ?? '';
+  if (!email) {
+    throw new AppError(400, 'Email is required', 'INVALID_EMAIL');
+  }
+  await resendVerification(email);
+  return reply.send({ success: true, message: 'If an account exists with that email, a verification link has been sent.' });
+}
+
+export async function forgotPasswordHandler(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+  const body = request.body as { email?: string };
+  const email = body.email?.trim().toLowerCase() ?? '';
+  if (!email) {
+    throw new AppError(400, 'Email is required', 'INVALID_EMAIL');
+  }
+  await forgotPassword(email);
+  return reply.send({ success: true, message: 'If an account exists with that email, a password reset link has been sent.' });
+}
+
+export async function resetPasswordHandler(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+  const body = request.body as { token?: string; password?: string };
+  if (!body.token || !body.password) {
+    throw new AppError(400, 'Token and password are required', 'INVALID_INPUT');
+  }
+  await resetPassword(body.token, body.password);
+  return reply.send({ success: true, message: 'Password reset successfully. Please log in with your new password.' });
 }
 
 export async function authenticateRequest(request: FastifyRequest): Promise<void> {

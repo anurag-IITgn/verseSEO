@@ -1,7 +1,9 @@
 import { hashSessionToken, generateSessionToken, SESSION_TTL_MS } from '../auth/session.js';
 import { hashPassword, verifyPassword } from '../auth/password.js';
-import { findUserByEmail, findUserById, insertUser, type User } from '../repositories/userRepo.js';
-import { deleteSessionByTokenHash, findSessionByTokenHash, insertSession } from '../repositories/sessionRepo.js';
+import { findUserByEmail, findUserById, insertUser, markEmailVerified, updatePasswordHash, type User } from '../repositories/userRepo.js';
+import { deleteSessionByTokenHash, findSessionByTokenHash, insertSession, deleteSessionsByUserId } from '../repositories/sessionRepo.js';
+import { createToken, validateAndConsumeToken, type TokenType } from './tokenService.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from './emailService.js';
 import { AppError } from '../utils/errors.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -9,6 +11,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export interface PublicUser {
   id: string;
   email: string;
+  emailVerified: boolean;
   plan: string;
   createdAt: Date;
   updatedAt: Date;
@@ -23,6 +26,7 @@ export function toPublicUser(user: User): PublicUser {
   return {
     id: user.id,
     email: user.email,
+    emailVerified: user.emailVerified,
     plan: user.plan,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
@@ -71,6 +75,14 @@ export async function register(email: string, password: string): Promise<AuthRes
   });
 
   const sessionToken = await createSession(user.id);
+
+  try {
+    const token = await createToken(user.id, 'email_verification');
+    await sendVerificationEmail(normalizedEmail, token);
+  } catch {
+    // Don't block registration if email fails
+  }
+
   return { user: toPublicUser(user), sessionToken };
 }
 
@@ -109,4 +121,40 @@ export async function getCurrentUser(userId: string): Promise<PublicUser> {
     throw new AppError(401, 'Not authenticated', 'UNAUTHENTICATED');
   }
   return toPublicUser(user);
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  const userId = await validateAndConsumeToken(token, 'email_verification');
+  await markEmailVerified(userId);
+}
+
+export async function resendVerification(email: string): Promise<void> {
+  const normalizedEmail = normalizeEmail(email);
+  const user = await findUserByEmail(normalizedEmail);
+  if (!user || user.emailVerified) {
+    return;
+  }
+  const token = await createToken(user.id, 'email_verification');
+  await sendVerificationEmail(normalizedEmail, token);
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  const normalizedEmail = normalizeEmail(email);
+  const user = await findUserByEmail(normalizedEmail);
+  if (!user) {
+    return;
+  }
+  const token = await createToken(user.id, 'password_reset');
+  await sendPasswordResetEmail(normalizedEmail, token);
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  assertPasswordValid(newPassword);
+  const userId = await validateAndConsumeToken(token, 'password_reset');
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new AppError(400, 'Invalid or expired reset token', 'INVALID_TOKEN');
+  }
+  await updatePasswordHash(userId, hashPassword(newPassword));
+  await deleteSessionsByUserId(userId);
 }

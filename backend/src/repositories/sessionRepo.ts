@@ -25,3 +25,7 @@ export async function deleteSessionByTokenHash(tokenHash: string): Promise<void>
 export async function deleteExpiredSessions(): Promise<void> {
   await db.delete(sessions).where(eq(sessions.expiresAt, new Date(0)));
 }
+
+export async function deleteSessionsByUserId(userId: string): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.userId, userId));
+}

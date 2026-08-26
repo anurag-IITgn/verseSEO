@@ -1,12 +1,22 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { allowedOrigins } from '../config/env.js';
+import { allowedOrigins, isProduction } from '../config/env.js';
 
 const ALLOWED_METHODS = 'GET, POST, PATCH, DELETE, OPTIONS';
 const ALLOWED_HEADERS = 'Content-Type, Accept';
 
-export function corsHandler(request: FastifyRequest, reply: FastifyReply, done: () => void): void {
+function isLocalhostOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    return url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  } catch {
+    return false;
+  }
+}
+
+export async function corsHandler(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   const origin = request.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
+  const isAllowed = origin && (allowedOrigins.includes(origin) || (!isProduction && isLocalhostOrigin(origin)));
+  if (isAllowed && origin) {
     reply.header('Access-Control-Allow-Origin', origin);
     reply.header('Access-Control-Allow-Methods', ALLOWED_METHODS);
     reply.header('Access-Control-Allow-Headers', ALLOWED_HEADERS);
@@ -15,8 +25,6 @@ export function corsHandler(request: FastifyRequest, reply: FastifyReply, done: 
   }
 
   if (request.method === 'OPTIONS') {
-    reply.code(204).send();
-    return;
+    await reply.code(204).send();
   }
-  done();
 }

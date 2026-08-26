@@ -10,7 +10,7 @@ export default defineConfig({
   site: 'https://verseseo.com',
 
   integrations: [sitemap({
-    filter: (page) => !page.includes('/app') && !page.includes('/login') && !page.includes('/register')
+    filter: (page) => !page.includes('/app') && !page.includes('/login') && !page.includes('/register') && !page.includes('/verify-email') && !page.includes('/forgot-password') && !page.includes('/reset-password')
   })],
 
   vite: {

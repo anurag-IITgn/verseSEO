@@ -17,6 +17,7 @@ import { redditRoutes } from './routes/reddit.js';
 import { scanRoutes } from './routes/scans.js';
 import { searchRoutes } from './routes/search.js';
 import { billingRoutes } from './routes/billing.js';
+import { newsletterRoutes } from './routes/newsletter.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -87,6 +88,7 @@ export function buildApp() {
   app.register(aiVisibilityRoutes);
   app.register(contentRoutes);
   app.register(demoRoutes);
+  app.register(newsletterRoutes);
   app.register(scanRoutes);
 
   registerErrorHandler(app);

@@ -65,6 +65,9 @@ const envSchema = z
     GSC_CLIENT_SECRET: z.string().optional(),
     GSC_REDIRECT_URI: z.string().optional(),
     GSC_TOKEN_ENCRYPTION_KEY: z.string().optional(),
+
+    // Transactional email (Resend — https://resend.com)
+    RESEND_API_KEY: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.FRONTEND_ORIGIN) {

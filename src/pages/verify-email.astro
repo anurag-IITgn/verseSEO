@@ -1,0 +1,115 @@
+---
+// src/pages/verify-email.astro
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Verify Email — VerseSEO"
+  description="Verify your VerseSEO account email address."
+  robots="noindex, nofollow"
+>
+  <main class="min-h-screen flex flex-col">
+    <header class="w-full">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg p-1">
+          <img src="/brand/logo-mark-new.png" alt="VerseSEO icon" class="w-9 h-9 rounded-xl object-cover" />
+          <span class="font-extrabold text-xl tracking-tight text-slate-900">VerseSEO</span>
+        </a>
+        <a href="/" class="text-sm font-medium text-slate-600 hover:text-slate-900 hover:underline">← Back to home</a>
+      </div>
+    </header>
+
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
+      <div class="w-full max-w-md">
+        <div class="bg-white rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 p-8 sm:p-10">
+          <a href="/" class="inline-flex items-center gap-2.5 mb-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg">
+            <img src="/brand/logo-mark-new.png" alt="VerseSEO icon" class="w-9 h-9 rounded-xl object-cover" />
+            <span class="font-extrabold text-xl tracking-tight text-slate-900">VerseSEO</span>
+          </a>
+
+          <div id="verify-loading" class="text-center py-8">
+            <div class="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-sm text-slate-600">Verifying your email...</p>
+          </div>
+
+          <div id="verify-success" class="hidden text-center py-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
+              <span class="text-3xl text-emerald-600">✓</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">Email verified!</h1>
+            <p class="text-sm text-slate-600 mb-6">Your account is now fully activated.</p>
+            <a href="/app" class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/25 transition-all">
+              Go to Dashboard
+            </a>
+          </div>
+
+          <div id="verify-error" class="hidden text-center py-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-rose-100 mb-4">
+              <span class="text-3xl text-rose-600">✕</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">Verification failed</h1>
+            <p id="verify-error-msg" class="text-sm text-slate-600 mb-6">This verification link is invalid or has expired.</p>
+            <a href="/login" class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/25 transition-all">
+              Go to Login
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center py-8 text-xs text-slate-400">
+      &copy; VerseSEO · Powered by real crawl data, not guesses.
+    </footer>
+  </main>
+</Layout>
+
+<script>
+  const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+
+  const loadingEl = document.getElementById('verify-loading');
+  const successEl = document.getElementById('verify-success');
+  const errorEl = document.getElementById('verify-error');
+  const errorMsgEl = document.getElementById('verify-error-msg');
+
+  function showEl(el: HTMLElement | null) {
+    el?.classList.remove('hidden');
+  }
+  function hideEl(el: HTMLElement | null) {
+    el?.classList.add('hidden');
+  }
+
+  async function verify() {
+    if (!token) {
+      hideEl(loadingEl);
+      if (errorMsgEl) errorMsgEl.textContent = 'No verification token provided.';
+      showEl(errorEl);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+
+      hideEl(loadingEl);
+
+      if (res.ok) {
+        showEl(successEl);
+      } else {
+        const body = await res.json().catch(() => null);
+        if (errorMsgEl) errorMsgEl.textContent = body?.error?.message ?? 'This verification link is invalid or has expired.';
+        showEl(errorEl);
+      }
+    } catch {
+      hideEl(loadingEl);
+      if (errorMsgEl) errorMsgEl.textContent = 'Could not reach the server. Please try again.';
+      showEl(errorEl);
+    }
+  }
+
+  void verify();
+</script>
