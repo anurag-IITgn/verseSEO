@@ -1,4 +1,4 @@
-const API = (import.meta as any).env?.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+import { API_BASE as API } from '../lib/api-config';
 
 function apiFetch(p: string, i: RequestInit = {}): Promise<Response> {
   const h: Record<string, string> = { Accept: 'application/json', ...(i.headers as Record<string, string>) };
@@ -335,7 +335,7 @@ async function loadProjects() {
     projects = (await r.json()).projects ?? [];
     renderProjects();
   } catch {
-    showBanner(projectsError, 'Could not load projects. Is the backend running on localhost:3000?');
+    showBanner(projectsError, 'Could not load projects. Please try again later.');
     if (projectsLoading) projectsLoading.classList.add('hidden');
   }
 }

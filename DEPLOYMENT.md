@@ -25,9 +25,10 @@ POSTGRES_DB=seo_saas
 # Public HTTP port on the host
 PORT=80
 
-# Optional: bake a different API origin into the frontend bundle.
-# Leave empty for the same-origin nginx proxy (recommended).
-# PUBLIC_API_BASE_URL=https://seo.example.com
+# Required: the backend API origin the frontend will call.
+# For same-origin nginx proxy (VPS), leave empty or omit.
+# For Cloudflare Pages, set to your Render backend URL:
+PUBLIC_API_BASE_URL=https://api.verseseo.com
 ```
 
 Security notes:

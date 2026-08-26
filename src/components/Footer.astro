@@ -54,7 +54,7 @@
       </div>
 
       <script>
-        const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+        import { API_BASE } from '../lib/api-config';
         const form = document.getElementById('newsletter-form') as HTMLFormElement;
         const emailInput = document.getElementById('newsletter-email') as HTMLInputElement;
         const submitBtn = document.getElementById('newsletter-submit') as HTMLButtonElement;

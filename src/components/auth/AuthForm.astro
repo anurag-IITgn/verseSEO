@@ -115,7 +115,7 @@ const isLogin = mode === 'login';
 <script>
   const MODE: 'login' | 'register' = document.getElementById('auth-root')?.dataset.mode === 'register' ? 'register' : 'login';
   const isLogin = MODE === 'login';
-  const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+  import { API_BASE } from '../../lib/api-config';
   const form = document.getElementById('auth-form');
   const emailInput = document.getElementById('auth-email') as HTMLInputElement | null;
   const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null;
@@ -214,7 +214,7 @@ const isLogin = mode === 'login';
       }, 700);
     } catch {
       setLoading(false);
-      showBanner(errorBanner, 'Could not reach the backend. Is it running on localhost:3000?');
+      showBanner(errorBanner, 'Could not reach the backend. Please try again later.');
     }
   }
 

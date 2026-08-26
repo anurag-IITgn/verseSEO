@@ -2,8 +2,18 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
+import { loadEnv } from 'vite';
 
 import cloudflare from '@astrojs/cloudflare';
+
+const mode = process.env.NODE_ENV ?? 'production';
+const env = loadEnv(mode, process.cwd(), '');
+if (mode === 'production' && !env.PUBLIC_API_BASE_URL) {
+  throw new Error(
+    'PUBLIC_API_BASE_URL is required in production builds.\n' +
+    'Set it in your hosting dashboard (Cloudflare Pages / Render) before deploying.'
+  );
+}
 
 // https://astro.build/config
 export default defineConfig({

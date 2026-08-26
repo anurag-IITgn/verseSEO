@@ -173,7 +173,7 @@
 </section>
 
 <script>
-  const API = (import.meta as any).env?.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+  import { API_BASE as API } from '../lib/api-config';
 
   async function getCurrentUser(): Promise<{ id: string; email: string; plan: string } | null> {
     try {

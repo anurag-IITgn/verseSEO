@@ -327,8 +327,7 @@ const { mode = 'teaser' } = Astro.props;
     }
   };
 
-  // Backend API base. Override with PUBLIC_API_BASE_URL for non-local deployments.
-  const API_BASE = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+  import { API_BASE } from '../lib/api-config';
   const simRoot = document.getElementById('demo');
   const SIM_MODE: 'teaser' | 'app' = simRoot?.dataset.mode === 'app' ? 'app' : 'teaser';
 
