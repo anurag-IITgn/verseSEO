@@ -664,6 +664,7 @@
     position: relative;
     top: 0;
     height: auto;
+    max-height: none;
   }
 
   .modules-scroll-container {
@@ -726,6 +727,7 @@
     position: relative;
     top: 0;
     height: auto;
+    max-height: none;
   }
 
   .modules-card-area {
