@@ -733,6 +733,36 @@
 
   /* ─── Real Scan Flow (unchanged) ──────────────────────────────────────── */
 
+  function resetLockedModules() {
+    const lockedCards = [
+      { id: 'demo-search-card', statusId: 'demo-search-status', itemsId: 'demo-search-items',
+        statusHtml: '<span class="mr-1">&#128274;</span> Free Preview',
+        bodyHtml: 'Discover high-intent keywords your customers are searching for. <strong class="text-slate-700">Unlock with VerseSEO.</strong>' },
+      { id: 'demo-reddit-card', statusId: 'demo-reddit-status', itemsId: 'demo-reddit-items',
+        statusHtml: '<span class="mr-1">&#128274;</span> Free Preview',
+        bodyHtml: 'Find authentic buyer discussions on Reddit. <strong class="text-slate-700">Unlock with VerseSEO.</strong>' },
+      { id: 'demo-content-card', statusId: 'demo-content-status', itemsId: 'demo-content-items',
+        statusHtml: '<span class="mr-1">&#128274;</span> Free Preview',
+        bodyHtml: 'Turn opportunities into SEO content briefs and drafts. <strong class="text-slate-700">Unlock with VerseSEO.</strong>' },
+    ];
+    for (const card of lockedCards) {
+      const el = document.getElementById(card.id);
+      const status = document.getElementById(card.statusId);
+      const items = document.getElementById(card.itemsId);
+      if (el) {
+        el.classList.add('opacity-75', 'bg-slate-50/70');
+        el.classList.remove('bg-white/70');
+      }
+      if (status) {
+        status.className = 'text-xs font-bold text-slate-500';
+        status.innerHTML = card.statusHtml;
+      }
+      if (items) {
+        items.innerHTML = `<div class="text-slate-500">${card.bodyHtml}</div>`;
+      }
+    }
+  }
+
   function renderTechPanel(domain: string, tech: {
     healthScore: number | null;
     pagesCrawled: number;
@@ -906,6 +936,7 @@
     if (signupLink) signupLink.href = `/register?next=/app&website=${encodeURIComponent(domain)}`;
     if (runBtn) { runBtn.disabled = true; runBtn.classList.add('opacity-60', 'cursor-wait'); }
     showProgress('Scanning website...', 'Crawling pages and analyzing technical SEO', 20);
+    resetLockedModules();
     try {
       const res = await fetch(`${API_BASE}/api/demo/scan`, {
         method: 'POST',
