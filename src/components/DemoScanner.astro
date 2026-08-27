@@ -1,5 +1,5 @@
 ---
-// DemoScanner.astro — Anonymous limited demo scan (Tech + AI only) with signup CTA
+// DemoScanner.astro — Sample demo presets (all 5 modules) + real scan for custom URLs
 ---
 
 <section class="py-16 sm:py-24 bg-[#FAF9F5] border-b border-slate-200/80 relative" id="demo">
@@ -26,16 +26,16 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">Select Sample Site:</span>
           <div class="flex flex-wrap gap-2" id="demo-persona-chips">
-            <button type="button" class="demo-persona-btn active px-3 py-1.5 rounded-lg bg-[#0c1021] text-white text-xs font-semibold cursor-pointer transition-all" data-domain="resumeforge.io">
+            <button type="button" class="demo-persona-btn active px-3 py-1.5 rounded-lg bg-[#0c1021] text-white text-xs font-semibold cursor-pointer transition-all" data-domain="resumeforge.io" data-category="saas">
               SaaS Startup
             </button>
-            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="aeroroast.co">
+            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="aeroroast.co" data-category="ecommerce">
               E-Commerce
             </button>
-            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="apexpt.com">
+            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="apexpt.com" data-category="clinic">
               Local Clinic
             </button>
-            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="coursecraft.dev">
+            <button type="button" class="demo-persona-btn px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-semibold cursor-pointer transition-all" data-domain="coursecraft.dev" data-category="creator">
               Creator Platform
             </button>
           </div>
@@ -88,7 +88,7 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Target Scanned</span>
-              <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">Demo Scan</span>
+              <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">Sample Result</span>
             </div>
             <h3 class="text-xl sm:text-2xl font-black text-slate-900 mt-1 font-mono" id="demo-result-domain">resumeforge.io</h3>
           </div>
@@ -127,7 +127,7 @@
           </div>
 
           <!-- 2. Search Intent — LOCKED -->
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
+          <div id="demo-search-card" class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-blue-600"></span> 2. Search Intent
@@ -142,7 +142,7 @@
           </div>
 
           <!-- 3. Reddit Intel — LOCKED -->
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
+          <div id="demo-reddit-card" class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-orange-500"></span> 3. Reddit Intel
@@ -170,7 +170,7 @@
           </div>
 
           <!-- 5. Content Generator — LOCKED -->
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
+          <div id="demo-content-card" class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 opacity-75">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-indigo-600"></span> 5. Content Generator
@@ -207,6 +207,287 @@
 <script>
   import { API_BASE } from '../lib/api-config';
 
+  /* ─── Demo Preset Data ────────────────────────────────────────────────── */
+  interface DemoPreset {
+    domain: string;
+    label: string;
+    omniScore: number;
+    tech: {
+      healthScore: number;
+      pagesCrawled: number;
+      robotsFound: boolean;
+      sitemapFound: boolean;
+      issueCount: number;
+      issueCounts: Record<string, number>;
+      issues: Array<{ issueType: string; severity: string; message: string }>;
+      pageStats: {
+        total: number;
+        http200: number;
+        withTitle: number;
+        withMetaDescription: number;
+        withCanonical: number;
+      };
+    };
+    search: {
+      opportunities: Array<{
+        opportunityType: string;
+        query: string;
+        score: number;
+        priority: string;
+        reason: string;
+        suggestedAction: string;
+        relatedPageUrl: string;
+      }>;
+    };
+    reddit: {
+      discussions: Array<{
+        subreddit: string;
+        postTitle: string;
+        postUrl: string;
+        author: string;
+        score: number;
+        numComments: number;
+        postedAt: string;
+        opportunityScore: number;
+        priority: string;
+        reason: string;
+      }>;
+    };
+    ai: {
+      status: string;
+      overallVisibilityScore: number;
+      mentionedCount: number;
+      citedCount: number;
+      queryCount: number;
+      topCompetitors: string[];
+      results: Array<{
+        topic: string;
+        mentioned: boolean;
+        cited: boolean;
+        stance: string;
+        visibilityScore: number;
+        reason: string;
+        competitors: string[];
+      }>;
+    };
+    content: {
+      recommendations: Array<{
+        title: string;
+        intent: string;
+        priority: string;
+        rationale: string;
+        aiEnhanced: boolean;
+      }>;
+    };
+  }
+
+  const DEMO_PRESETS: Record<string, DemoPreset> = {
+    saas: {
+      domain: 'resumeforge.io',
+      label: 'SaaS Startup',
+      omniScore: 78,
+      tech: {
+        healthScore: 82,
+        pagesCrawled: 67,
+        robotsFound: true,
+        sitemapFound: true,
+        issueCount: 5,
+        issueCounts: { MISSING_META_DESCRIPTION: 3, TITLE_TOO_SHORT: 2 },
+        issues: [
+          { issueType: 'MISSING_META_DESCRIPTION', severity: 'warning', message: '3 pages missing meta descriptions' },
+          { issueType: 'TITLE_TOO_SHORT', severity: 'warning', message: '2 pages have titles under 30 characters' },
+        ],
+        pageStats: { total: 67, http200: 65, withTitle: 63, withMetaDescription: 58, withCanonical: 60 },
+      },
+      search: {
+        opportunities: [
+          { opportunityType: 'HIGH_INTENT', query: 'resume builder for software engineers', score: 92, priority: 'HIGH', reason: 'High buyer-intent keyword with 2,400 monthly searches and low competition', suggestedAction: 'Create a dedicated landing page targeting this keyword', relatedPageUrl: '/templates' },
+          { opportunityType: 'COMPETITOR', query: 'best resume builder 2026', score: 87, priority: 'HIGH', reason: 'Comparison keyword — you can capture users evaluating alternatives', suggestedAction: 'Publish a comparison page or claim listings on review sites', relatedPageUrl: '/pricing' },
+          { opportunityType: 'FEATURE', query: 'ATS-friendly resume template', score: 81, priority: 'MEDIUM', reason: 'Feature-specific search with strong conversion potential', suggestedAction: 'Add an ATS optimization section to your templates page', relatedPageUrl: '/features' },
+        ],
+      },
+      reddit: {
+        discussions: [
+          { subreddit: 'r/cscareerquestions', postTitle: 'How important is resume format for ATS systems?', postUrl: 'https://reddit.com/r/cscareerquestions/example1', author: 'u/devcareer2026', score: 342, numComments: 89, postedAt: '2 days ago', opportunityScore: 88, priority: 'HIGH', reason: 'Direct discussion about your core feature — ATS-friendly resumes' },
+          { subreddit: 'r/resumes', postTitle: 'Best free resume builder for tech jobs?', postUrl: 'https://reddit.com/r/resumes/example2', author: 'u/jobseeker_dev', score: 156, numComments: 45, postedAt: '5 hours ago', opportunityScore: 82, priority: 'HIGH', reason: 'Users actively seeking resume builders — high conversion potential' },
+        ],
+      },
+      ai: {
+        status: 'success',
+        overallVisibilityScore: 65,
+        mentionedCount: 4,
+        citedCount: 1,
+        queryCount: 12,
+        topCompetitors: ['Resume.io', 'Zety', 'Novoresume'],
+        results: [
+          { topic: 'best resume builder for software engineers', mentioned: true, cited: true, stance: 'positive', visibilityScore: 82, reason: 'Cited in AI response as a top pick for technical resumes', competitors: ['Resume.io', 'Zety'] },
+          { topic: 'ATS-friendly resume tools', mentioned: true, cited: false, stance: 'neutral', visibilityScore: 55, reason: 'Mentioned in a list but not linked as a top recommendation', competitors: ['Novoresume', 'Jobscan'] },
+          { topic: 'free resume builders 2026', mentioned: false, cited: false, stance: 'not-mentioned', visibilityScore: 0, reason: 'Not mentioned — competitors dominated this category', competitors: ['Canva', 'Resume.io', 'Zety'] },
+        ],
+      },
+      content: {
+        recommendations: [
+          { title: 'Software Engineer Resume Guide: ATS Tips & Templates', intent: 'informational', priority: 'HIGH', rationale: 'Targets high-volume career search with strong content-market fit', aiEnhanced: true },
+          { title: 'Resume.io vs ResumeForge: Feature Comparison', intent: 'comparison', priority: 'HIGH', rationale: 'Captures comparison shoppers — high conversion intent', aiEnhanced: true },
+          { title: 'How ATS Systems Parse Your Resume (Technical Deep Dive)', intent: 'educational', priority: 'MEDIUM', rationale: 'Positions your brand as the technical authority in resume optimization', aiEnhanced: false },
+        ],
+      },
+    },
+    ecommerce: {
+      domain: 'aeroroast.co',
+      label: 'E-Commerce',
+      omniScore: 71,
+      tech: {
+        healthScore: 74,
+        pagesCrawled: 203,
+        robotsFound: true,
+        sitemapFound: true,
+        issueCount: 8,
+        issueCounts: { MISSING_ALT_TEXT: 5, DUPLICATE_META_DESCRIPTION: 3 },
+        issues: [
+          { issueType: 'MISSING_ALT_TEXT', severity: 'warning', message: '5 product images missing alt text' },
+          { issueType: 'DUPLICATE_META_DESCRIPTION', severity: 'warning', message: '3 pages share duplicate meta descriptions' },
+        ],
+        pageStats: { total: 203, http200: 198, withTitle: 195, withMetaDescription: 189, withCanonical: 192 },
+      },
+      search: {
+        opportunities: [
+          { opportunityType: 'HIGH_INTENT', query: 'single origin ethiopian coffee beans online', score: 94, priority: 'HIGH', reason: 'Buyer-ready keyword with 3,100 monthly searches — direct product match', suggestedAction: 'Optimize product page title and meta for this exact query', relatedPageUrl: '/collections/ethiopian' },
+          { opportunityType: 'CATEGORY', query: 'best coffee subscription box', score: 86, priority: 'HIGH', reason: 'Subscription intent — high LTV customer acquisition opportunity', suggestedAction: 'Create a comparison guide featuring your subscription offering', relatedPageUrl: '/subscriptions' },
+          { opportunityType: 'INFORMATIONAL', query: 'pour over vs french press taste difference', score: 73, priority: 'MEDIUM', reason: 'Top-of-funnel educational content that builds brand authority', suggestedAction: 'Publish a brewing guide that links to your product pages', relatedPageUrl: '/blog' },
+        ],
+      },
+      reddit: {
+        discussions: [
+          { subreddit: 'r/coffee', postTitle: 'Best subscription for ethiopian single origin?', postUrl: 'https://reddit.com/r/coffee/example1', author: 'u/coffeegeek_88', score: 278, numComments: 67, postedAt: '1 day ago', opportunityScore: 91, priority: 'HIGH', reason: 'Direct buyer intent for your core product category' },
+          { subreddit: 'r/BuyItForLife', postTitle: 'Quality coffee brands that actually deliver?', postUrl: 'https://reddit.com/r/BuyItForLife/example2', author: 'u/qualityfirst', score: 134, numComments: 38, postedAt: '3 days ago', opportunityScore: 76, priority: 'MEDIUM', reason: 'Brand discovery opportunity — users seeking quality coffee recommendations' },
+        ],
+      },
+      ai: {
+        status: 'success',
+        overallVisibilityScore: 52,
+        mentionedCount: 2,
+        citedCount: 0,
+        queryCount: 10,
+        topCompetitors: ['Trade Coffee', 'Blue Bottle', 'Atlas Coffee Club'],
+        results: [
+          { topic: 'best ethiopian coffee subscription', mentioned: true, cited: false, stance: 'neutral', visibilityScore: 45, reason: 'Mentioned once in a list of options but not as a top pick', competitors: ['Trade Coffee', 'Blue Bottle'] },
+          { topic: 'specialty coffee online stores', mentioned: true, cited: false, stance: 'positive', visibilityScore: 62, reason: 'Recommended for single-origin quality but missing subscription angle', competitors: ['Counter Culture', 'Onyx Coffee'] },
+          { topic: 'best coffee subscription boxes 2026', mentioned: false, cited: false, stance: 'not-mentioned', visibilityScore: 0, reason: 'Not mentioned — dominated by larger subscription services', competitors: ['Trade Coffee', 'Atlas Coffee Club', 'Blue Bottle'] },
+        ],
+      },
+      content: {
+        recommendations: [
+          { title: 'Ethiopian Coffee Origins: A Complete Buyer\'s Guide', intent: 'informational', priority: 'HIGH', rationale: 'Captures high-intent origin research with direct product links', aiEnhanced: true },
+          { title: 'Pour Over vs French Press: Which Brew Method Is Right for You?', intent: 'educational', priority: 'MEDIUM', rationale: 'High search volume brewing content that positions your beans as the answer', aiEnhanced: true },
+          { title: 'Why Single Origin Matters: Quality vs Blend Comparison', intent: 'comparison', priority: 'MEDIUM', rationale: 'Differentiates your brand in a crowded market with quality-first messaging', aiEnhanced: false },
+        ],
+      },
+    },
+    clinic: {
+      domain: 'apexpt.com',
+      label: 'Local Clinic',
+      omniScore: 65,
+      tech: {
+        healthScore: 68,
+        pagesCrawled: 34,
+        robotsFound: false,
+        sitemapFound: true,
+        issueCount: 6,
+        issueCounts: { MISSING_TITLE: 2, MISSING_META_DESCRIPTION: 4 },
+        issues: [
+          { issueType: 'MISSING_TITLE', severity: 'warning', message: '2 pages missing title tags entirely' },
+          { issueType: 'MISSING_META_DESCRIPTION', severity: 'warning', message: '4 pages missing meta descriptions' },
+        ],
+        pageStats: { total: 34, http200: 33, withTitle: 31, withMetaDescription: 28, withCanonical: 30 },
+      },
+      search: {
+        opportunities: [
+          { opportunityType: 'LOCAL_INTENT', query: 'physical therapy near me for sports injury', score: 96, priority: 'HIGH', reason: 'Local patient search with immediate appointment intent — 1,800 monthly searches', suggestedAction: 'Optimize Google Business Profile and add sports injury service page', relatedPageUrl: '/services/sports-injury' },
+          { opportunityType: 'CONDITION', query: 'how long does physical therapy take for knee surgery', score: 84, priority: 'HIGH', reason: 'Patient education search — builds trust and captures top-of-funnel traffic', suggestedAction: 'Create a detailed recovery timeline page with local expertise', relatedPageUrl: '/conditions/knee-recovery' },
+          { opportunityType: 'LOCAL_INTENT', query: 'best physical therapist [city name]', score: 79, priority: 'MEDIUM', reason: 'Branded local search — essential for capturing patient decision-makers', suggestedAction: 'Build location-specific landing pages for each service area', relatedPageUrl: '/locations' },
+        ],
+      },
+      reddit: {
+        discussions: [
+          { subreddit: 'r/physicaltherapy', postTitle: 'How do I find a good PT for post-surgery rehab?', postUrl: 'https://reddit.com/r/physicaltherapy/example1', author: 'u/recovering_pt', score: 198, numComments: 52, postedAt: '6 hours ago', opportunityScore: 85, priority: 'HIGH', reason: 'Direct patient need for your core service — post-surgery rehabilitation' },
+          { subreddit: 'r/AskDocs', postTitle: 'When should I start PT after ACL reconstruction?', postUrl: 'https://reddit.com/r/AskDocs/example2', author: 'u/kneeconcern', score: 87, numComments: 23, postedAt: '2 days ago', opportunityScore: 72, priority: 'MEDIUM', reason: 'Medical question where expert PT advice builds credibility' },
+        ],
+      },
+      ai: {
+        status: 'success',
+        overallVisibilityScore: 41,
+        mentionedCount: 1,
+        citedCount: 0,
+        queryCount: 8,
+        topCompetitors: ['PT Solutions', 'ATI Physical Therapy', 'Fyzical'],
+        results: [
+          { topic: 'physical therapy for sports injuries', mentioned: true, cited: false, stance: 'neutral', visibilityScore: 38, reason: 'Briefly mentioned as a local option but not as a top recommendation', competitors: ['PT Solutions', 'ATI Physical Therapy'] },
+          { topic: 'best physical therapy clinics near me', mentioned: false, cited: false, stance: 'not-mentioned', visibilityScore: 0, reason: 'Not mentioned — AI favors larger chains for "best of" queries', competitors: ['ATI Physical Therapy', 'Fyzical', 'PT Solutions'] },
+          { topic: 'post-surgery rehabilitation options', mentioned: false, cited: false, stance: 'not-mentioned', visibilityScore: 0, reason: 'Not mentioned — competitors have more comprehensive condition pages', competitors: ['PT Solutions', 'Benchmark Physical Therapy'] },
+        ],
+      },
+      content: {
+        recommendations: [
+          { title: 'ACL Recovery Timeline: What to Expect Week by Week', intent: 'informational', priority: 'HIGH', rationale: 'High-value patient education content with local service tie-in', aiEnhanced: true },
+          { title: 'How to Choose the Right Physical Therapist (Patient Guide)', intent: 'educational', priority: 'HIGH', rationale: 'Captures patient decision-making searches with trust-building content', aiEnhanced: true },
+          { title: 'Sports Injury Recovery: When to See a Physical Therapist', intent: 'symptom', priority: 'MEDIUM', rationale: 'Targets symptom-aware patients at the moment they need help', aiEnhanced: false },
+        ],
+      },
+    },
+    creator: {
+      domain: 'coursecraft.dev',
+      label: 'Creator Platform',
+      omniScore: 83,
+      tech: {
+        healthScore: 91,
+        pagesCrawled: 156,
+        robotsFound: true,
+        sitemapFound: true,
+        issueCount: 2,
+        issueCounts: { TITLE_TOO_LONG: 2 },
+        issues: [
+          { issueType: 'TITLE_TOO_LONG', severity: 'info', message: '2 pages have titles over 60 characters' },
+        ],
+        pageStats: { total: 156, http200: 155, withTitle: 154, withMetaDescription: 152, withCanonical: 155 },
+      },
+      search: {
+        opportunities: [
+          { opportunityType: 'HIGH_INTENT', query: 'build online course platform from scratch', score: 91, priority: 'HIGH', reason: 'Creator tool search with strong purchase intent — 2,800 monthly searches', suggestedAction: 'Create a step-by-step guide featuring your platform as the solution', relatedPageUrl: '/features' },
+          { opportunityType: 'COMPETITOR', query: 'teachable vs thinkific alternative', score: 85, priority: 'HIGH', reason: 'Users comparing competitors — opportunity to capture switchers', suggestedAction: 'Publish a detailed comparison page highlighting your advantages', relatedPageUrl: '/compare' },
+          { opportunityType: 'FEATURE', query: 'markdown support course builder', score: 78, priority: 'MEDIUM', reason: 'Technical creator audience — your markdown-native platform is a perfect fit', suggestedAction: 'Optimize the markdown features page for this specific query', relatedPageUrl: '/features/markdown' },
+        ],
+      },
+      reddit: {
+        discussions: [
+          { subreddit: 'r/Entrepreneur', postTitle: 'Best platform for technical course creators who hate clunky UIs?', postUrl: 'https://reddit.com/r/Entrepreneur/example1', author: 'u/techcreator22', score: 267, numComments: 71, postedAt: '1 day ago', opportunityScore: 89, priority: 'HIGH', reason: 'Direct product-market fit discussion — users seeking exactly what you offer' },
+          { subreddit: 'r/onlinecourse', postTitle: 'What platform do you use for markdown-based courses?', postUrl: 'https://reddit.com/r/onlinecourse/example2', author: 'u/codemd_course', score: 143, numComments: 34, postedAt: '4 days ago', opportunityScore: 81, priority: 'HIGH', reason: 'Feature-specific search matching your core differentiator' },
+        ],
+      },
+      ai: {
+        status: 'success',
+        overallVisibilityScore: 72,
+        mentionedCount: 6,
+        citedCount: 2,
+        queryCount: 14,
+        topCompetitors: ['Teachable', 'Thinkific', 'Podia'],
+        results: [
+          { topic: 'best course platforms for developers', mentioned: true, cited: true, stance: 'positive', visibilityScore: 88, reason: 'Cited as a top pick specifically for technical course creators', competitors: ['Teachable', 'Thinkific'] },
+          { topic: 'markdown course creation tools', mentioned: true, cited: true, stance: 'positive', visibilityScore: 92, reason: 'Cited as the leading markdown-native course platform', competitors: ['GitBook'] },
+          { topic: 'teachable alternatives 2026', mentioned: true, cited: false, stance: 'positive', visibilityScore: 68, reason: 'Mentioned as a strong alternative but not in the top 3 linked results', competitors: ['Thinkific', 'Podia', 'Kajabi'] },
+        ],
+      },
+      content: {
+        recommendations: [
+          { title: 'Build Your First Online Course: A Developer\'s Guide (2026)', intent: 'informational', priority: 'HIGH', rationale: 'Captures the massive developer-to-creator pipeline with actionable content', aiEnhanced: true },
+          { title: 'Teachable vs CourseCraft: Which Platform Is Right for Technical Courses?', intent: 'comparison', priority: 'HIGH', rationale: 'High-intent comparison content targeting competitor switchers', aiEnhanced: true },
+          { title: 'Why Markdown Is the Future of Course Content', intent: 'educational', priority: 'MEDIUM', rationale: 'Thought leadership content that reinforces your core differentiator', aiEnhanced: false },
+        ],
+      },
+    },
+  };
+
+  /* ─── DOM References ──────────────────────────────────────────────────── */
   const domainInput = document.getElementById('demo-domain-input') as HTMLInputElement | null;
   const runBtn = document.getElementById('demo-run-btn') as HTMLButtonElement | null;
   const btnText = document.getElementById('demo-btn-text');
@@ -221,8 +502,14 @@
   const resScore = document.getElementById('demo-result-score');
   const techStatus = document.getElementById('demo-tech-status');
   const techItems = document.getElementById('demo-tech-items');
+  const searchStatus = document.getElementById('demo-search-status');
+  const searchItems = document.getElementById('demo-search-items');
+  const redditStatus = document.getElementById('demo-reddit-status');
+  const redditItems = document.getElementById('demo-reddit-items');
   const aiStatus = document.getElementById('demo-ai-status');
   const aiItems = document.getElementById('demo-ai-items');
+  const contentStatus = document.getElementById('demo-content-status');
+  const contentItems = document.getElementById('demo-content-items');
   const techCta = document.getElementById('demo-tech-cta');
   const techSignup = document.getElementById('demo-tech-signup') as HTMLAnchorElement | null;
   const signupLink = document.getElementById('demo-signup-link') as HTMLAnchorElement | null;
@@ -280,6 +567,172 @@
     if (resultsBox) resultsBox.classList.remove('hidden');
   }
 
+  /* ─── Demo Preset Rendering ───────────────────────────────────────────── */
+
+  function unlockModule(
+    container: HTMLElement | null,
+    statusEl: HTMLElement | null,
+    itemsEl: HTMLElement | null,
+    statusText: string,
+    html: string,
+    colorClass: string,
+  ) {
+    if (!container || !statusEl || !itemsEl) return;
+    container.classList.remove('opacity-75', 'bg-slate-50/70');
+    container.classList.add('bg-white/70');
+    statusEl.classList.remove('text-slate-500');
+    statusEl.classList.add(colorClass);
+    statusEl.textContent = statusText;
+    itemsEl.innerHTML = html;
+  }
+
+  function renderDemoPreset(category: string) {
+    const preset = DEMO_PRESETS[category];
+    if (!preset) return;
+
+    // Header
+    if (resDomain) resDomain.textContent = preset.domain;
+    if (resScore) resScore.innerHTML = `${preset.omniScore} <span class="text-sm font-normal text-slate-400">/ 100</span>`;
+
+    // 1. Technical Health
+    const tech = preset.tech;
+    const techLines: string[] = [];
+    if (tech.pageStats.total > 0) techLines.push(`\u2713 ${tech.pageStats.total} pages crawled`);
+    if (tech.pageStats.http200 === tech.pageStats.total) {
+      techLines.push(`\u2713 ${tech.pageStats.http200}/${tech.pageStats.total} pages return 200`);
+    } else {
+      techLines.push(`\u26A0 ${tech.pageStats.http200}/${tech.pageStats.total} pages return 200`);
+    }
+    const titleIssues = (tech.issueCounts['TITLE_TOO_SHORT'] ?? 0) + (tech.issueCounts['TITLE_TOO_LONG'] ?? 0) + (tech.issueCounts['MISSING_TITLE'] ?? 0);
+    if (titleIssues === 0) {
+      techLines.push(`\u2713 ${tech.pageStats.withTitle}/${tech.pageStats.total} pages have titles`);
+    } else {
+      const parts: string[] = [];
+      if ((tech.issueCounts['TITLE_TOO_SHORT'] ?? 0) > 0) parts.push(`${tech.issueCounts['TITLE_TOO_SHORT']} too short`);
+      if ((tech.issueCounts['TITLE_TOO_LONG'] ?? 0) > 0) parts.push(`${tech.issueCounts['TITLE_TOO_LONG']} too long`);
+      if ((tech.issueCounts['MISSING_TITLE'] ?? 0) > 0) parts.push(`${tech.issueCounts['MISSING_TITLE']} missing`);
+      techLines.push(`\u26A0 ${parts.join(', ')} — ${tech.pageStats.withTitle}/${tech.pageStats.total} have titles`);
+    }
+    const metaIssues = (tech.issueCounts['MISSING_META_DESCRIPTION'] ?? 0) + (tech.issueCounts['DUPLICATE_META_DESCRIPTION'] ?? 0);
+    if (metaIssues === 0) {
+      techLines.push(`\u2713 ${tech.pageStats.withMetaDescription}/${tech.pageStats.total} meta descriptions present`);
+    } else {
+      const parts: string[] = [];
+      if ((tech.issueCounts['MISSING_META_DESCRIPTION'] ?? 0) > 0) parts.push(`${tech.issueCounts['MISSING_META_DESCRIPTION']} missing`);
+      if ((tech.issueCounts['DUPLICATE_META_DESCRIPTION'] ?? 0) > 0) parts.push(`${tech.issueCounts['DUPLICATE_META_DESCRIPTION']} duplicated`);
+      techLines.push(`\u26A0 ${parts.join(', ')} — ${tech.pageStats.withMetaDescription}/${tech.pageStats.total} present`);
+    }
+    if (tech.robotsFound) techLines.push('\u2713 robots.txt found');
+    else techLines.push('\u26A0 Missing robots.txt');
+    if (tech.sitemapFound) techLines.push('\u2713 sitemap.xml found');
+    else techLines.push('\u26A0 Missing sitemap.xml');
+
+    const techHtml = techLines.map(line => {
+      const isGood = line.startsWith('\u2713');
+      return `<div class="flex items-center gap-1.5 ${isGood ? 'text-emerald-700' : 'text-amber-700'}">${escapeHtml(line)}</div>`;
+    }).join('');
+    if (techStatus) { techStatus.textContent = `${tech.healthScore}% (${scoreLabel(tech.healthScore)})`; }
+    if (techItems) { techItems.innerHTML = techHtml; }
+    if (techCta) techCta.classList.add('hidden');
+
+    // 2. Search Intent
+    const searchHtml = preset.search.opportunities.map(opp => {
+      const prioColor = opp.priority === 'HIGH' ? 'text-emerald-700' : 'text-blue-700';
+      return `<div class="flex items-start gap-2 text-xs">
+        <span class="${prioColor} font-bold shrink-0">${opp.priority === 'HIGH' ? '\u25B2' : '\u25CF'}</span>
+        <div class="min-w-0">
+          <span class="font-semibold text-slate-800">"${escapeHtml(opp.query)}"</span>
+          <span class="text-slate-500 ml-1">(${escapeHtml(opp.reason)})</span>
+        </div>
+      </div>`;
+    }).join('');
+    unlockModule(
+      document.getElementById('demo-search-card'),
+      searchStatus, searchItems,
+      `${preset.search.opportunities.length} opportunities`,
+      searchHtml, 'text-blue-700',
+    );
+
+    // 3. Reddit Intel
+    const redditHtml = preset.reddit.discussions.map(d => {
+      return `<div class="flex items-start gap-2 text-xs">
+        <span class="text-orange-500 font-bold shrink-0">r/</span>
+        <div class="min-w-0">
+          <span class="font-semibold text-slate-800">${escapeHtml(d.subreddit)}</span> &mdash; ${escapeHtml(d.postTitle)}
+          <span class="text-slate-500 ml-1">(${d.score}pts, ${d.numComments} comments)</span>
+        </div>
+      </div>`;
+    }).join('');
+    unlockModule(
+      document.getElementById('demo-reddit-card'),
+      redditStatus, redditItems,
+      `${preset.reddit.discussions.length} discussions`,
+      redditHtml, 'text-orange-600',
+    );
+
+    // 4. AI Engine Footprint
+    const ai = preset.ai;
+    const aiResults = ai.results ?? [];
+    let scoreInterp: string;
+    if (ai.overallVisibilityScore >= 81) scoreInterp = 'Excellent AI Visibility';
+    else if (ai.overallVisibilityScore >= 61) scoreInterp = 'Strong AI Visibility';
+    else if (ai.overallVisibilityScore >= 41) scoreInterp = 'Moderate AI Visibility';
+    else scoreInterp = 'Low AI Visibility';
+    let aiExplanation: string;
+    if (ai.mentionedCount === 0) aiExplanation = "Your site wasn\u2019t mentioned in the AI responses we analyzed.";
+    else if (ai.citedCount > 0) aiExplanation = `Your site was linked in ${ai.citedCount} of ${ai.queryCount} AI responses.`;
+    else aiExplanation = `Your site was mentioned in ${ai.mentionedCount} of ${ai.queryCount} AI responses, but not linked.`;
+
+    let aiHtml = `<div class="flex items-center justify-between mb-1">
+      <span class="text-2xl font-black text-violet-700">${ai.overallVisibilityScore}<span class="text-sm font-normal text-slate-400"> / 100</span></span>
+    </div>
+    <div class="text-xs font-bold uppercase tracking-wide text-violet-700 mb-2">${scoreInterp}</div>
+    <p class="text-xs text-slate-600 mb-2">${escapeHtml(aiExplanation)}</p>`;
+    if (ai.mentionedCount === 0 && ai.topCompetitors.length > 0) {
+      aiHtml += `<p class="text-xs text-slate-500 mb-2">Competitors were mentioned more often in AI answers for your category.</p>`;
+    }
+    aiHtml += `<div class="space-y-1.5">`;
+    for (const r of aiResults.slice(0, 5)) {
+      const icon = r.mentioned ? '\u2713' : '\u2715';
+      const iconClass = r.mentioned ? 'text-emerald-600' : 'text-rose-500';
+      const label = r.cited ? 'Mentioned & linked' : r.mentioned ? 'Mentioned' : 'Not mentioned';
+      const labelClass = r.mentioned ? 'text-emerald-700 font-semibold' : 'text-rose-600 font-semibold';
+      aiHtml += `<div class="flex items-center gap-2 text-xs">
+        <span class="${iconClass} font-bold shrink-0">${icon}</span>
+        <span class="font-semibold text-slate-800 truncate">"${escapeHtml(r.topic)}"</span>
+        <span class="${labelClass} ml-auto shrink-0">${label}</span>
+      </div>`;
+    }
+    aiHtml += `</div>`;
+    if (aiStatus) { aiStatus.classList.remove('text-slate-500', 'text-amber-700'); aiStatus.classList.add('text-violet-700'); aiStatus.textContent = `${ai.queryCount} queries analyzed`; }
+    if (aiItems) aiItems.innerHTML = aiHtml;
+
+    // 5. Content Generator
+    const contentHtml = preset.content.recommendations.map(rec => {
+      const prioColor = rec.priority === 'HIGH' ? 'text-indigo-700' : 'text-slate-600';
+      return `<div class="flex items-start gap-2 text-xs">
+        <span class="${prioColor} font-bold shrink-0">${rec.priority === 'HIGH' ? '\u25B2' : '\u25CF'}</span>
+        <div class="min-w-0">
+          <span class="font-semibold text-slate-800">${escapeHtml(rec.title)}</span>
+          <span class="text-slate-500 ml-1">&mdash; ${escapeHtml(rec.rationale)}</span>
+        </div>
+      </div>`;
+    }).join('');
+    unlockModule(
+      document.getElementById('demo-content-card'),
+      contentStatus, contentItems,
+      `${preset.content.recommendations.length} briefs`,
+      contentHtml, 'text-indigo-600',
+    );
+
+    // Show results, hide progress
+    showResults();
+    if (ctaBox) ctaBox.classList.remove('hidden');
+    if (signupLink) signupLink.href = `/register?next=/app&website=${encodeURIComponent(preset.domain)}`;
+  }
+
+  /* ─── Real Scan Flow (unchanged) ──────────────────────────────────────── */
+
   function renderTechPanel(domain: string, tech: {
     healthScore: number | null;
     pagesCrawled: number;
@@ -303,18 +756,12 @@
     if (techStatus) techStatus.textContent = `${healthScore}% (${scoreLabel(healthScore)})`;
 
     const lines: string[] = [];
-
-    // 1. Pages crawled
     if (ps.total > 0) lines.push(`\u2713 ${ps.total} page${ps.total === 1 ? '' : 's'} crawled`);
-
-    // 2. HTTP 200 status
     if (ps.total > 0 && ps.http200 === ps.total) {
       lines.push(`\u2713 ${ps.http200}/${ps.total} pages return 200`);
     } else if (ps.total > 0 && ps.http200 > 0) {
       lines.push(`\u26A0 ${ps.http200}/${ps.total} pages return 200`);
     }
-
-    // 3. Title tag health
     if (ps.total > 0) {
       const titleIssues = (tech.issueCounts['TITLE_TOO_SHORT'] ?? 0) + (tech.issueCounts['TITLE_TOO_LONG'] ?? 0) + (tech.issueCounts['MISSING_TITLE'] ?? 0);
       if (titleIssues === 0) {
@@ -330,8 +777,6 @@
         lines.push(`\u26A0 ${parts.join(', ')} — ${ps.withTitle}/${ps.total} have titles`);
       }
     }
-
-    // 4. Meta description health
     if (ps.total > 0) {
       const metaIssues = (tech.issueCounts['MISSING_META_DESCRIPTION'] ?? 0) + (tech.issueCounts['DUPLICATE_META_DESCRIPTION'] ?? 0);
       if (metaIssues === 0) {
@@ -345,34 +790,17 @@
         lines.push(`\u26A0 ${parts.join(', ')} — ${ps.withMetaDescription}/${ps.total} present`);
       }
     }
-
-    // 5. Canonical coverage
     if (ps.total > 0 && ps.withCanonical === ps.total) {
       lines.push(`\u2713 ${ps.withCanonical}/${ps.total} canonical tags set`);
     } else if (ps.withCanonical > 0) {
       lines.push(`\u26A0 ${ps.withCanonical}/${ps.total} canonical tags set`);
     }
-
-    // 6. robots.txt
-    if (tech.robotsFound) {
-      lines.push('\u2713 robots.txt found');
-    } else {
-      lines.push('\u26A0 Missing robots.txt');
-    }
-
-    // 7. sitemap.xml
-    if (tech.sitemapFound) {
-      lines.push('\u2713 sitemap.xml found');
-    } else {
-      lines.push('\u26A0 Missing sitemap.xml');
-    }
-
-    // 8. Broken links (if any)
+    if (tech.robotsFound) lines.push('\u2713 robots.txt found');
+    else lines.push('\u26A0 Missing robots.txt');
+    if (tech.sitemapFound) lines.push('\u2713 sitemap.xml found');
+    else lines.push('\u26A0 Missing sitemap.xml');
     const brokenLinks = tech.issueCounts['BROKEN_INTERNAL_LINK'] ?? 0;
-    if (brokenLinks > 0) {
-      lines.push(`\u26A0 ${brokenLinks} broken internal link${brokenLinks === 1 ? '' : 's'}`);
-    }
-
+    if (brokenLinks > 0) lines.push(`\u26A0 ${brokenLinks} broken internal link${brokenLinks === 1 ? '' : 's'}`);
     if (lines.length === 0) lines.push('\u2713 No technical issues found');
 
     if (techItems) {
@@ -381,8 +809,6 @@
         return `<div class="flex items-center gap-1.5 ${isGood ? 'text-emerald-700' : 'text-amber-700'}">${escapeHtml(line)}</div>`;
       }).join('');
     }
-
-    // Show conversion CTA
     if (techCta) techCta.classList.remove('hidden');
     if (techSignup) techSignup.href = `/register?next=/app&website=${encodeURIComponent(domain)}`;
   }
@@ -417,7 +843,6 @@
       if (aiItems) aiItems.innerHTML = '<div class="text-slate-400">No AI visibility results for this crawl.</div>';
       return;
     }
-
     const score = ai.displayScore ?? ai.overallVisibilityScore ?? 0;
     const mentioned = ai.mentionedCount ?? 0;
     const cited = ai.citedCount ?? 0;
@@ -429,63 +854,47 @@
       aiStatus.classList.add('text-violet-700');
       aiStatus.textContent = `${queryCount} quer${queryCount === 1 ? 'y' : 'ies'} analyzed`;
     }
-
     let scoreInterpretation: string;
     if (score >= 81) scoreInterpretation = 'Excellent AI Visibility';
     else if (score >= 61) scoreInterpretation = 'Strong AI Visibility';
     else if (score >= 41) scoreInterpretation = 'Moderate AI Visibility';
     else if (score >= 21) scoreInterpretation = 'Low AI Visibility';
     else scoreInterpretation = 'Very Low AI Visibility';
-
     let explanation: string;
-    if (mentioned === 0) {
-      explanation = "Your site wasn\u2019t mentioned in the AI responses we analyzed.";
-    } else if (cited > 0) {
-      explanation = `Your site was linked in ${cited} of ${queryCount} AI responses.`;
-    } else {
-      explanation = `Your site was mentioned in ${mentioned} of ${queryCount} AI responses, but not linked.`;
-    }
+    if (mentioned === 0) explanation = "Your site wasn\u2019t mentioned in the AI responses we analyzed.";
+    else if (cited > 0) explanation = `Your site was linked in ${cited} of ${queryCount} AI responses.`;
+    else explanation = `Your site was mentioned in ${mentioned} of ${queryCount} AI responses, but not linked.`;
 
-    let html = `
-      <div class="flex items-center justify-between mb-1">
-        <span class="text-2xl font-black text-violet-700">${score}<span class="text-sm font-normal text-slate-400"> / 100</span></span>
-      </div>
-      <div class="text-xs font-bold uppercase tracking-wide text-violet-700 mb-2">${scoreInterpretation}</div>
-      <p class="text-xs text-slate-600 mb-2">${escapeHtml(explanation)}</p>
-    `;
-
+    let html = `<div class="flex items-center justify-between mb-1">
+      <span class="text-2xl font-black text-violet-700">${score}<span class="text-sm font-normal text-slate-400"> / 100</span></span>
+    </div>
+    <div class="text-xs font-bold uppercase tracking-wide text-violet-700 mb-2">${scoreInterpretation}</div>
+    <p class="text-xs text-slate-600 mb-2">${escapeHtml(explanation)}</p>`;
     if (mentioned === 0 && topCompetitors.length > 0) {
       html += `<p class="text-xs text-slate-500 mb-2">Competitors were mentioned more often in AI answers for your category.</p>`;
     }
-
     html += `<div class="space-y-1.5">`;
     for (const r of results.slice(0, 5)) {
       const icon = r.mentioned ? '\u2713' : '\u2715';
       const iconClass = r.mentioned ? 'text-emerald-600' : 'text-rose-500';
       const label = r.cited ? 'Mentioned & linked' : r.mentioned ? 'Mentioned' : 'Not mentioned';
       const labelClass = r.mentioned ? 'text-emerald-700 font-semibold' : 'text-rose-600 font-semibold';
-      html += `
-        <div class="flex items-center gap-2 text-xs">
-          <span class="${iconClass} font-bold shrink-0">${icon}</span>
-          <span class="font-semibold text-slate-800 truncate">"${escapeHtml(r.topic)}"</span>
-          <span class="${labelClass} ml-auto shrink-0">${label}</span>
-        </div>
-      `;
+      html += `<div class="flex items-center gap-2 text-xs">
+        <span class="${iconClass} font-bold shrink-0">${icon}</span>
+        <span class="font-semibold text-slate-800 truncate">"${escapeHtml(r.topic)}"</span>
+        <span class="${labelClass} ml-auto shrink-0">${label}</span>
+      </div>`;
     }
     html += `</div>`;
-
-    html += `
-      <div class="pt-3 mt-3 border-t border-violet-100 text-center space-y-2">
-        <p class="text-[11px] font-semibold text-slate-700">Want the full AI visibility analysis?</p>
-        <p class="text-[11px] text-slate-500 leading-relaxed">See which competitors are being recommended, where your site is missing, and which queries represent opportunities.</p>
-        <a id="demo-ai-signup" href="/register" class="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all">
-          Create your free account
-          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-        </a>
-        <p class="text-[10px] text-slate-400">No credit card required.</p>
-      </div>
-    `;
-
+    html += `<div class="pt-3 mt-3 border-t border-violet-100 text-center space-y-2">
+      <p class="text-[11px] font-semibold text-slate-700">Want the full AI visibility analysis?</p>
+      <p class="text-[11px] text-slate-500 leading-relaxed">See which competitors are being recommended, where your site is missing, and which queries represent opportunities.</p>
+      <a id="demo-ai-signup" href="/register" class="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all">
+        Create your free account
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+      </a>
+      <p class="text-[10px] text-slate-400">No credit card required.</p>
+    </div>`;
     if (aiItems) aiItems.innerHTML = html;
   }
 
@@ -493,48 +902,37 @@
     const raw = domainInput?.value.trim() ?? '';
     const websiteUrl = toWebsiteUrl(raw);
     if (!websiteUrl) { showError('Please enter a website URL.'); return; }
-
     const domain = domainKey(raw);
     if (signupLink) signupLink.href = `/register?next=/app&website=${encodeURIComponent(domain)}`;
-
     if (runBtn) { runBtn.disabled = true; runBtn.classList.add('opacity-60', 'cursor-wait'); }
     showProgress('Scanning website...', 'Crawling pages and analyzing technical SEO', 20);
-
     try {
       const res = await fetch(`${API_BASE}/api/demo/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ websiteUrl }),
       });
-
       if (res.status === 429) {
         const body = await res.json().catch(() => null);
         showError(body?.error?.message ?? 'Too many demo scans. Please try again later.');
         return;
       }
-
       if (!res.ok) {
         const body = await res.json().catch(() => null);
         showError(body?.error?.message ?? `Backend request failed (${res.status})`);
         return;
       }
-
       const data = await res.json();
-
       if (data.status === 'FAILED') {
         showError(data.errorMessage ?? 'The scan failed.');
         return;
       }
-
       showProgress('Analyzing results...', 'Computing health score and AI visibility', 85);
       await sleep(300);
-
       if (data.tech) renderTechPanel(domain, data.tech);
       if (data.ai) renderAiPanel(data.ai);
-
       const aiSignup = document.getElementById('demo-ai-signup') as HTMLAnchorElement | null;
       if (aiSignup) aiSignup.href = `/register?next=/app&website=${encodeURIComponent(domain)}`;
-
       showResults();
       if (ctaBox) ctaBox.classList.remove('hidden');
     } catch (err) {
@@ -544,7 +942,9 @@
     }
   }
 
-  // Persona chips
+  /* ─── Event Handlers ──────────────────────────────────────────────────── */
+
+  // Persona chips — instantly render demo preset
   personaBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       personaBtns.forEach(b => {
@@ -552,14 +952,16 @@
       });
       btn.className = 'demo-persona-btn active px-3 py-1.5 rounded-lg bg-[#0c1021] text-white text-xs font-semibold cursor-pointer transition-all';
       const domain = btn.getAttribute('data-domain') || 'resumeforge.io';
+      const category = btn.getAttribute('data-category') || 'saas';
       if (domainInput) domainInput.value = domain;
+      renderDemoPreset(category);
     });
   });
 
-  // Run button
+  // Run button — real scan only
   runBtn?.addEventListener('click', () => void runDemoScan());
 
-  // Enter key
+  // Enter key — real scan only
   domainInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); void runDemoScan(); }
   });

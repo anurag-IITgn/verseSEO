@@ -29,8 +29,13 @@ pnpm-debug.log*
 
 refrences/
 
+# visual verification
+screenshots/
+
 # wrangler files
 .wrangler
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+references/

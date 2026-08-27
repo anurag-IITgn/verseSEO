@@ -41,6 +41,19 @@ Components follow a consistent pattern:
 - Visual components are passed as `<slot />` children of FeatureSection
 - Inline `<script>` tags (no framework) handle interactivity — Astro bundles these automatically
 
+## Animation & Motion Rules
+
+1. **Always check `prefers-reduced-motion`** — disable or simplify animations for users who request reduced motion.
+2. **Use existing keyframes** (`fadeIn`, `floatSlow`, `pulseSlow`) and Tailwind's `animate-*` utilities. Do not create new keyframe animations without adding them to `global.css`.
+3. **Scroll-driven animations** (like ModulesExperience) must:
+   - Use `requestAnimationFrame` for scroll handlers (never raw scroll events without throttling)
+   - Keep `overflow: visible` on sticky containers — never `overflow: hidden` on presentation areas
+   - Use the simplest reliable transition architecture appropriate to the component. For mutually exclusive module presentations, opacity/transform transitions with properly layered elements are allowed when they do not cause clipping or layout instability. Avoid JS-measured heights unless genuinely necessary.
+   - Never solve an oversized visual by creating an internal scrolling card unless the UX explicitly requires it. Prefer responsive sizing, natural layout, and appropriate viewport-aware dimensions so the complete important content remains visible.
+4. **Canvas/particle effects** must be absolutely positioned and `pointer-events: none` — they never participate in layout flow.
+5. **Transitions on interactive elements:** `transition-all duration-300` or `duration-500` with `cubic-bezier(0.16, 1, 0.3, 1)` easing.
+6. **No animation should cause content to extend outside the viewport or clip visible content.**
+
 ## Documentation
 
 Astro docs MCP server is configured in `opencode.json`. Use the Astro docs search tool for framework questions.

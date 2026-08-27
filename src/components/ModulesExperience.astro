@@ -1,0 +1,283 @@
+---
+// ModulesExperience.astro — Scroll-driven 5-module showcase
+import TechnicalSeoVisual from './visuals/TechnicalSeoVisual.astro';
+import SearchOpportunityVisual from './visuals/SearchOpportunityVisual.astro';
+import RedditOpportunityVisual from './visuals/RedditOpportunityVisual.astro';
+import AiVisibilityVisual from './visuals/AiVisibilityVisual.astro';
+import ContentGeneratorVisual from './visuals/ContentGeneratorVisual.astro';
+
+const modules = [
+  { num: '01', label: 'Technical SEO', tagClass: 'tag-emerald', bulletClass: 'bullet-emerald' },
+  { num: '02', label: 'Search Opportunities', tagClass: 'tag-blue', bulletClass: 'bullet-blue' },
+  { num: '03', label: 'Reddit Intel', tagClass: 'tag-orange', bulletClass: 'bullet-orange' },
+  { num: '04', label: 'AI Visibility', tagClass: 'tag-violet', bulletClass: 'bullet-violet' },
+  { num: '05', label: 'Content Engine', tagClass: 'tag-indigo', bulletClass: 'bullet-indigo' },
+];
+---
+
+<section class="modules-experience" id="modules">
+
+  <!-- Background layers (absolute, out of flow) -->
+  <div class="modules-ambient" aria-hidden="true"></div>
+  <div id="modules-glow-1" aria-hidden="true"></div>
+  <div id="modules-glow-2" aria-hidden="true"></div>
+
+  <!-- Intro: normal flow, scrolls away naturally -->
+  <div class="modules-intro" id="modules-intro">
+    <div class="modules-badge">The 5 Core Modules</div>
+    <h2 class="modules-title">Everything you need to win visibility across the modern web.</h2>
+    <p class="modules-subtitle">From technical website health to Reddit discussions and generative AI citations — five tailored intelligence modules built for real founders.</p>
+    <div class="modules-progress" id="modules-progress">
+      {modules.map((m, i) => (
+        <Fragment>
+          {i > 0 && <span class="modules-step-connector"></span>}
+          <span class:list={['modules-step-dot', { active: i === 0 }]} data-step={i}>{m.num}</span>
+        </Fragment>
+      ))}
+    </div>
+  </div>
+
+  <!-- Scroll container: provides the scroll distance for module transitions -->
+  <div class="modules-scroll-container">
+
+    <!-- Sticky presentation: pinned while scrolling through modules -->
+    <div class="modules-presentation" id="modules-presentation">
+
+      <!-- Content: sidebar + card -->
+      <div class="modules-content">
+
+        <!-- Left navigation -->
+        <nav class="modules-nav" aria-label="Module navigation">
+          {modules.map((m, i) => (
+            <div class:list={['modules-nav-item', { active: i === 0 }]} data-mod={i}>
+              <span class="modules-nav-num">{m.num}</span>
+              <span class="modules-nav-label">{m.label}</span>
+            </div>
+          ))}
+        </nav>
+
+        <!-- Right: single active card -->
+        <div class="modules-card-area" id="modules-card-area">
+
+          <!-- Module 01: Technical SEO -->
+          <div class="modules-card active" data-mod="0">
+            <div class="modules-card-shell">
+              <div class="modules-card-head">
+                <div class="modules-card-tag tag-emerald">Module 01 — Technical SEO</div>
+                <h3 class="modules-card-title">Find what is holding your website back.</h3>
+                <p class="modules-card-desc">You don't need a 100-page enterprise audit. VerseSEO scans critical crawling foundations in seconds — SSL, XML sitemaps, canonical tags, missing metadata, and broken links — with plain-English fix steps.</p>
+              </div>
+              <div class="modules-card-mockup">
+                <TechnicalSeoVisual />
+              </div>
+              <ul class="modules-card-bullets">
+                <li class="bullet-emerald"><strong>Clear 0–100 Health Score</strong><span>Understand your website's baseline indexability without deciphering complicated jargon.</span></li>
+                <li class="bullet-emerald"><strong>Crawl Roadblock Detection</strong><span>Ensure Google bots, Bing crawlers, and AI scrapers can parse and index every critical page.</span></li>
+                <li class="bullet-emerald"><strong>Actionable Fix Guidance</strong><span>Step-by-step instructions designed for non-technical founders to resolve warnings in minutes.</span></li>
+              </ul>
+              <a href="#demo" class="modules-card-cta">Simulate Technical SEO in Live Demo →</a>
+            </div>
+          </div>
+
+          <!-- Module 02: Search Opportunities -->
+          <div class="modules-card" data-mod="1">
+            <div class="modules-card-shell">
+              <div class="modules-card-head">
+                <div class="modules-card-tag tag-blue">Module 02 — Search Opportunities</div>
+                <h3 class="modules-card-title">Stop guessing what to write.</h3>
+                <p class="modules-card-desc">Discover high-intent, low-competition keywords that your exact potential customers are typing into search engines right now. Filter by opportunity score, search volume, and commercial intent.</p>
+              </div>
+              <div class="modules-card-mockup">
+                <SearchOpportunityVisual />
+              </div>
+              <ul class="modules-card-bullets">
+                <li class="bullet-blue"><strong>Opportunity Scoring (0–100)</strong><span>Instantly identify low-hanging fruit keywords with high buyer interest and low competition.</span></li>
+                <li class="bullet-blue"><strong>Search Intent Alignment</strong><span>Distinguish between informational research queries and buyers ready to sign up.</span></li>
+                <li class="bullet-blue"><strong>Revenue-Focused Terms</strong><span>Prioritize keywords that have high conversion potential for your specific product category.</span></li>
+              </ul>
+              <a href="#demo" class="modules-card-cta">Simulate Search Opportunities in Live Demo →</a>
+            </div>
+          </div>
+
+          <!-- Module 03: Reddit Intel -->
+          <div class="modules-card" data-mod="2">
+            <div class="modules-card-shell">
+              <div class="modules-card-head">
+                <div class="modules-card-tag tag-orange">Module 03 — Reddit Opportunities</div>
+                <h3 class="modules-card-title">Find the conversations that matter.</h3>
+                <p class="modules-card-desc">Listen to high-intent buyer discussions across niche communities. When users ask for recommendations or vent about competitors, you'll know immediately. 100% organic market listening — zero auto-spam.</p>
+              </div>
+              <div class="modules-card-mockup">
+                <RedditOpportunityVisual />
+              </div>
+              <ul class="modules-card-bullets">
+                <li class="bullet-orange"><strong>High-Intent Community Radar</strong><span>Scans active subreddits for authentic discussions where users are seeking solutions in your niche.</span></li>
+                <li class="bullet-orange"><strong>Zero Spam / Organic Value Only</strong><span>We never post fake comments. We identify where you can join conversations authentically and add value.</span></li>
+                <li class="bullet-orange"><strong>Sentiment & Relevance Scoring</strong><span>Focus only on threads with high purchase intent and active community engagement.</span></li>
+              </ul>
+              <a href="#demo" class="modules-card-cta">Simulate Reddit Intel in Live Demo →</a>
+            </div>
+          </div>
+
+          <!-- Module 04: AI Visibility -->
+          <div class="modules-card" data-mod="3">
+            <div class="modules-card-shell">
+              <div class="modules-card-head">
+                <div class="modules-card-tag tag-violet">Module 04 — AI Visibility</div>
+                <h3 class="modules-card-title">Measure your brand's footprint in AI answers.</h3>
+                <p class="modules-card-desc">Millions of buyers now ask ChatGPT, Perplexity, Claude, and Gemini for direct product recommendations. VerseSEO tracks whether AI models mention your brand and cites your content as a verified source.</p>
+              </div>
+              <div class="modules-card-mockup">
+                <AiVisibilityVisual />
+              </div>
+              <ul class="modules-card-bullets">
+                <li class="bullet-violet"><strong>Multi-Model Citation Tracker</strong><span>Monitor ChatGPT (GPT-4o), Claude 3.5 Sonnet, Perplexity AI, and Google Gemini simultaneously.</span></li>
+                <li class="bullet-violet"><strong>Competitor Mention Rate</strong><span>See which competing brands are being recommended in your target prompt categories.</span></li>
+                <li class="bullet-violet"><strong>RAG & Citation Optimization</strong><span>Actionable steps to get your content indexed into live AI answer sources and knowledge graphs.</span></li>
+              </ul>
+              <a href="#demo" class="modules-card-cta">Simulate AI Visibility in Live Demo →</a>
+            </div>
+          </div>
+
+          <!-- Module 05: Content Engine -->
+          <div class="modules-card" data-mod="4">
+            <div class="modules-card-shell">
+              <div class="modules-card-head">
+                <div class="modules-card-tag tag-indigo">Module 05 — Content Generator</div>
+                <h3 class="modules-card-title">Turn discovered opportunities into high-ranking content briefs.</h3>
+                <p class="modules-card-desc">Bridge the gap between raw keyword data and publish-ready articles. Generate structured SEO briefs and draft articles tailored for Google rankings and AI citations in seconds.</p>
+              </div>
+              <div class="modules-card-mockup">
+                <ContentGeneratorVisual />
+              </div>
+              <ul class="modules-card-bullets">
+                <li class="bullet-indigo"><strong>One-Click Structured Briefs</strong><span>Auto-generates recommended word counts, search intent targets, and H2/H3 section outlines.</span></li>
+                <li class="bullet-indigo"><strong>Semantic Entity Integration</strong><span>Embeds natural LSI keywords and entities that search engines and AI models expect to see.</span></li>
+                <li class="bullet-indigo"><strong>Export Ready</strong><span>Download clean Markdown or copy straight to WordPress, Ghost, or your custom CMS.</span></li>
+              </ul>
+              <a href="#demo" class="modules-card-cta">Simulate Content Engine in Live Demo →</a>
+            </div>
+          </div>
+
+        </div><!-- /card-area -->
+
+      </div><!-- /content -->
+
+    </div><!-- /presentation -->
+
+  </div><!-- /scroll-container -->
+
+</section>
+
+<script>
+(function() {
+  const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const section = document.querySelector('.modules-experience') as HTMLElement;
+  const intro = document.getElementById('modules-intro');
+  const container = document.querySelector('.modules-scroll-container') as HTMLElement;
+  const presentation = document.getElementById('modules-presentation');
+  const cards = document.querySelectorAll<HTMLElement>('.modules-card');
+  const navItems = document.querySelectorAll<HTMLElement>('.modules-nav-item');
+  const stepDots = document.querySelectorAll<HTMLElement>('.modules-step-dot');
+  const glow1 = document.getElementById('modules-glow-1');
+  const glow2 = document.getElementById('modules-glow-2');
+  const ambient = section?.querySelector('.modules-ambient') as HTMLElement;
+
+  if (!section || !container || !presentation) return;
+
+  const glowColors = [
+    ['rgba(16,185,129,0.12)', 'rgba(16,185,129,0.04)'],
+    ['rgba(59,130,246,0.12)', 'rgba(59,130,246,0.04)'],
+    ['rgba(249,115,22,0.12)', 'rgba(249,115,22,0.04)'],
+    ['rgba(139,92,246,0.12)', 'rgba(139,92,246,0.04)'],
+    ['rgba(99,102,241,0.12)', 'rgba(99,102,241,0.04)'],
+  ];
+
+  const glowPositions = [
+    { x1: '25%', y1: '20%', x2: '70%', y2: '75%' },
+    { x1: '30%', y1: '25%', x2: '65%', y2: '70%' },
+    { x1: '35%', y1: '30%', x2: '60%', y2: '65%' },
+    { x1: '40%', y1: '35%', x2: '55%', y2: '60%' },
+    { x1: '45%', y1: '40%', x2: '50%', y2: '55%' },
+  ];
+
+  let currentIdx = -1;
+
+  function activate(idx: number) {
+    if (idx === currentIdx) return;
+    currentIdx = idx;
+
+    cards.forEach((c, i) => {
+      c.classList.toggle('active', i === idx);
+    });
+
+    navItems.forEach((n, i) => n.classList.toggle('active', i === idx));
+    stepDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+
+    if (idx >= 0 && idx < 5) {
+      const [c1, c2] = glowColors[idx];
+      const pos = glowPositions[idx];
+      if (glow1) { 
+        glow1.style.opacity = '1'; 
+        glow1.style.background = c1;
+        glow1.style.left = pos.x1;
+        glow1.style.top = pos.y1;
+      }
+      if (glow2) { 
+        glow2.style.opacity = '1'; 
+        glow2.style.background = c2;
+        glow2.style.right = pos.x2;
+        glow2.style.bottom = pos.y2;
+      }
+    } else {
+      if (glow1) glow1.style.opacity = '0';
+      if (glow2) glow2.style.opacity = '0';
+    }
+  }
+
+  let ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+
+      const containerRect = container.getBoundingClientRect();
+      const containerTop = containerRect.top;
+      const containerHeight = containerRect.height;
+      const vh = window.innerHeight;
+
+      // How far into the scroll container have we scrolled
+      // containerTop starts positive (below viewport) and goes negative as we scroll past
+      // scrolled = -containerTop gives us how far past the container start we've scrolled
+      const scrolled = -containerTop;
+      const scrollable = containerHeight - vh;
+
+      if (scrollable <= 0) { activate(0); return; }
+
+      const progress = Math.max(0, Math.min(1, scrolled / scrollable));
+
+      // 5 modules: 0-4
+      // Each gets ~20% of the scroll range
+      let idx: number;
+      if (progress < 0.02)      idx = -1; // Before first module
+      else if (progress < 0.18) idx = 0;  // Module 1
+      else if (progress < 0.36) idx = 1;  // Module 2
+      else if (progress < 0.54) idx = 2;  // Module 3
+      else if (progress < 0.72) idx = 3;  // Module 4
+      else if (progress < 0.90) idx = 4;  // Module 5
+      else                       idx = 4;  // After last module
+
+      activate(idx);
+    });
+  }
+
+  activate(0);
+  if (!prefersReducedMotion) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+})();
+</script>
