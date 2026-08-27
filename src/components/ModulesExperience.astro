@@ -172,6 +172,7 @@ const modules = [
 <script>
 (function() {
   const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 639px)').matches;
 
   const section = document.querySelector('.modules-experience') as HTMLElement;
   const intro = document.getElementById('modules-intro');
@@ -250,8 +251,6 @@ const modules = [
       const vh = window.innerHeight;
 
       // How far into the scroll container have we scrolled
-      // containerTop starts positive (below viewport) and goes negative as we scroll past
-      // scrolled = -containerTop gives us how far past the container start we've scrolled
       const scrolled = -containerTop;
       const scrollable = containerHeight - vh;
 
@@ -259,19 +258,22 @@ const modules = [
 
       const progress = Math.max(0, Math.min(1, scrolled / scrollable));
 
-      // 5 modules: 0-4
-      // Each gets ~20% of the scroll range
+      // 5 modules: 0-4, each gets ~20% of scroll range
       let idx: number;
-      if (progress < 0.02)      idx = -1; // Before first module
-      else if (progress < 0.18) idx = 0;  // Module 1
-      else if (progress < 0.36) idx = 1;  // Module 2
-      else if (progress < 0.54) idx = 2;  // Module 3
-      else if (progress < 0.72) idx = 3;  // Module 4
-      else if (progress < 0.90) idx = 4;  // Module 5
-      else                       idx = 4;  // After last module
+      if (progress < 0.10)      idx = 0;  // Module 1
+      else if (progress < 0.30) idx = 1;  // Module 2
+      else if (progress < 0.50) idx = 2;  // Module 3
+      else if (progress < 0.70) idx = 3;  // Module 4
+      else                       idx = 4;  // Module 5
 
       activate(idx);
     });
+  }
+
+  // On mobile, show all cards immediately — no scroll-driven switching
+  if (isMobile) {
+    activate(0);
+    return;
   }
 
   activate(0);
