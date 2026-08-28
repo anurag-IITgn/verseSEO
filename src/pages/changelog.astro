@@ -1,0 +1,88 @@
+---
+// src/pages/changelog.astro
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface ChangelogEntry {
+  date: string;
+  version?: string;
+  title: string;
+  items: string[];
+}
+
+const entries: ChangelogEntry[] = [
+  {
+    date: "August 28, 2026",
+    title: "Marketing Site & Legal Pages",
+    items: [
+      "Launched public marketing site with product overview, pricing, and FAQ",
+      "Added Privacy Policy and Terms of Service pages",
+      "Added Security Overview, About, Zero-Spam Pledge, Roadmap, and How Discovery Works pages",
+      "Added Product Changelog page",
+      "Updated footer navigation with new page links"
+    ]
+  },
+  {
+    date: "August 26, 2026",
+    title: "Launch Week",
+    items: [
+      "VerseSEO product launch",
+      "User authentication system with email verification",
+      "Project management and scan history",
+      "Technical Website Health Scanner (Module 01)",
+      "Search & Intent Discovery (Module 02)",
+      "Reddit Opportunity Listening (Module 03)",
+      "AI/LLM Visibility Radar (Module 04)",
+      "Content Generator & Briefs (Module 05)",
+      "Live Microtool Simulator on marketing site",
+      "Pricing calculator with plan comparison",
+      "Newsletter subscription system"
+    ]
+  }
+];
+---
+
+<Layout
+  title="Product Changelog — VerseSEO"
+  description="See what's new in VerseSEO. Product updates, feature launches, and improvements."
+  canonical="https://verseseo.com/changelog"
+>
+  <Navbar />
+
+  <main class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Product Changelog</h1>
+      <p class="text-sm text-slate-500 mb-10">What's new in VerseSEO</p>
+
+      <div class="space-y-10">
+        {entries.map((entry) => (
+          <section class="relative pl-6 border-l-2 border-slate-200">
+            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-600 border-4 border-[#FAF9F5]"></div>
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
+              <time class="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">{entry.date}</time>
+              {entry.version && (
+                <span class="text-xs font-mono text-slate-400">v{entry.version}</span>
+              )}
+            </div>
+            <h2 class="text-lg font-bold text-slate-900 mb-3">{entry.title}</h2>
+            <ul class="space-y-1.5">
+              {entry.items.map((item) => (
+                <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0"></span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+
+      <div class="mt-12 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+        <p class="text-sm text-slate-600">This changelog covers notable product changes. For a complete history, check our <a href="https://github.com/anurag-IITgn/verseSEO" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">GitHub repository</a>.</p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

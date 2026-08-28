@@ -1,0 +1,84 @@
+---
+// CookieConsent.astro — Lightweight cookie preferences banner
+---
+
+<div id="cookie-consent-banner" class="fixed bottom-0 inset-x-0 z-50 hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+    <div class="bg-[#0c1021] border border-white/10 rounded-2xl p-5 sm:p-6 shadow-2xl">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div class="flex-1">
+          <h3 class="text-sm font-bold text-white mb-1">Cookie Preferences</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            VerseSEO uses essential cookies for authentication and session management. 
+            We also use Google Analytics 4 to collect anonymized usage data. 
+            You can opt out of analytics below.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 shrink-0">
+          <button
+            id="cookie-reject-analytics"
+            type="button"
+            class="px-4 py-2 text-xs font-semibold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors cursor-pointer"
+          >
+            Essential Only
+          </button>
+          <button
+            id="cookie-accept-all"
+            type="button"
+            class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors cursor-pointer"
+          >
+            Accept All
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BANNER_ID = 'cookie-consent-banner';
+  const STORAGE_KEY = 'verseseo_cookie_consent';
+
+  function getConsent(): string | null {
+    try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+  }
+
+  function setConsent(value: string) {
+    try { localStorage.setItem(STORAGE_KEY, value); } catch {}
+  }
+
+  function showBanner() {
+    document.getElementById(BANNER_ID)?.classList.remove('hidden');
+  }
+
+  function hideBanner() {
+    document.getElementById(BANNER_ID)?.classList.add('hidden');
+  }
+
+  // Show banner if no consent recorded
+  if (!getConsent()) {
+    // Small delay so it doesn't flash on page load
+    setTimeout(showBanner, 1500);
+  }
+
+  // Accept All
+  document.getElementById('cookie-accept-all')?.addEventListener('click', () => {
+    setConsent('all');
+    hideBanner();
+  });
+
+  // Essential Only (reject analytics)
+  document.getElementById('cookie-reject-analytics')?.addEventListener('click', () => {
+    setConsent('essential');
+    hideBanner();
+    // Disable GA if present
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('consent', 'default', { analytics_storage: 'denied' });
+    }
+  });
+
+  // Listen for custom event from footer/security page
+  window.addEventListener('open-cookie-preferences', () => {
+    showBanner();
+  });
+</script>

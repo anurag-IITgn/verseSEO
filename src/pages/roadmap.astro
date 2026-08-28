@@ -1,0 +1,188 @@
+---
+// src/pages/roadmap.astro
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface RoadmapItem {
+  title: string;
+  description: string;
+}
+
+const shipped: RoadmapItem[] = [
+  {
+    title: "Technical Website Health Scanner",
+    description: "Crawl any website for SEO issues, broken links, missing meta tags, and technical problems with actionable fixes."
+  },
+  {
+    title: "Search & Intent Discovery",
+    description: "Keyword and search opportunity analysis to find high-intent queries you're missing."
+  },
+  {
+    title: "Reddit Opportunity Listening",
+    description: "Discover relevant Reddit conversations where you can genuinely provide value."
+  },
+  {
+    title: "AI/LLM Visibility Radar",
+    description: "Track how your brand appears across ChatGPT, Claude, and Perplexity."
+  },
+  {
+    title: "Content Generator & Briefs",
+    description: "Generate SEO-optimized content briefs and drafts for both search and AI answer engines."
+  },
+  {
+    title: "Live Microtool Simulator",
+    description: "Interactive demo of the scanning and analysis pipeline on the marketing site."
+  },
+  {
+    title: "Pricing Calculator",
+    description: "Dynamic pricing page with plan comparison and feature breakdown."
+  },
+  {
+    title: "User Authentication & Projects",
+    description: "Account system with project management, scan history, and settings."
+  },
+  {
+    title: "Newsletter Subscription",
+    description: "Weekly AI and SEO intelligence updates via email."
+  }
+];
+
+const inProgress: RoadmapItem[] = [
+  {
+    title: "Advanced Crawl Analytics",
+    description: "Deeper technical analysis with historical tracking, trend visualization, and automated re-crawl scheduling."
+  },
+  {
+    title: "AI Citation Tracking Expansion",
+    description: "Broader coverage of AI engines and more detailed citation source attribution."
+  }
+];
+
+const planned: RoadmapItem[] = [
+  {
+    title: "Competitor Analysis",
+    description: "Compare your visibility metrics against competitors across search, Reddit, and AI engines."
+  },
+  {
+    title: "Automated Re-crawl Alerts",
+    description: "Get notified when new technical issues are detected on your tracked websites."
+  },
+  {
+    title: "Team Collaboration",
+    description: "Shared projects and team member access for organizations."
+  }
+];
+
+const exploring: RoadmapItem[] = [
+  {
+    title: "Browser Extension",
+    description: "Quick-access visibility insights while browsing any website."
+  },
+  {
+    title: "API Access",
+    description: "Programmatic access to VerseSEO's analysis engine for integrations and custom workflows."
+  },
+  {
+    title: "White-Label Reports",
+    description: "Branded PDF reports for agencies and consultants to share with clients."
+  }
+];
+---
+
+<Layout
+  title="Public Roadmap — VerseSEO"
+  description="See what VerseSEO has shipped, what's in progress, and what we're exploring. Transparent product development."
+  canonical="https://verseseo.com/roadmap"
+>
+  <Navbar />
+
+  <main class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Public Roadmap</h1>
+      <p class="text-sm text-slate-500 mb-10">What we've built, what we're working on, and what we're thinking about</p>
+
+      <div class="space-y-12">
+
+        <!-- Shipped -->
+        <section>
+          <div class="flex items-center gap-3 mb-5">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/60">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Shipped
+            </span>
+          </div>
+          <div class="space-y-4">
+            {shipped.map((item) => (
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+                <h3 class="text-base font-bold text-slate-900">{item.title}</h3>
+                <p class="mt-1.5 text-sm text-slate-600 leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- In Progress -->
+        <section>
+          <div class="flex items-center gap-3 mb-5">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200/60">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+              In Progress
+            </span>
+          </div>
+          <div class="space-y-4">
+            {inProgress.map((item) => (
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+                <h3 class="text-base font-bold text-slate-900">{item.title}</h3>
+                <p class="mt-1.5 text-sm text-slate-600 leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- Planned -->
+        <section>
+          <div class="flex items-center gap-3 mb-5">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800 border border-orange-200/60">
+              <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+              Planned
+            </span>
+          </div>
+          <div class="space-y-4">
+            {planned.map((item) => (
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+                <h3 class="text-base font-bold text-slate-900">{item.title}</h3>
+                <p class="mt-1.5 text-sm text-slate-600 leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- Exploring -->
+        <section>
+          <div class="flex items-center gap-3 mb-5">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-100 text-violet-800 border border-violet-200/60">
+              <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+              Exploring
+            </span>
+          </div>
+          <div class="space-y-4">
+            {exploring.map((item) => (
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+                <h3 class="text-base font-bold text-slate-900">{item.title}</h3>
+                <p class="mt-1.5 text-sm text-slate-600 leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </div>
+
+      <div class="mt-12 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+        <p class="text-sm text-slate-600">This roadmap reflects our current priorities and thinking. Items may shift, and timelines are not fixed. If you have feedback or want to suggest something, reach out at <a href="mailto:support@verseseo.com" class="text-blue-600 hover:underline">support@verseseo.com</a>.</p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import CookieConsent from '../components/CookieConsent.astro';
 
 interface Props {
   title?: string;
@@ -76,5 +77,6 @@ const absoluteOgImage = ogImage.startsWith("http") ? ogImage : `${siteUrl}${ogIm
   </head>
   <body class="bg-[#FAF9F5] text-slate-900 selection:bg-blue-600 selection:text-white antialiased min-h-screen flex flex-col">
     <slot />
+    <CookieConsent />
   </body>
 </html>

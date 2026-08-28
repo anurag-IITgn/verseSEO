@@ -1,0 +1,138 @@
+---
+// src/pages/how-discovery-works.astro
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Module {
+  num: string;
+  title: string;
+  description: string;
+  details: string[];
+  color: string;
+  bgColor: string;
+  borderColor: string;
+}
+
+const modules: Module[] = [
+  {
+    num: "01",
+    title: "Technical Website Health",
+    description: "The foundation of visibility is a healthy website. If search engines and AI crawlers can't access your content, nothing else matters.",
+    details: [
+      "Crawls your website like a search engine would, following links and rendering pages",
+      "Identifies broken links, missing meta tags, duplicate content, and crawl errors",
+      "Checks page speed signals, mobile-friendliness, and structured data",
+      "Provides prioritized, actionable fixes ranked by impact"
+    ],
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200"
+  },
+  {
+    num: "02",
+    title: "Search & Intent Discovery",
+    description: "Find the keywords and search queries where your content can rank — especially high-intent queries that drive conversions.",
+    details: [
+      "Analyzes search volume, competition, and intent signals for relevant keywords",
+      "Identifies gaps between what you're targeting and what people actually search for",
+      "Surfaces long-tail and question-based queries with lower competition",
+      "Maps keywords to content opportunities and existing page relevance"
+    ],
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200"
+  },
+  {
+    num: "03",
+    title: "Reddit Opportunity Listening",
+    description: "Reddit is one of the largest sources of authentic user questions and product discussions. VerseSEO helps you find the right conversations.",
+    details: [
+      "Monitors subreddits and threads relevant to your niche or product",
+      "Identifies questions and discussions where your expertise or product could genuinely help",
+      "Ranks opportunities by relevance, recency, and engagement potential",
+      "Does not automate posting — you read the context and respond as a real person"
+    ],
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-200"
+  },
+  {
+    num: "04",
+    title: "AI/LLM Visibility Radar",
+    description: "AI answer engines like ChatGPT, Claude, and Perplexity are increasingly how people discover products and answers. VerseSEO tracks your presence there.",
+    details: [
+      "Queries major AI engines with prompts relevant to your space",
+      "Detects whether your brand, product, or content is cited in AI-generated answers",
+      "Tracks visibility changes over time across different AI platforms",
+      "Identifies where competitors are being cited instead of you"
+    ],
+    color: "text-violet-600",
+    bgColor: "bg-violet-50",
+    borderColor: "border-violet-200"
+  },
+  {
+    num: "05",
+    title: "Content Engine",
+    description: "Turn visibility insights into content that performs — structured for both traditional search and AI answer engines.",
+    details: [
+      "Generates content briefs based on identified keyword and opportunity data",
+      "Structures content for featured snippets, AI citations, and traditional ranking",
+      "Optimizes for both search engine crawlers and AI language model comprehension",
+      "Connects content creation directly to the opportunities VerseSEO discovers"
+    ],
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200"
+  }
+];
+---
+
+<Layout
+  title="How Discovery Works — VerseSEO"
+  description="Learn how VerseSEO discovers opportunities across technical health, search, Reddit, AI visibility, and content creation."
+  canonical="https://verseseo.com/how-discovery-works"
+>
+  <Navbar />
+
+  <main class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">How Discovery Works</h1>
+      <p class="text-sm text-slate-500 mb-10">VerseSEO's five-module approach to visibility intelligence</p>
+
+      <div class="prose prose-slate prose-sm max-w-none space-y-6 text-slate-700 leading-relaxed">
+
+        <p class="text-base text-slate-600">VerseSEO discovers opportunities across five interconnected modules. Each module focuses on a different visibility surface, and together they give you a complete picture of where you're seen — and where you're missing.</p>
+
+        {modules.map((mod) => (
+          <section class={`p-6 rounded-2xl border ${mod.borderColor} ${mod.bgColor}`}>
+            <div class="flex items-center gap-3 mb-3">
+              <span class={`font-mono text-xs font-bold ${mod.color}`}>{mod.num}</span>
+              <h2 class={`text-lg font-bold ${mod.color}`}>{mod.title}</h2>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed mb-4">{mod.description}</p>
+            <ul class="space-y-2">
+              {mod.details.map((detail) => (
+                <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                  <svg class={`w-4 h-4 mt-0.5 shrink-0 ${mod.color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>{detail}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+
+        <section class="mt-10">
+          <h2 class="text-lg font-bold text-slate-900 mt-8 mb-3">How It All Connects</h2>
+          <p>The five modules work together. A technical issue found in Module 01 might explain why a keyword from Module 02 isn't ranking. A Reddit opportunity from Module 03 might be amplified by content created in Module 05. And Module 04 shows you whether your efforts are translating into AI visibility.</p>
+          <p class="mt-3">VerseSEO doesn't just surface data — it helps you understand the connections between different visibility surfaces and take action on the opportunities that matter most.</p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
